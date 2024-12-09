@@ -1,0 +1,15 @@
+{
+	"$schema": "../umbraco-package-schema.json",
+	"name": "Umbraco.Community.ContentAudit",
+	"id": "Umbraco.Community.ContentAudit",
+	"version": "0.0.0-alpha",
+	"allowTelemetry": true,
+	"extensions": [
+		{
+			"name": "Umbraco.Community.ContentAudit.EntryPoint",
+			"alias": "Umbraco.Community.ContentAudit.EntryPoint",
+			"type": "backofficeEntryPoint",
+			"js": "/App_Plugins/Umbraco.Community.ContentAudit/assets.js"
+		}
+	]
+}

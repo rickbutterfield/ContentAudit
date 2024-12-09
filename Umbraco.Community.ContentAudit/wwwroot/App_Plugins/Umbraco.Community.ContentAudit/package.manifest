@@ -1,0 +1,10 @@
+﻿{
+  "name": "Umbraco.Community.ContentAudit",
+  "version": "0.0.0",
+  "allowPackageTelemetry": true,
+  "javascript": [
+    "~/App_Plugins/Umbraco.Community.ContentAudit/js/dashboard.controller.js"
+  ],
+  "css": [
+  ]
+}
