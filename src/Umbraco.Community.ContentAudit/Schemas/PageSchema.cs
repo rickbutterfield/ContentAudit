@@ -21,45 +21,59 @@ namespace Umbraco.Community.ContentAudit.Schemas
             NodeKey = pageContent.NodeKey;
             StatusCode = pageContent.StatusCode;
             ContentType = pageContent.ContentType?.ToString();
-            PageTitle = pageContent.PageTitle;
+            MetaTitle = pageContent.MetaTitle;
+
+            MetaDescription = pageContent.MetaDescription;
+            MetaKeywords = pageContent.MetaKeywords;
+            CanonicalUrl = pageContent.CanonicalUrl;
+            Canonicalised = pageContent.Canonicalised;
+            
             PageSize = pageContent.Size.GetValueOrDefault();
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         [Column("Id")]
-        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         [Column("RunId")]
-        [JsonPropertyName("runId")]
         public int RunId { get; set; }
 
         [Column("Url")]
-        [JsonPropertyName("url")]
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? Url { get; set; }
 
         [Column("NodeKey")]
-        [JsonPropertyName("nodeKey")]
         [NullSetting(NullSetting = NullSettings.Null)]
         public Guid? NodeKey { get; set; }
 
         [Column("StatusCode")]
-        [JsonPropertyName("statusCode")]
         public int StatusCode { get; set; }
 
         [Column("ContentType")]
-        [JsonPropertyName("contentType")]
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? ContentType { get; set; }
 
-        [Column("PageTitle")]
-        [JsonPropertyName("pageTitle")]
+        [Column("MetaTitle")]
         [NullSetting(NullSetting = NullSettings.Null)]
-        public string? PageTitle { get; set; }
+        public string? MetaTitle { get; set; }
+
+        [Column("MetaDescription")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? MetaDescription { get; set; }
+
+        [Column("MetaKeywords")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? MetaKeywords { get; set; }
+
+        [Column("CanonicalUrl")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? CanonicalUrl { get; set; }
+
+        [Column("Canonicalised")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public bool Canonicalised { get; set; }
 
         [Column("PageSize")]
-        [JsonPropertyName("pageSize")]
         public double PageSize { get; set; }
     }
 }

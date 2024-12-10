@@ -1,23 +1,144 @@
-var W = (s) => {
+var K = (s) => {
   throw TypeError(s);
 };
-var q = (s, t, e) => t.has(s) || W("Cannot " + e);
-var p = (s, t, e) => (q(s, t, "read from private field"), e ? e.call(s) : t.get(s)), u = (s, t, e) => t.has(s) ? W("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(s) : t.set(s, e), h = (s, t, e, n) => (q(s, t, "write to private field"), n ? n.call(s, e) : t.set(s, e), e);
-import { UMB_AUTH_CONTEXT as at } from "@umbraco-cms/backoffice/auth";
-import { UmbControllerBase as K } from "@umbraco-cms/backoffice/class-api";
-import { UmbContextToken as ct } from "@umbraco-cms/backoffice/context-api";
-import { UMB_WORKSPACE_CONTEXT as dt } from "@umbraco-cms/backoffice/workspace";
-import { tryExecuteAndNotify as lt } from "@umbraco-cms/backoffice/resources";
-import { UmbObjectState as ut } from "@umbraco-cms/backoffice/observable-api";
-import { UmbElementMixin as ht } from "@umbraco-cms/backoffice/element-api";
-import { LitElement as pt, html as mt } from "@umbraco-cms/backoffice/external/lit";
-const b = "Umb.Workspace.ContentAudit", ft = "Umb.Context.ContentAudit", G = "content-audit";
-class B extends Error {
+var G = (s, t, e) => t.has(s) || K("Cannot " + e);
+var c = (s, t, e) => (G(s, t, "read from private field"), e ? e.call(s) : t.get(s)), u = (s, t, e) => t.has(s) ? K("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(s) : t.set(s, e), d = (s, t, e, n) => (G(s, t, "write to private field"), n ? n.call(s, e) : t.set(s, e), e);
+import { UMB_AUTH_CONTEXT as St } from "@umbraco-cms/backoffice/auth";
+import { LitElement as it, html as S, repeat as Tt, css as wt, property as $t, customElement as vt } from "@umbraco-cms/backoffice/external/lit";
+import { UmbElementMixin as at } from "@umbraco-cms/backoffice/element-api";
+import { UmbControllerBase as ot } from "@umbraco-cms/backoffice/class-api";
+import { UmbContextToken as Ot } from "@umbraco-cms/backoffice/context-api";
+import { UMB_WORKSPACE_CONTEXT as Ut } from "@umbraco-cms/backoffice/workspace";
+import { tryExecuteAndNotify as D } from "@umbraco-cms/backoffice/resources";
+import { UmbObjectState as It, UmbArrayState as J } from "@umbraco-cms/backoffice/observable-api";
+const Pt = [
+  {
+    label: "Opportunity",
+    icon: "icon-info",
+    class: "opportunity"
+  },
+  {
+    label: "Warning",
+    icon: "icon-stop-alt",
+    class: "warning"
+  },
+  {
+    label: "Issue",
+    icon: "icon-alert",
+    class: "issue"
+  }
+], Rt = [
+  {
+    label: "Low",
+    icon: "icon-navigation-bottom",
+    class: "low"
+  },
+  {
+    label: "Medium",
+    icon: "icon-navigation-road",
+    class: "medium"
+  },
+  {
+    label: "High",
+    icon: "icon-navigation-top",
+    class: "high"
+  }
+];
+var Mt = Object.defineProperty, Nt = Object.getOwnPropertyDescriptor, rt = (s) => {
+  throw TypeError(s);
+}, ct = (s, t, e, n) => {
+  for (var i = n > 1 ? void 0 : n ? Nt(t, e) : t, a = s.length - 1, o; a >= 0; a--)
+    (o = s[a]) && (i = (n ? o(t, e, i) : o(i)) || i);
+  return n && i && Mt(t, e, i), i;
+}, kt = (s, t, e) => t.has(s) || rt("Cannot " + e), Dt = (s, t, e) => t.has(s) ? rt("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(s) : t.set(s, e), X = (s, t, e) => (kt(s, t, "access private method"), e), v, lt, ut;
+let U = class extends at(it) {
+  constructor() {
+    super(...arguments), Dt(this, v), this.data = [];
+  }
+  render() {
+    if (this.data.length > 0)
+      return S`
+            <uui-table>
+                <uui-table-column></uui-table-column>
+                <uui-table-column></uui-table-column>
+                <uui-table-column></uui-table-column>
+                <uui-table-column></uui-table-column>
+                <uui-table-column></uui-table-column>
+
+                <uui-table-head>
+                    <uui-table-head-cell>Name</uui-table-head-cell>
+                    <uui-table-head-cell>Type</uui-table-head-cell>
+                    <uui-table-head-cell>Priority</uui-table-head-cell>
+                    <uui-table-head-cell>URLs</uui-table-head-cell>
+                    <uui-table-head-cell>%</uui-table-head-cell>
+                </uui-table-head>
+                ${Tt(
+        this.data,
+        (s) => s.name,
+        (s) => {
+          var t;
+          return S`
+                        <uui-table-row>
+                            <uui-table-cell>
+                                <strong>${s.category}: ${s.name}</strong><br/>
+                                ${s.description}
+                            </uui-table-cell>
+                            <uui-table-cell>${X(this, v, lt).call(this, s.type)}</uui-table-cell>
+                            <uui-table-cell>${X(this, v, ut).call(this, s.priority)}</uui-table-cell>
+                            <uui-table-cell>${s.numberOfUrls}</uui-table-cell>
+                            <uui-table-cell>${(t = s.percentOfTotal) == null ? void 0 : t.toFixed(2)}%</uui-table-cell>
+                        </uui-table-row>
+                    `;
+        }
+      )}
+            </uui-table>
+            `;
+  }
+};
+v = /* @__PURE__ */ new WeakSet();
+lt = function(s) {
+  const t = Pt[parseInt(s) - 1];
+  return S`
+            <div class="issue-label ${t.class}">
+                <uui-icon name="${t.icon}"></uui-icon>
+                <span class="label">${t.label}</span>
+            </div>
+        `;
+};
+ut = function(s) {
+  const t = Rt[parseInt(s) - 1];
+  return S`
+            <div class="issue-label ${t.class}">
+                <uui-icon name="${t.icon}"></uui-icon>
+                <span class="label">${t.label}</span>
+            </div>
+        `;
+};
+U.styles = [
+  wt`
+            .issue-label {
+                display: flex;
+                align-items: center;
+
+                uui-icon {
+                    margin-right: 6px;
+                }
+            }
+        `
+];
+ct([
+  $t({ type: Array })
+], U.prototype, "data", 2);
+U = ct([
+  vt("audit-issue-table")
+], U);
+const I = "Umb.Workspace.ContentAudit", jt = "Umb.Context.ContentAudit", dt = "content-audit";
+class Q extends Error {
   constructor(t, e, n) {
     super(n), this.name = "ApiError", this.url = e.url, this.status = e.status, this.statusText = e.statusText, this.body = e.body, this.request = t;
   }
 }
-class yt extends Error {
+class xt extends Error {
   constructor(t) {
     super(t), this.name = "CancelError";
   }
@@ -25,24 +146,24 @@ class yt extends Error {
     return !0;
   }
 }
-class _t {
+class Lt {
   constructor(t) {
     this._isResolved = !1, this._isRejected = !1, this._isCancelled = !1, this.cancelHandlers = [], this.promise = new Promise((e, n) => {
       this._resolve = e, this._reject = n;
-      const i = (a) => {
-        this._isResolved || this._isRejected || this._isCancelled || (this._isResolved = !0, this._resolve && this._resolve(a));
-      }, o = (a) => {
-        this._isResolved || this._isRejected || this._isCancelled || (this._isRejected = !0, this._reject && this._reject(a));
-      }, r = (a) => {
-        this._isResolved || this._isRejected || this._isCancelled || this.cancelHandlers.push(a);
+      const i = (r) => {
+        this._isResolved || this._isRejected || this._isCancelled || (this._isResolved = !0, this._resolve && this._resolve(r));
+      }, a = (r) => {
+        this._isResolved || this._isRejected || this._isCancelled || (this._isRejected = !0, this._reject && this._reject(r));
+      }, o = (r) => {
+        this._isResolved || this._isRejected || this._isCancelled || this.cancelHandlers.push(r);
       };
-      return Object.defineProperty(r, "isResolved", {
+      return Object.defineProperty(o, "isResolved", {
         get: () => this._isResolved
-      }), Object.defineProperty(r, "isRejected", {
+      }), Object.defineProperty(o, "isRejected", {
         get: () => this._isRejected
-      }), Object.defineProperty(r, "isCancelled", {
+      }), Object.defineProperty(o, "isCancelled", {
         get: () => this._isCancelled
-      }), t(i, o, r);
+      }), t(i, a, o);
     });
   }
   get [Symbol.toStringTag]() {
@@ -67,14 +188,14 @@ class _t {
           console.warn("Cancellation threw an error", t);
           return;
         }
-      this.cancelHandlers.length = 0, this._reject && this._reject(new yt("Request aborted"));
+      this.cancelHandlers.length = 0, this._reject && this._reject(new xt("Request aborted"));
     }
   }
   get isCancelled() {
     return this._isCancelled;
   }
 }
-class H {
+class Z {
   constructor() {
     this._fns = [];
   }
@@ -86,7 +207,7 @@ class H {
     this._fns = [...this._fns, t];
   }
 }
-const y = {
+const p = {
   BASE: "",
   CREDENTIALS: "include",
   ENCODE_PATH: void 0,
@@ -97,83 +218,83 @@ const y = {
   VERSION: "Latest",
   WITH_CREDENTIALS: !1,
   interceptors: {
-    request: new H(),
-    response: new H()
+    request: new Z(),
+    response: new Z()
   }
-}, S = (s) => typeof s == "string", R = (s) => S(s) && s !== "", k = (s) => s instanceof Blob, J = (s) => s instanceof FormData, bt = (s) => {
+}, T = (s) => typeof s == "string", j = (s) => T(s) && s !== "", H = (s) => s instanceof Blob, ht = (s) => s instanceof FormData, Wt = (s) => {
   try {
     return btoa(s);
   } catch {
     return Buffer.from(s).toString("base64");
   }
-}, At = (s) => {
-  const t = [], e = (i, o) => {
-    t.push(`${encodeURIComponent(i)}=${encodeURIComponent(String(o))}`);
-  }, n = (i, o) => {
-    o != null && (o instanceof Date ? e(i, o.toISOString()) : Array.isArray(o) ? o.forEach((r) => n(i, r)) : typeof o == "object" ? Object.entries(o).forEach(([r, a]) => n(`${i}[${r}]`, a)) : e(i, o));
+}, qt = (s) => {
+  const t = [], e = (i, a) => {
+    t.push(`${encodeURIComponent(i)}=${encodeURIComponent(String(a))}`);
+  }, n = (i, a) => {
+    a != null && (a instanceof Date ? e(i, a.toISOString()) : Array.isArray(a) ? a.forEach((o) => n(i, o)) : typeof a == "object" ? Object.entries(a).forEach(([o, r]) => n(`${i}[${o}]`, r)) : e(i, a));
   };
-  return Object.entries(s).forEach(([i, o]) => n(i, o)), t.length ? `?${t.join("&")}` : "";
-}, Et = (s, t) => {
-  const e = encodeURI, n = t.url.replace("{api-version}", s.VERSION).replace(/{(.*?)}/g, (o, r) => {
-    var a;
-    return (a = t.path) != null && a.hasOwnProperty(r) ? e(String(t.path[r])) : o;
+  return Object.entries(s).forEach(([i, a]) => n(i, a)), t.length ? `?${t.join("&")}` : "";
+}, Ht = (s, t) => {
+  const e = encodeURI, n = t.url.replace("{api-version}", s.VERSION).replace(/{(.*?)}/g, (a, o) => {
+    var r;
+    return (r = t.path) != null && r.hasOwnProperty(o) ? e(String(t.path[o])) : a;
   }), i = s.BASE + n;
-  return t.query ? i + At(t.query) : i;
-}, Ct = (s) => {
+  return t.query ? i + qt(t.query) : i;
+}, Bt = (s) => {
   if (s.formData) {
     const t = new FormData(), e = (n, i) => {
-      S(i) || k(i) ? t.append(n, i) : t.append(n, JSON.stringify(i));
+      T(i) || H(i) ? t.append(n, i) : t.append(n, JSON.stringify(i));
     };
     return Object.entries(s.formData).filter(([, n]) => n != null).forEach(([n, i]) => {
-      Array.isArray(i) ? i.forEach((o) => e(n, o)) : e(n, i);
+      Array.isArray(i) ? i.forEach((a) => e(n, a)) : e(n, i);
     }), t;
   }
-}, T = async (s, t) => typeof t == "function" ? t(s) : t, St = async (s, t) => {
-  const [e, n, i, o] = await Promise.all([
+}, w = async (s, t) => typeof t == "function" ? t(s) : t, Vt = async (s, t) => {
+  const [e, n, i, a] = await Promise.all([
     // @ts-ignore
-    T(t, s.TOKEN),
+    w(t, s.TOKEN),
     // @ts-ignore
-    T(t, s.USERNAME),
+    w(t, s.USERNAME),
     // @ts-ignore
-    T(t, s.PASSWORD),
+    w(t, s.PASSWORD),
     // @ts-ignore
-    T(t, s.HEADERS)
-  ]), r = Object.entries({
+    w(t, s.HEADERS)
+  ]), o = Object.entries({
     Accept: "application/json",
-    ...o,
-    ...t.headers
-  }).filter(([, a]) => a != null).reduce((a, [d, c]) => ({
     ...a,
-    [d]: String(c)
+    ...t.headers
+  }).filter(([, r]) => r != null).reduce((r, [h, l]) => ({
+    ...r,
+    [h]: String(l)
   }), {});
-  if (R(e) && (r.Authorization = `Bearer ${e}`), R(n) && R(i)) {
-    const a = bt(`${n}:${i}`);
-    r.Authorization = `Basic ${a}`;
+  if (j(e) && (o.Authorization = `Bearer ${e}`), j(n) && j(i)) {
+    const r = Wt(`${n}:${i}`);
+    o.Authorization = `Basic ${r}`;
   }
-  return t.body !== void 0 && (t.mediaType ? r["Content-Type"] = t.mediaType : k(t.body) ? r["Content-Type"] = t.body.type || "application/octet-stream" : S(t.body) ? r["Content-Type"] = "text/plain" : J(t.body) || (r["Content-Type"] = "application/json")), new Headers(r);
-}, Tt = (s) => {
+  return t.body !== void 0 && (t.mediaType ? o["Content-Type"] = t.mediaType : H(t.body) ? o["Content-Type"] = t.body.type || "application/octet-stream" : T(t.body) ? o["Content-Type"] = "text/plain" : ht(t.body) || (o["Content-Type"] = "application/json")), new Headers(o);
+}, zt = (s) => {
   var t, e;
   if (s.body !== void 0)
-    return (t = s.mediaType) != null && t.includes("application/json") || (e = s.mediaType) != null && e.includes("+json") ? JSON.stringify(s.body) : S(s.body) || k(s.body) || J(s.body) ? s.body : JSON.stringify(s.body);
-}, wt = async (s, t, e, n, i, o, r) => {
-  const a = new AbortController();
-  let d = {
-    headers: o,
+    return (t = s.mediaType) != null && t.includes("application/json") || (e = s.mediaType) != null && e.includes("+json") ? JSON.stringify(s.body) : T(s.body) || H(s.body) || ht(s.body) ? s.body : JSON.stringify(s.body);
+}, Yt = async (s, t, e, n, i, a, o) => {
+  const r = new AbortController();
+  let h = {
+    headers: a,
     body: n ?? i,
     method: t.method,
-    signal: a.signal
+    signal: r.signal
   };
-  s.WITH_CREDENTIALS && (d.credentials = s.CREDENTIALS);
-  for (const c of s.interceptors.request._fns)
-    d = await c(d);
-  return r(() => a.abort()), await fetch(e, d);
-}, gt = (s, t) => {
+  s.WITH_CREDENTIALS && (h.credentials = s.CREDENTIALS);
+  for (const l of s.interceptors.request._fns)
+    h = await l(h);
+  return o(() => r.abort()), await fetch(e, h);
+}, Ft = (s, t) => {
   if (t) {
     const e = s.headers.get(t);
-    if (S(e))
+    if (T(e))
       return e;
   }
-}, Ut = async (s) => {
+}, Kt = async (s) => {
   if (s.status !== 204)
     try {
       const t = s.headers.get("Content-Type");
@@ -191,7 +312,7 @@ const y = {
     } catch (t) {
       console.error(t);
     }
-}, Ot = (s, t) => {
+}, Gt = (s, t) => {
   const n = {
     400: "Bad Request",
     401: "Unauthorized",
@@ -236,119 +357,171 @@ const y = {
     ...s.errors
   }[t.status];
   if (n)
-    throw new B(s, t, n);
+    throw new Q(s, t, n);
   if (!t.ok) {
-    const i = t.status ?? "unknown", o = t.statusText ?? "unknown", r = (() => {
+    const i = t.status ?? "unknown", a = t.statusText ?? "unknown", o = (() => {
       try {
         return JSON.stringify(t.body, null, 2);
       } catch {
         return;
       }
     })();
-    throw new B(
+    throw new Q(
       s,
       t,
-      `Generic Error: status: ${i}; status text: ${o}; body: ${r}`
+      `Generic Error: status: ${i}; status text: ${a}; body: ${o}`
     );
   }
-}, $t = (s, t) => new _t(async (e, n, i) => {
+}, $ = (s, t) => new Lt(async (e, n, i) => {
   try {
-    const o = Et(s, t), r = Ct(t), a = Tt(t), d = await St(s, t);
+    const a = Ht(s, t), o = Bt(t), r = zt(t), h = await Vt(s, t);
     if (!i.isCancelled) {
-      let c = await wt(s, t, o, a, r, d, i);
-      for (const rt of s.interceptors.response._fns)
-        c = await rt(c);
-      const j = await Ut(c), ot = gt(c, t.responseHeader);
-      let L = j;
-      t.responseTransformer && c.ok && (L = await t.responseTransformer(j));
-      const x = {
-        url: o,
-        ok: c.ok,
-        status: c.status,
-        statusText: c.statusText,
-        body: ot ?? L
+      let l = await Yt(s, t, a, r, o, h, i);
+      for (const Ct of s.interceptors.response._fns)
+        l = await Ct(l);
+      const z = await Kt(l), Et = Ft(l, t.responseHeader);
+      let Y = z;
+      t.responseTransformer && l.ok && (Y = await t.responseTransformer(z));
+      const F = {
+        url: a,
+        ok: l.ok,
+        status: l.status,
+        statusText: l.statusText,
+        body: Et ?? Y
       };
-      Ot(t, x), e(x.body);
+      Gt(t, F), e(F.body);
     }
-  } catch (o) {
-    n(o);
+  } catch (a) {
+    n(a);
   }
 });
-class vt {
+class x {
+  /**
+   * @returns unknown OK
+   * @throws ApiError
+   */
+  static getAllIssues() {
+    return $(p, {
+      method: "GET",
+      url: "/umbraco/content-audit/api/v1/all-issues"
+    });
+  }
+  /**
+   * @returns unknown OK
+   * @throws ApiError
+   */
+  static getDuplicateContentUrls() {
+    return $(p, {
+      method: "GET",
+      url: "/umbraco/content-audit/api/v1/duplicate-content"
+    });
+  }
   /**
    * @returns unknown OK
    * @throws ApiError
    */
   static getLatestAuditOverview() {
-    return $t(y, {
+    return $(p, {
       method: "GET",
       url: "/umbraco/content-audit/api/v1/latest-audit"
     });
   }
+  /**
+   * @returns unknown OK
+   * @throws ApiError
+   */
+  static getPagesWithMissingMetadata() {
+    return $(p, {
+      method: "GET",
+      url: "/umbraco/content-audit/api/v1/missing-metadata"
+    });
+  }
 }
-var A;
-class Rt {
+var f;
+class Jt {
   constructor(t) {
+    u(this, f);
+    d(this, f, t);
+  }
+  async getLatestAuditOverview() {
+    return await D(c(this, f), x.getLatestAuditOverview());
+  }
+  async getPagesWithMissingMetadata() {
+    return await D(c(this, f), x.getPagesWithMissingMetadata());
+  }
+  async getAllIssues() {
+    return await D(c(this, f), x.getAllIssues());
+  }
+}
+f = new WeakMap();
+var M;
+class Xt {
+  constructor(t) {
+    u(this, M);
+    d(this, M, t);
+  }
+}
+M = new WeakMap();
+var b, N;
+class Qt extends ot {
+  constructor(e) {
+    super(e);
+    u(this, b);
+    u(this, N);
+    d(this, b, new Jt(this)), d(this, N, new Xt(this));
+  }
+  async getLatestAuditOverview() {
+    return c(this, b).getLatestAuditOverview();
+  }
+  async getPagesWithMissingMetadata() {
+    return c(this, b).getPagesWithMissingMetadata();
+  }
+  async getAllIssues() {
+    return c(this, b).getAllIssues();
+  }
+}
+b = new WeakMap(), N = new WeakMap();
+var y, _, g, A;
+class W extends ot {
+  constructor(e) {
+    super(e);
+    u(this, y);
+    u(this, _);
+    u(this, g);
     u(this, A);
-    h(this, A, t);
-  }
-  async getLatestAuditOverview() {
-    return await lt(p(this, A), vt.getLatestAuditOverview());
-  }
-}
-A = new WeakMap();
-var O;
-class It {
-  constructor(t) {
-    u(this, O);
-    h(this, O, t);
-  }
-}
-O = new WeakMap();
-var E, $;
-class Pt extends K {
-  constructor(e) {
-    super(e);
-    u(this, E);
-    u(this, $);
-    h(this, E, new Rt(this)), h(this, $, new It(this));
-  }
-  async getLatestAuditOverview() {
-    return p(this, E).getLatestAuditOverview();
-  }
-}
-E = new WeakMap(), $ = new WeakMap();
-var C, m;
-class P extends K {
-  constructor(e) {
-    super(e);
-    u(this, C);
-    u(this, m);
-    this.workspaceAlias = b, h(this, m, new ut(void 0)), this.latestAuditOverview = p(this, m).asObservable(), this.provideContext(dt, this), this.provideContext(X, this), h(this, C, new Pt(this));
+    this.workspaceAlias = I, d(this, _, new It(void 0)), this.latestAuditOverview = c(this, _).asObservable(), d(this, g, new J([], (n) => n.id)), this.pagesWithMissingMetadata = c(this, g).asObservable(), d(this, A, new J([], (n) => n.name)), this.allIssues = c(this, A).asObservable(), this.provideContext(Ut, this), this.provideContext(pt, this), d(this, y, new Qt(this));
   }
   getEntityType() {
-    return G;
+    return dt;
   }
   async getLatestAuditOverview() {
-    const { data: e } = await p(this, C).getLatestAuditOverview();
-    e && p(this, m).setValue(e);
+    const { data: e } = await c(this, y).getLatestAuditOverview();
+    e && c(this, _).setValue(e);
+  }
+  async getPagesWithMissingMetadata() {
+    const { data: e } = await c(this, y).getPagesWithMissingMetadata();
+    e && c(this, g).setValue(e);
+  }
+  async getAllIssues() {
+    const { data: e } = await c(this, y).getAllIssues();
+    e && c(this, A).setValue(e);
   }
 }
-C = new WeakMap(), m = new WeakMap();
-const X = new ct(
-  "ContentAuditWorkspaceContext"
-), Nt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+y = new WeakMap(), _ = new WeakMap(), g = new WeakMap(), A = new WeakMap();
+const pt = new Ot(
+  "ContentAuditContext"
+), Zt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  CONTENT_AUDIT_CONTEXT_TOKEN: X,
-  ContentAuditWorkspaceContext: P,
-  default: P
+  CONTENT_AUDIT_CONTEXT_TOKEN: pt,
+  ContentAuditContext: W,
+  default: W
 }, Symbol.toStringTag, { value: "Module" }));
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const kt = (s) => (t, e) => {
+const te = (s) => (t, e) => {
   e !== void 0 ? e.addInitializer(() => {
     customElements.define(s, t);
   }) : customElements.define(s, t);
@@ -358,18 +531,18 @@ const kt = (s) => (t, e) => {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const w = globalThis, M = w.ShadowRoot && (w.ShadyCSS === void 0 || w.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Q = Symbol(), V = /* @__PURE__ */ new WeakMap();
-let Mt = class {
+const O = globalThis, B = O.ShadowRoot && (O.ShadyCSS === void 0 || O.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, mt = Symbol(), tt = /* @__PURE__ */ new WeakMap();
+let ee = class {
   constructor(t, e, n) {
-    if (this._$cssResult$ = !0, n !== Q) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, n !== mt) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t, this.t = e;
   }
   get styleSheet() {
     let t = this.o;
     const e = this.t;
-    if (M && t === void 0) {
+    if (B && t === void 0) {
       const n = e !== void 0 && e.length === 1;
-      n && (t = V.get(e)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), n && V.set(e, t));
+      n && (t = tt.get(e)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), n && tt.set(e, t));
     }
     return t;
   }
@@ -377,26 +550,26 @@ let Mt = class {
     return this.cssText;
   }
 };
-const Dt = (s) => new Mt(typeof s == "string" ? s : s + "", void 0, Q), jt = (s, t) => {
-  if (M) s.adoptedStyleSheets = t.map((e) => e instanceof CSSStyleSheet ? e : e.styleSheet);
+const se = (s) => new ee(typeof s == "string" ? s : s + "", void 0, mt), ne = (s, t) => {
+  if (B) s.adoptedStyleSheets = t.map((e) => e instanceof CSSStyleSheet ? e : e.styleSheet);
   else for (const e of t) {
-    const n = document.createElement("style"), i = w.litNonce;
+    const n = document.createElement("style"), i = O.litNonce;
     i !== void 0 && n.setAttribute("nonce", i), n.textContent = e.cssText, s.appendChild(n);
   }
-}, z = M ? (s) => s : (s) => s instanceof CSSStyleSheet ? ((t) => {
+}, et = B ? (s) => s : (s) => s instanceof CSSStyleSheet ? ((t) => {
   let e = "";
   for (const n of t.cssRules) e += n.cssText;
-  return Dt(e);
+  return se(e);
 })(s) : s;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Lt, defineProperty: xt, getOwnPropertyDescriptor: Wt, getOwnPropertyNames: qt, getOwnPropertySymbols: Bt, getPrototypeOf: Ht } = Object, l = globalThis, Y = l.trustedTypes, Vt = Y ? Y.emptyScript : "", I = l.reactiveElementPolyfillSupport, _ = (s, t) => s, N = { toAttribute(s, t) {
+const { is: ie, defineProperty: ae, getOwnPropertyDescriptor: oe, getOwnPropertyNames: re, getOwnPropertySymbols: ce, getPrototypeOf: le } = Object, m = globalThis, st = m.trustedTypes, ue = st ? st.emptyScript : "", L = m.reactiveElementPolyfillSupport, C = (s, t) => s, q = { toAttribute(s, t) {
   switch (t) {
     case Boolean:
-      s = s ? Vt : null;
+      s = s ? ue : null;
       break;
     case Object:
     case Array:
@@ -421,46 +594,46 @@ const { is: Lt, defineProperty: xt, getOwnPropertyDescriptor: Wt, getOwnProperty
       }
   }
   return e;
-} }, Z = (s, t) => !Lt(s, t), F = { attribute: !0, type: String, converter: N, reflect: !1, hasChanged: Z };
-Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), l.litPropertyMetadata ?? (l.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
-class f extends HTMLElement {
+} }, ft = (s, t) => !ie(s, t), nt = { attribute: !0, type: String, converter: q, reflect: !1, hasChanged: ft };
+Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), m.litPropertyMetadata ?? (m.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
+class E extends HTMLElement {
   static addInitializer(t) {
     this._$Ei(), (this.l ?? (this.l = [])).push(t);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(t, e = F) {
+  static createProperty(t, e = nt) {
     if (e.state && (e.attribute = !1), this._$Ei(), this.elementProperties.set(t, e), !e.noAccessor) {
       const n = Symbol(), i = this.getPropertyDescriptor(t, n, e);
-      i !== void 0 && xt(this.prototype, t, i);
+      i !== void 0 && ae(this.prototype, t, i);
     }
   }
   static getPropertyDescriptor(t, e, n) {
-    const { get: i, set: o } = Wt(this.prototype, t) ?? { get() {
+    const { get: i, set: a } = oe(this.prototype, t) ?? { get() {
       return this[e];
-    }, set(r) {
-      this[e] = r;
+    }, set(o) {
+      this[e] = o;
     } };
     return { get() {
       return i == null ? void 0 : i.call(this);
-    }, set(r) {
-      const a = i == null ? void 0 : i.call(this);
-      o.call(this, r), this.requestUpdate(t, a, n);
+    }, set(o) {
+      const r = i == null ? void 0 : i.call(this);
+      a.call(this, o), this.requestUpdate(t, r, n);
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(t) {
-    return this.elementProperties.get(t) ?? F;
+    return this.elementProperties.get(t) ?? nt;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(_("elementProperties"))) return;
-    const t = Ht(this);
+    if (this.hasOwnProperty(C("elementProperties"))) return;
+    const t = le(this);
     t.finalize(), t.l !== void 0 && (this.l = [...t.l]), this.elementProperties = new Map(t.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(_("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(_("properties"))) {
-      const e = this.properties, n = [...qt(e), ...Bt(e)];
+    if (this.hasOwnProperty(C("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(C("properties"))) {
+      const e = this.properties, n = [...re(e), ...ce(e)];
       for (const i of n) this.createProperty(i, e[i]);
     }
     const t = this[Symbol.metadata];
@@ -479,8 +652,8 @@ class f extends HTMLElement {
     const e = [];
     if (Array.isArray(t)) {
       const n = new Set(t.flat(1 / 0).reverse());
-      for (const i of n) e.unshift(z(i));
-    } else t !== void 0 && e.push(z(t));
+      for (const i of n) e.unshift(et(i));
+    } else t !== void 0 && e.push(et(t));
     return e;
   }
   static _$Eu(t, e) {
@@ -509,7 +682,7 @@ class f extends HTMLElement {
   }
   createRenderRoot() {
     const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return jt(t, this.constructor.elementStyles), t;
+    return ne(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
     var t;
@@ -531,24 +704,24 @@ class f extends HTMLElement {
     this._$AK(t, n);
   }
   _$EC(t, e) {
-    var o;
+    var a;
     const n = this.constructor.elementProperties.get(t), i = this.constructor._$Eu(t, n);
     if (i !== void 0 && n.reflect === !0) {
-      const r = (((o = n.converter) == null ? void 0 : o.toAttribute) !== void 0 ? n.converter : N).toAttribute(e, n.type);
-      this._$Em = t, r == null ? this.removeAttribute(i) : this.setAttribute(i, r), this._$Em = null;
+      const o = (((a = n.converter) == null ? void 0 : a.toAttribute) !== void 0 ? n.converter : q).toAttribute(e, n.type);
+      this._$Em = t, o == null ? this.removeAttribute(i) : this.setAttribute(i, o), this._$Em = null;
     }
   }
   _$AK(t, e) {
-    var o;
+    var a;
     const n = this.constructor, i = n._$Eh.get(t);
     if (i !== void 0 && this._$Em !== i) {
-      const r = n.getPropertyOptions(i), a = typeof r.converter == "function" ? { fromAttribute: r.converter } : ((o = r.converter) == null ? void 0 : o.fromAttribute) !== void 0 ? r.converter : N;
-      this._$Em = i, this[i] = a.fromAttribute(e, r.type), this._$Em = null;
+      const o = n.getPropertyOptions(i), r = typeof o.converter == "function" ? { fromAttribute: o.converter } : ((a = o.converter) == null ? void 0 : a.fromAttribute) !== void 0 ? o.converter : q;
+      this._$Em = i, this[i] = r.fromAttribute(e, o.type), this._$Em = null;
     }
   }
   requestUpdate(t, e, n) {
     if (t !== void 0) {
-      if (n ?? (n = this.constructor.getPropertyOptions(t)), !(n.hasChanged ?? Z)(this[t], e)) return;
+      if (n ?? (n = this.constructor.getPropertyOptions(t)), !(n.hasChanged ?? ft)(this[t], e)) return;
       this.P(t, e, n);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$ET());
@@ -574,18 +747,18 @@ class f extends HTMLElement {
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this._$Ep) {
-        for (const [o, r] of this._$Ep) this[o] = r;
+        for (const [a, o] of this._$Ep) this[a] = o;
         this._$Ep = void 0;
       }
       const i = this.constructor.elementProperties;
-      if (i.size > 0) for (const [o, r] of i) r.wrapped !== !0 || this._$AL.has(o) || this[o] === void 0 || this.P(o, this[o], r);
+      if (i.size > 0) for (const [a, o] of i) o.wrapped !== !0 || this._$AL.has(a) || this[a] === void 0 || this.P(a, this[a], o);
     }
     let t = !1;
     const e = this._$AL;
     try {
       t = this.shouldUpdate(e), t ? (this.willUpdate(e), (n = this._$EO) == null || n.forEach((i) => {
-        var o;
-        return (o = i.hostUpdate) == null ? void 0 : o.call(i);
+        var a;
+        return (a = i.hostUpdate) == null ? void 0 : a.call(i);
       }), this.update(e)) : this._$EU();
     } catch (i) {
       throw t = !1, this._$EU(), i;
@@ -621,81 +794,81 @@ class f extends HTMLElement {
   firstUpdated(t) {
   }
 }
-f.elementStyles = [], f.shadowRootOptions = { mode: "open" }, f[_("elementProperties")] = /* @__PURE__ */ new Map(), f[_("finalized")] = /* @__PURE__ */ new Map(), I == null || I({ ReactiveElement: f }), (l.reactiveElementVersions ?? (l.reactiveElementVersions = [])).push("2.0.4");
-var zt = Object.defineProperty, Yt = Object.getOwnPropertyDescriptor, Ft = (s, t, e, n) => {
-  for (var i = n > 1 ? void 0 : n ? Yt(t, e) : t, o = s.length - 1, r; o >= 0; o--)
-    (r = s[o]) && (i = (n ? r(t, e, i) : r(i)) || i);
-  return n && i && zt(t, e, i), i;
+E.elementStyles = [], E.shadowRootOptions = { mode: "open" }, E[C("elementProperties")] = /* @__PURE__ */ new Map(), E[C("finalized")] = /* @__PURE__ */ new Map(), L == null || L({ ReactiveElement: E }), (m.reactiveElementVersions ?? (m.reactiveElementVersions = [])).push("2.0.4");
+var de = Object.defineProperty, he = Object.getOwnPropertyDescriptor, pe = (s, t, e, n) => {
+  for (var i = n > 1 ? void 0 : n ? he(t, e) : t, a = s.length - 1, o; a >= 0; a--)
+    (o = s[a]) && (i = (n ? o(t, e, i) : o(i)) || i);
+  return n && i && de(t, e, i), i;
 };
-let g = class extends ht(pt) {
+let P = class extends at(it) {
   constructor() {
-    super(), this._workspaceContext = new P(this);
+    super(), this._workspaceContext = new W(this);
   }
   render() {
-    return mt`
+    return S`
 			<umb-workspace-editor headline="Audit" .enforceNoFooter=${!0}>
 			</umb-workspace-editor>
 		`;
   }
 };
-g = Ft([
-  kt("content-audit-workspace-root")
-], g);
-const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+P = pe([
+  te("content-audit-workspace-root")
+], P);
+const me = P, fe = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get ContentAuditWorkspaceRootElement() {
-    return g;
+    return P;
   },
-  default: Kt
-}, Symbol.toStringTag, { value: "Module" })), tt = "url-inventory-root", Jt = {
+  default: me
+}, Symbol.toStringTag, { value: "Module" })), bt = "issues-root", be = {
   type: "menuItem",
-  alias: "Umb.MenuItem.ContentAudit.UrlInventory",
-  name: "URL Inventory Menu Item",
+  alias: "Umb.MenuItem.ContentAudit.Issues",
+  name: "Issues Menu Item",
   weight: 2e3,
   meta: {
-    label: "URL Inventory",
-    icon: "icon-scan",
-    entityType: tt,
+    label: "Issues",
+    icon: "icon-alert",
+    entityType: bt,
     menus: ["Umb.Menu.ContentAudit"]
   }
-}, Xt = [Jt], Qt = "Umb.Workspace.ContentAudit.UrlInventory", Zt = [
+}, ye = [be], _e = "Umb.Workspace.ContentAudit.Issues", ge = [
   {
     type: "workspace",
-    alias: Qt,
-    name: "URL Inventory Root Workspace",
-    js: () => import("./overview-workspace-view.element-CtOiyywm.js"),
+    alias: _e,
+    name: "Issues Root Workspace",
+    js: () => import("./issues-workspace-view.element-CZgPgKMS.js"),
     meta: {
-      entityType: tt
+      entityType: bt
     }
   }
-], te = [
-  ...Zt,
-  ...Xt
-], et = "status-codes-root", ee = {
+], Ae = [
+  ...ge,
+  ...ye
+], yt = "status-codes-root", Ee = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.StatusCodes",
   name: "Status Codes Menu Item",
   weight: 2e3,
   meta: {
     label: "Status Codes",
-    icon: "icon-alert",
-    entityType: et,
+    icon: "icon-stop-alt",
+    entityType: yt,
     menus: ["Umb.Menu.ContentAudit"]
   }
-}, se = [ee], ne = "Umb.Workspace.ContentAudit.StatusCodes", ie = [
+}, Ce = [Ee], Se = "Umb.Workspace.ContentAudit.StatusCodes", Te = [
   {
     type: "workspace",
-    alias: ne,
+    alias: Se,
     name: "Status Codes Root Workspace",
     js: () => import("./status-codes-workspace-view.element-C0CemEtO.js"),
     meta: {
-      entityType: et
+      entityType: yt
     }
   }
-], oe = [
-  ...ie,
-  ...se
-], st = "orphaned-pages-root", v = "Umb.Menu.ContentAudit", D = "Umb.Menu.ContentMetadata", re = {
+], we = [
+  ...Te,
+  ...Ce
+], _t = "orphaned-pages-root", k = "Umb.Menu.ContentAudit", V = "Umb.Menu.ContentMetadata", $e = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.OrphanedPages",
   name: "Orphaned Pages Menu Item",
@@ -703,23 +876,23 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Orphaned Pages",
     icon: "icon-tactics",
-    entityType: st,
-    menus: [D]
+    entityType: _t,
+    menus: [V]
   }
-}, ae = [re], ce = "Umb.Workspace.ContentAudit.OrphanedPages", de = [
+}, ve = [$e], Oe = "Umb.Workspace.ContentAudit.OrphanedPages", Ue = [
   {
     type: "workspace",
-    alias: ce,
+    alias: Oe,
     name: "Orphaned Pages Root Workspace",
     js: () => import("./orphaned-pages-workspace-view.element-CZJGbSyQ.js"),
     meta: {
-      entityType: st
+      entityType: _t
     }
   }
-], le = [
-  ...de,
-  ...ae
-], nt = "metadata-root", ue = {
+], Ie = [
+  ...Ue,
+  ...ve
+], gt = "metadata-root", Pe = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.Metadata",
   name: "Metadata Menu Item",
@@ -727,23 +900,23 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Metadata",
     icon: "icon-tags",
-    entityType: nt,
+    entityType: gt,
     menus: ["Umb.Menu.ContentMetadata"]
   }
-}, he = [ue], pe = "Umb.Workspace.ContentAudit.Metadata", me = [
+}, Re = [Pe], Me = "Umb.Workspace.ContentAudit.Metadata", Ne = [
   {
     type: "workspace",
-    alias: pe,
+    alias: Me,
     name: "Metadata Root Workspace",
-    js: () => import("./metadata-workspace-view.element-DUFUOnzg.js"),
+    js: () => import("./metadata-workspace-view.element-CEt9ukrj.js"),
     meta: {
-      entityType: nt
+      entityType: gt
     }
   }
-], fe = [
-  ...me,
-  ...he
-], it = "duplicate-content-root", ye = {
+], ke = [
+  ...Ne,
+  ...Re
+], At = "duplicate-content-root", De = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.DuplicateContent",
   name: "Duplicate Content Menu Item",
@@ -751,23 +924,23 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Duplicate Content",
     icon: "icon-documents",
-    entityType: it,
+    entityType: At,
     menus: ["Umb.Menu.ContentMetadata"]
   }
-}, _e = [ye], be = "Umb.Workspace.ContentAudit.DuplicateContent", Ae = [
+}, je = [De], xe = "Umb.Workspace.ContentAudit.DuplicateContent", Le = [
   {
     type: "workspace",
-    alias: be,
+    alias: xe,
     name: "Duplicate Content Root Workspace",
     js: () => import("./duplicate-content-workspace-view.element-BjeIXo9I.js"),
     meta: {
-      entityType: it
+      entityType: At
     }
   }
-], Ee = [
-  ...Ae,
-  ..._e
-], Ce = "inbound-links-root", Se = {
+], We = [
+  ...Le,
+  ...je
+], qe = "inbound-links-root", He = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.InboundLinks",
   name: "Inbound Links Menu Item",
@@ -775,13 +948,13 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Inbound Links",
     icon: "icon-window-popin",
-    entityType: Ce,
-    menus: [v]
+    entityType: qe,
+    menus: [k]
   }
-}, Te = [Se], we = [
+}, Be = [He], Ve = [
   //...workspaceManifests,
-  ...Te
-], ge = "outbound-links-root", Ue = {
+  ...Be
+], ze = "outbound-links-root", Ye = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.OutboundLinks",
   name: "Outbound Links Menu Item",
@@ -789,21 +962,21 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Outbound Links",
     icon: "icon-window-popout",
-    entityType: ge,
-    menus: [v]
+    entityType: ze,
+    menus: [k]
   }
-}, Oe = [Ue], $e = [
+}, Fe = [Ye], Ke = [
   //...workspaceManifests,
-  ...Oe
-], U = "Umb.Section.ContentAudit", ve = {
+  ...Fe
+], R = "Umb.Section.ContentAudit", Ge = {
   type: "section",
-  alias: U,
+  alias: R,
   name: "Content Audit",
   meta: {
     label: "Audit",
     pathname: "audit"
   }
-}, Re = {
+}, Je = {
   type: "sectionView",
   alias: "Umb.SectionView.ContentAudit.Scan",
   name: "Content Audit Scan Section View",
@@ -816,21 +989,21 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   conditions: [
     {
       alias: "Umb.Condition.SectionAlias",
-      match: U
+      match: R
     }
   ]
-}, Ie = [
+}, Xe = [
   {
     type: "menu",
-    alias: v,
+    alias: k,
     name: "Audit Menu"
   },
   {
     type: "menu",
-    alias: D,
+    alias: V,
     name: "Content Menu"
   }
-], Pe = [
+], Qe = [
   {
     type: "sectionSidebarApp",
     kind: "menu",
@@ -838,12 +1011,12 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Content Audit Sidebar Menu",
     meta: {
       label: "Site Audit",
-      menu: v
+      menu: k
     },
     conditions: [
       {
         alias: "Umb.Condition.SectionAlias",
-        match: U
+        match: R
       }
     ]
   },
@@ -854,52 +1027,41 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Content Sidebar Menu",
     meta: {
       label: "Content",
-      menu: D
+      menu: V
     },
     conditions: [
       {
         alias: "Umb.Condition.SectionAlias",
-        match: U
+        match: R
       }
     ]
   }
-], Ne = [
-  ve,
-  Re,
-  ...Ie,
-  ...Pe,
-  ...te,
-  ...oe,
-  ...le,
-  ...fe,
-  ...Ee,
+], Ze = [
+  Ge,
+  Je,
+  ...Xe,
+  ...Qe,
+  ...Ae,
   ...we,
-  ...$e
-], ke = {
+  ...Ie,
+  ...ke,
+  ...We,
+  ...Ve,
+  ...Ke
+], ts = {
   type: "workspace",
-  alias: b,
+  alias: I,
   name: "Content Audit Workspace",
-  element: () => Promise.resolve().then(() => Gt),
+  element: () => Promise.resolve().then(() => fe),
   meta: {
-    entityType: G
+    entityType: dt
   }
-}, Me = {
-  type: "workspaceContext",
-  alias: ft,
-  name: "Content Audit Workspace Context",
-  js: () => Promise.resolve().then(() => Nt),
-  conditions: [
-    {
-      alias: "Umb.Condition.WorkspaceAlias",
-      match: b
-    }
-  ]
-}, De = [
+}, es = [
   {
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Scan",
     name: "Content Audit Scan Workspace View",
-    element: () => import("./overview.element-Dkpz4JhL.js"),
+    element: () => import("./overview.element-SFXX1iAU.js"),
     meta: {
       label: "Overview",
       pathname: "overview",
@@ -908,7 +1070,7 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: "Umb.Condition.WorkspaceAlias",
-        match: b
+        match: I
       }
     ]
   },
@@ -925,31 +1087,39 @@ const Kt = g, Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: "Umb.Condition.WorkspaceAlias",
-        match: b
+        match: I
       }
     ]
   }
-], je = [
-  ke,
-  Me,
-  ...De
-], Ke = async (s, t) => {
+], ss = [
+  ts,
+  ...es
+], ns = {
+  type: "globalContext",
+  alias: jt,
+  name: "Content Audit Workspace Context",
+  js: () => Promise.resolve().then(() => Zt)
+}, ms = async (s, t) => {
   t.registerMany([
-    ...Ne,
-    ...je
-  ]), s.consumeContext(at, async (e) => {
+    ns,
+    ...Ze,
+    ...ss
+  ]), s.consumeContext(St, async (e) => {
     if (!e) return;
     const n = e.getOpenApiConfiguration();
-    y.BASE = n.base, y.TOKEN = n.token, y.WITH_CREDENTIALS = n.withCredentials, y.CREDENTIALS = n.credentials;
+    p.BASE = n.base, p.TOKEN = n.token, p.WITH_CREDENTIALS = n.withCredentials, p.CREDENTIALS = n.credentials;
   });
 };
 export {
-  ft as CONTENT_AUDIT_CONTEXT_ALIAS,
-  X as CONTENT_AUDIT_CONTEXT_TOKEN,
-  G as CONTENT_AUDIT_ENTITY_TYPE,
-  b as CONTENT_AUDIT_WORKSPACE_ALIAS,
-  P as ContentAuditWorkspaceContext,
-  g as ContentAuditWorkspaceRootElement,
-  Ke as onInit
+  jt as CONTENT_AUDIT_CONTEXT_ALIAS,
+  pt as CONTENT_AUDIT_CONTEXT_TOKEN,
+  dt as CONTENT_AUDIT_ENTITY_TYPE,
+  I as CONTENT_AUDIT_WORKSPACE_ALIAS,
+  W as ContentAuditContext,
+  P as ContentAuditWorkspaceRootElement,
+  Rt as IssuePriorityConfigMap,
+  Pt as IssueTypeConfigMap,
+  U as IssuesTable,
+  ms as onInit
 };
 //# sourceMappingURL=assets.js.map

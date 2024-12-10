@@ -1,0 +1,1 @@
+﻿export * from './issue-table.element';

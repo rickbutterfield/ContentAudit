@@ -1,5 +1,6 @@
-﻿import { ManifestWorkspace, ManifestWorkspaceContext, ManifestWorkspaceView } from '@umbraco-cms/backoffice/workspace';
+﻿import { ManifestWorkspace, ManifestWorkspaceView } from '@umbraco-cms/backoffice/workspace';
 import { CONTENT_AUDIT_CONTEXT_ALIAS, CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from './constants';
+import { ManifestGlobalContext } from '@umbraco-cms/backoffice/extension-registry';
 
 const workspace: ManifestWorkspace = {
     type: 'workspace',
@@ -9,19 +10,6 @@ const workspace: ManifestWorkspace = {
     meta: {
         entityType: CONTENT_AUDIT_ENTITY_TYPE
     }
-};
-
-const workspaceContext: ManifestWorkspaceContext = {
-    type: 'workspaceContext',
-    alias: CONTENT_AUDIT_CONTEXT_ALIAS,
-    name: 'Content Audit Workspace Context',
-    js: () => import('./workspace.context'),
-    conditions: [
-        {
-            alias: 'Umb.Condition.WorkspaceAlias',
-            match: CONTENT_AUDIT_WORKSPACE_ALIAS
-        }
-    ]
 };
 
 const workspaceViews: ManifestWorkspaceView[] = [
@@ -63,6 +51,5 @@ const workspaceViews: ManifestWorkspaceView[] = [
 
 export const manifests = [
     workspace,
-    workspaceContext,
     ...workspaceViews
 ]

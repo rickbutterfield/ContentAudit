@@ -6,6 +6,8 @@ using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Services;
+using Umbraco.Community.ContentAudit.Composing;
+using Umbraco.Community.ContentAudit.Common.Configuration;
 
 #if NET8_0
 using Umbraco.Community.ContentAudit.Sections;
@@ -27,6 +29,14 @@ namespace Umbraco.Community.ContentAudit
             builder.Services.AddScoped<ICrawlerService, CrawlerService>();
 
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
+
+            builder.WithCollectionBuilder<AuditIssueCollectionBuilder>()
+                .Add(() => builder.TypeLoader.GetTypes<IAuditIssue>());
+
+            var options = builder.Services.AddOptions<ContentAuditSettings>()
+                .Bind(builder.Config.GetSection("ContentAudit"));
+
+            options.ValidateDataAnnotations();
 
 #if NET8_0
             builder.Sections().Append<AuditSection>();

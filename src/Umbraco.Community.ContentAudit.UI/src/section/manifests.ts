@@ -1,7 +1,7 @@
 ﻿import { ManifestMenu } from '@umbraco-cms/backoffice/menu';
 import { ManifestSection, ManifestSectionSidebarApp, ManifestSectionView } from '@umbraco-cms/backoffice/section';
 
-import { manifests as urlInventoryManifests } from './url-inventory/manifests';
+import { manifests as issuesManifests } from './issues/manifests';
 import { manifests as statusCodesManifests } from './status-codes/manifests';
 import { manifests as orphanedPagesManifests } from './orphaned-pages/manifests';
 import { manifests as metadataManifests } from './metadata/manifests';
@@ -94,7 +94,7 @@ export const manifests = [
     sectionView,
     ...menus,
     ...menuSectionSidebarApps,
-    ...urlInventoryManifests,
+    ...issuesManifests,
     ...statusCodesManifests,
     ...orphanedPagesManifests,
     ...metadataManifests,

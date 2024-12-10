@@ -1,16 +1,21 @@
 ﻿using Examine;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.Linq;
+using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Community.ContentAudit.Common.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Schemas;
 using Umbraco.Extensions;
 using static Umbraco.Cms.Core.Constants;
+using static Umbraco.Community.ContentAudit.Common.Configuration.ContentAuditOptions;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
@@ -18,9 +23,9 @@ namespace Umbraco.Community.ContentAudit.Services
     {
         private string? _baseUrl;
 
+        private readonly ConcurrentQueue<string> _urlQueue = new ConcurrentQueue<string>();
         private readonly HashSet<string> _visitedUrls = new HashSet<string>();
         private readonly HashSet<string> _disallowedUrls = new HashSet<string>();
-        private readonly ConcurrentQueue<string> _urlQueue = new ConcurrentQueue<string>();
         private readonly HashSet<string> _robotsDisallowedPaths = new HashSet<string>();
         private readonly HashSet<string> _internalUrls = new HashSet<string>();
         private readonly HashSet<string> _externalUrls = new HashSet<string>();
@@ -34,7 +39,12 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ISitemapService _sitemapService;
         private readonly IRobotsService _robotsService;
 
+        public ContentAuditSettings _contentAuditSettings { get; private set; }
+        public RequestHandlerSettings _requestHandlerSettings { get; private set; }
+
         public CrawlerService(
+            IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
+            IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
             IScopeProvider scopeProvider,
             IExamineManager examineManager,
             IPublishedUrlProvider urlProvider,
@@ -48,21 +58,44 @@ namespace Umbraco.Community.ContentAudit.Services
             _resourceService = resourceService;
             _sitemapService = sitemapService;
             _robotsService = robotsService;
+
+            this._contentAuditSettings = contentAuditSettings.CurrentValue;
+
+            contentAuditSettings.OnChange(options =>
+            {
+                this._contentAuditSettings = options;
+            });
+
+            this._requestHandlerSettings = requestHandlerSettings.CurrentValue;
         }
 
         public async IAsyncEnumerable<PageResponseDto> StartCrawl(string baseUrl)
         {
+            if (_requestHandlerSettings.AddTrailingSlash)
+            {
+                baseUrl = baseUrl.EnsureEndsWith('/');
+            }
+
             _baseUrl = baseUrl;
             var baseUri = new Uri(_baseUrl);
+            bool useSitemap = false;
 
-            var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(baseUrl);
-            if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
-                robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
-
-            var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(baseUrl);
-            if (sitemapUrls != null && sitemapUrls?.Any() == true)
+            if (_contentAuditSettings.RespectRobotsTxt)
             {
-                sitemapUrls.ForEach(x => _urlQueue.Enqueue(x));
+                var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(baseUrl);
+                if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
+                    robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
+            }
+
+            if (_contentAuditSettings.UseSitemapXml)
+            {
+                var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(baseUrl);
+                if (sitemapUrls != null && sitemapUrls?.Any() == true)
+                {
+                    useSitemap = true;
+                    sitemapUrls.ForEach(x => _urlQueue.Enqueue(x));
+                }
+                else _urlQueue.Enqueue(_baseUrl);
             }
             else _urlQueue.Enqueue(_baseUrl);
 
@@ -72,17 +105,20 @@ namespace Umbraco.Community.ContentAudit.Services
 
             while (_urlQueue.TryDequeue(out string? url))
             {
+                // Turn the URL into a C# Uri
                 var currentUri = new Uri(url);
+                
+                // Skip if this page has already been visited
                 if (_visitedUrls.Contains(url)) continue;
 
+                // Check if robots.txt is saying we shouldn't visit
                 if (IsDisallowed(url))
                 {
                     _disallowedUrls.Add(url);
                     continue;
                 }
 
-                _visitedUrls.Add(url);
-
+                // Check if it's an internal or external link
                 bool isInternal = currentUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase);
                 if (isInternal)
                 {
@@ -90,22 +126,31 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
                 else _externalUrls.Add(url);
 
-                var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url);
+                // Now let's get the actual URL and associated data
+                // - Find the matching internal Umbraco node (might be useful in the future)
+                // - Visit the page and get the assets
+                // - Add it to our visited list
+                var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
                 var pageResponse = await _resourceService.GetPageWithAssetsAsync(url, matchingUmbracoNode.Key);
                 if (pageResponse == null) continue;
+                _visitedUrls.Add(url);
 
                 var dto = new PageSchema(pageResponse, 0);
                 _data.Add(dto);
                 yield return pageResponse;
 
-                if (sitemapUrls == null || sitemapUrls?.Any() == false)
+                // If we're not using the sitemap, we want to crawl the found URLs on the page
+                if (!useSitemap)
                 {
-                    IEnumerable<string> links = ExtractLinks(pageResponse.PageContent, url);
-                    foreach (var link in links)
+                    foreach (var link in pageResponse.Links)
                     {
-                        if (!_visitedUrls.Contains(link) && !IsDisallowed(link))
+                        if (Uri.TryCreate(baseUri, link, out Uri? absoluteUri))
                         {
-                            _urlQueue.Enqueue(link);
+                            string absoluteUrl = absoluteUri.AbsoluteUri;
+                            if (!_visitedUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                            {
+                                _urlQueue.Enqueue(absoluteUrl);
+                            }
                         }
                     }
                 }
@@ -187,40 +232,6 @@ namespace Umbraco.Community.ContentAudit.Services
         private bool IsDisallowed(string url)
         {
             return _robotsDisallowedPaths.Any(disallowed => url.StartsWith(disallowed, StringComparison.OrdinalIgnoreCase)) || !url.StartsWith(_baseUrl);
-        }
-
-        private IEnumerable<string> ExtractLinks(string htmlContent, string baseUrl)
-        {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(htmlContent);
-
-            var nodes = doc.DocumentNode.SelectNodes("//a[@href]");
-            if (nodes == null) return Enumerable.Empty<string>();
-
-            return nodes
-                .Select(node => node.GetAttributeValue("href", string.Empty))
-                .Select(href => ResolveUrl(baseUrl, href))
-                .Where(link => IsValidUrl(link));
-        }
-
-        private string ResolveUrl(string baseUrl, string href)
-        {
-            if (Uri.TryCreate(href, UriKind.Absolute, out var absoluteUri))
-            {
-                return absoluteUri.ToString();
-            }
-            if (Uri.TryCreate(new Uri(baseUrl), href, out var relativeUri))
-            {
-                return relativeUri.ToString();
-            }
-            return null;
-        }
-
-        private bool IsValidUrl(string url)
-        {
-            return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-                   uri.Scheme.StartsWith("http") &&
-                   uri.Host == new Uri(_baseUrl).Host;
         }
     }
 }

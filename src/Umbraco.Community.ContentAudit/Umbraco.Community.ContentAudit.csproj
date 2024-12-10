@@ -61,6 +61,7 @@
 	</ItemGroup>-->
 
 	<ItemGroup>
+		<ProjectReference Include="..\Umbraco.Community.ContentAudit.Common\Umbraco.Community.ContentAudit.Common.csproj" />
 		<ProjectReference Include="..\Umbraco.Community.ContentAudit.UI\Umbraco.Community.ContentAudit.UI.esproj">
 			<ReferenceOutputAssembly>False</ReferenceOutputAssembly>
 		</ProjectReference>

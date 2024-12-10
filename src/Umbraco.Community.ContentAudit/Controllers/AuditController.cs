@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 
@@ -22,6 +23,28 @@ namespace Umbraco.Community.ContentAudit.Controllers
         public async Task<AuditOverviewDto> GetLatestAuditOverview()
         {
             return await _auditService.GetLatestAuditOverview();
+        }
+
+        [HttpGet("duplicate-content")]
+        [ProducesResponseType(typeof(Dictionary<string, List<PageResponseDto>>), 200)]
+        public async Task<Dictionary<string, List<PageResponseDto>>> GetDuplicateContentUrls()
+        {
+            return await _auditService.GetDuplicateContentUrls();
+        }
+
+        [HttpGet("missing-metadata")]
+        [ProducesResponseType(typeof(List<PageResponseDto>), 200)]
+        public async Task<List<PageResponseDto>> GetPagesWithMissingMetadata()
+        {
+            return await _auditService.GetPagesWithMissingMetadata();
+        }
+
+        [HttpGet("all-issues")]
+        [ProducesResponseType(typeof(List<AuditIssueDto>), 200)]
+        public async Task<List<AuditIssueDto>> GetAllIssues()
+        {
+            var allIssues = await _auditService.GetAllIssues();
+            return allIssues.OrderByDescending(x => x.PriorityScore).ToList();
         }
     }
 }

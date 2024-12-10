@@ -15,13 +15,14 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async Task<PageResponseDto> GetPageWithAssetsAsync(string url, Guid? nodeKey = null)
         {
+            Uri baseUri = new Uri(url);
+
             var response = new PageResponseDto
             {
                 Url = url,
                 NodeKey = nodeKey
             };
 
-            // 1. Fetch initial HTML
             HttpResponseMessage initialResponse = await _httpClient.GetAsync(url);
             response.StatusCode = (int)initialResponse.StatusCode;
             response.ContentType = initialResponse.Content.Headers.ContentType;
@@ -30,20 +31,46 @@ namespace Umbraco.Community.ContentAudit.Services
             var htmlBytes = await initialResponse.Content.ReadAsByteArrayAsync();
             response.Size = htmlBytes.LongLength;
 
-            // Decode HTML
             string html = System.Text.Encoding.UTF8.GetString(htmlBytes);
             response.PageContent = html;
 
-            // 2. Parse HTML to find Title and Assets
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
             // Extract page title
             var titleNode = doc.DocumentNode.SelectSingleNode("//title");
             if (titleNode != null)
+                response.MetaTitle = titleNode.InnerText.Trim();
+
+            // Extract `meta`
+            var metaDescriptionNode = doc.DocumentNode.SelectSingleNode("//meta[@name='description']");
+            if (metaDescriptionNode != null)
+                response.MetaDescription = metaDescriptionNode.InnerText.Trim();
+
+            var metaKeywordsNode = doc.DocumentNode.SelectSingleNode("//meta[@name='keywords']");
+            if (metaKeywordsNode != null)
+                response.MetaKeywords = metaKeywordsNode.GetAttributeValue("content", "");
+
+            // Check canonical URL
+            var canonical = doc.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
+            if (canonical != null)
             {
-                response.PageTitle = titleNode.InnerText.Trim();
+                var canonicalUrl = canonical.GetAttributeValue("href", "");
+                response.CanonicalUrl = canonicalUrl;
+
+                if (canonicalUrl == url)
+                {
+                    response.Canonicalised = true;
+                }
             }
+
+            // Collect links from <a> tags
+            List<string> linkUrls = new List<string>();
+            var aNodes = doc.DocumentNode.SelectNodes("//a[@href]");
+            if (aNodes != null)
+                linkUrls.AddRange(aNodes.Select(x => x.GetAttributeValue("href", "")));
+
+            response.Links.AddRange(linkUrls.Distinct());
 
             // Collect asset URLs (images, scripts, links for CSS)
             List<string> assetUrls = new List<string>();
@@ -51,26 +78,19 @@ namespace Umbraco.Community.ContentAudit.Services
             // Images
             var imgNodes = doc.DocumentNode.SelectNodes("//img[@src]");
             if (imgNodes != null)
-            {
                 assetUrls.AddRange(imgNodes.Select(x => x.GetAttributeValue("src", "")));
-            }
 
             // Scripts
             var scriptNodes = doc.DocumentNode.SelectNodes("//script[@src]");
             if (scriptNodes != null)
-            {
                 assetUrls.AddRange(scriptNodes.Select(x => x.GetAttributeValue("src", "")));
-            }
 
             // Stylesheets
             var linkNodes = doc.DocumentNode.SelectNodes("//link[@rel='stylesheet' and @href]");
             if (linkNodes != null)
-            {
                 assetUrls.AddRange(linkNodes.Select(x => x.GetAttributeValue("href", "")));
-            }
 
             // Resolve relative URLs and get sizes
-            Uri baseUri = new Uri(url);
             long totalAssetsSize = 0;
 
             foreach (var relativeUrl in assetUrls.Distinct())

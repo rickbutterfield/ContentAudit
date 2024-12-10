@@ -17,4 +17,12 @@ export class ContentAuditRepository extends UmbControllerBase {
     async getLatestAuditOverview() {
         return this.#auditDataSource.getLatestAuditOverview();
     }
+
+    async getPagesWithMissingMetadata() {
+        return this.#auditDataSource.getPagesWithMissingMetadata();
+    }
+
+    async getAllIssues() {
+        return this.#auditDataSource.getAllIssues();
+    }
 }

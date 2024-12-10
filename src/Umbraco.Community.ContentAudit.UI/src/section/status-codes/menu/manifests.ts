@@ -8,7 +8,7 @@ const menuItem: ManifestMenuItem = {
     weight: 2000,
     meta: {
         label: 'Status Codes',
-        icon: 'icon-alert',
+        icon: 'icon-stop-alt',
         entityType: AUDIT_STATUS_CODES_ROOT_ENTITY_TYPE,
         menus: ["Umb.Menu.ContentAudit"]
     }
