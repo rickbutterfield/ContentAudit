@@ -133,13 +133,13 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private double CalculatePriorityScore(AuditIssueDto issue)
         {
-            double TypeCoefficient = 10.0;
-            double PriorityCoefficient = 20.0;
-            double PercentageCoefficient = 1.0;
+            double typeCoefficient = 10.0;
+            double priorityCoefficient = 20.0;
+            double percentageCoefficient = 1.0;
 
-            double typeWeight = (int)issue.Type * TypeCoefficient;
-            double priorityWeight = (int)issue.Priority * PriorityCoefficient;
-            double percentageWeight = issue.PercentOfTotal * PercentageCoefficient;
+            double typeWeight = (int)issue.Type * typeCoefficient;
+            double priorityWeight = (int)issue.Priority * priorityCoefficient;
+            double percentageWeight = issue.PercentOfTotal * percentageCoefficient;
 
             return typeWeight + priorityWeight + percentageWeight;
         }

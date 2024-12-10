@@ -1,9 +1,6 @@
 ﻿using Examine;
-using HtmlAgilityPack;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
-using System.Linq;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
@@ -15,7 +12,6 @@ using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Schemas;
 using Umbraco.Extensions;
 using static Umbraco.Cms.Core.Constants;
-using static Umbraco.Community.ContentAudit.Common.Configuration.ContentAuditOptions;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
@@ -59,14 +55,14 @@ namespace Umbraco.Community.ContentAudit.Services
             _sitemapService = sitemapService;
             _robotsService = robotsService;
 
-            this._contentAuditSettings = contentAuditSettings.CurrentValue;
+            _contentAuditSettings = contentAuditSettings.CurrentValue;
 
             contentAuditSettings.OnChange(options =>
             {
-                this._contentAuditSettings = options;
+                _contentAuditSettings = options;
             });
 
-            this._requestHandlerSettings = requestHandlerSettings.CurrentValue;
+            _requestHandlerSettings = requestHandlerSettings.CurrentValue;
         }
 
         public async IAsyncEnumerable<PageResponseDto> StartCrawl(string baseUrl)

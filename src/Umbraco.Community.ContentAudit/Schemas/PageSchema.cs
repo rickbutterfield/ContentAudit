@@ -26,8 +26,16 @@ namespace Umbraco.Community.ContentAudit.Schemas
             MetaDescription = pageContent.MetaDescription;
             MetaKeywords = pageContent.MetaKeywords;
             CanonicalUrl = pageContent.CanonicalUrl;
-            Canonicalised = pageContent.Canonicalised;
-            
+
+            if (pageContent.H1.Any())
+            {
+                H1 = string.Join(',', pageContent.H1);
+            }
+            if (pageContent.H2.Any())
+            {
+                H2 = string.Join(',', pageContent.H2);
+            }
+
             PageSize = pageContent.Size.GetValueOrDefault();
         }
 
@@ -65,13 +73,21 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? MetaKeywords { get; set; }
 
+        [Column("MetaRobots")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? MetaRobots { get; set; }
+
         [Column("CanonicalUrl")]
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? CanonicalUrl { get; set; }
 
-        [Column("Canonicalised")]
+        [Column("H1")]
         [NullSetting(NullSetting = NullSettings.Null)]
-        public bool Canonicalised { get; set; }
+        public string? H1 { get; set; }
+
+        [Column("H2")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? H2 { get; set; }
 
         [Column("PageSize")]
         public double PageSize { get; set; }

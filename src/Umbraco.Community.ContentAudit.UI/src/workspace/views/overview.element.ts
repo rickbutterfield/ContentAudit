@@ -1,6 +1,6 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
-import { AuditIssueDto, AuditOverviewDto, IssuePriority, IssueType, PageResponseDto } from "../../api";
+import { css, customElement, html, LitElement, nothing, state } from "@umbraco-cms/backoffice/external/lit";
+import { AuditIssueDto, AuditOverviewDto, PageResponseDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 
 @customElement('content-audit-scan-view')

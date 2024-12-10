@@ -51,17 +51,16 @@ namespace Umbraco.Community.ContentAudit.Services
             if (metaKeywordsNode != null)
                 response.MetaKeywords = metaKeywordsNode.GetAttributeValue("content", "");
 
+            var metaRobotsNode = doc.DocumentNode.SelectSingleNode("//meta[@name='robots']");
+            if (metaRobotsNode != null)
+                response.MetaRobots = metaRobotsNode.GetAttributeValue("content", "");
+
             // Check canonical URL
             var canonical = doc.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
             if (canonical != null)
             {
                 var canonicalUrl = canonical.GetAttributeValue("href", "");
                 response.CanonicalUrl = canonicalUrl;
-
-                if (canonicalUrl == url)
-                {
-                    response.Canonicalised = true;
-                }
             }
 
             // Collect links from <a> tags
@@ -71,6 +70,15 @@ namespace Umbraco.Community.ContentAudit.Services
                 linkUrls.AddRange(aNodes.Select(x => x.GetAttributeValue("href", "")));
 
             response.Links.AddRange(linkUrls.Distinct());
+
+            // Collect H1s and H2s
+            var h1s = doc.DocumentNode.SelectNodes("//h1");
+            if (h1s != null)
+                response.H1.AddRange(h1s.Select(x => x.InnerText));
+
+            var h2s = doc.DocumentNode.SelectNodes("//h2");
+            if (h2s != null)
+                response.H2.AddRange(h2s.Select(x => x.InnerText));
 
             // Collect asset URLs (images, scripts, links for CSS)
             List<string> assetUrls = new List<string>();
