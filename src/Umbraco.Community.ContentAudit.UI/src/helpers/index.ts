@@ -1,5 +1,4 @@
-﻿import { IssuePriority, IssueType } from "../api";
-import { IssueLabelConfig } from "../interfaces";
+﻿import { IssueLabelConfig } from "../interfaces";
 
 export const IssueTypeConfigMap: Array<IssueLabelConfig> = [
     {

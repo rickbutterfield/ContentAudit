@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, StartCrawlResponse } from './types.gen';
+import type { GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, StartCrawlResponse } from './types.gen';
 
 export class AuditService {
     /**
@@ -25,6 +25,17 @@ export class AuditService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/umbraco/content-audit/api/v1/duplicate-content'
+        });
+    }
+    
+    /**
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getHealthScore(): CancelablePromise<GetHealthScoreResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/health-score'
         });
     }
     

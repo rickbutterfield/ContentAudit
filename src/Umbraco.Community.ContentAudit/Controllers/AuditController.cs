@@ -46,5 +46,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
             var allIssues = await _auditService.GetAllIssues();
             return allIssues.OrderByDescending(x => x.PriorityScore).ToList();
         }
+
+        [HttpGet("health-score")]
+        [ProducesResponseType(typeof(HealthScoreDto), 200)]
+        public async Task<HealthScoreDto> GetHealthScore()
+        {
+            return await _auditService.GetHealthScore();
+        }
     }
 }

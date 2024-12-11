@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../wor
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
 import { UmbArrayState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
-import { AuditIssueDto, AuditOverviewDto, PageResponseDto } from "../api";
+import { AuditIssueDto, AuditOverviewDto, HealthScoreDto, PageResponseDto } from "../api";
 
 export class ContentAuditContext extends UmbControllerBase implements UmbWorkspaceContext {
 	public readonly workspaceAlias: string = CONTENT_AUDIT_WORKSPACE_ALIAS;
@@ -24,6 +24,9 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 
 	#allIssues = new UmbArrayState<AuditIssueDto>([], (x) => x.name);
 	public readonly allIssues = this.#allIssues.asObservable();
+
+	#healthScore = new UmbObjectState<HealthScoreDto | undefined>(undefined);
+	public readonly healthScore = this.#healthScore.asObservable();
 	
 	constructor(host: UmbControllerHost) {
 		super(host);
@@ -54,6 +57,14 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 
 		if (data) {
 			this.#allIssues.setValue(data);
+		}
+	}
+
+	async getHealthScore() {
+		const { data } = await this.#repository.getHealthScore();
+
+		if (data) {
+			this.#healthScore.setValue(data);
 		}
 	}
 }

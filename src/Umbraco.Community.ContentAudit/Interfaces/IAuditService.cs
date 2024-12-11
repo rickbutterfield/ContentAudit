@@ -8,5 +8,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<Dictionary<string, List<PageResponseDto>>> GetDuplicateContentUrls();
         Task<List<PageResponseDto>> GetPagesWithMissingMetadata();
         Task<List<AuditIssueDto>> GetAllIssues();
+        Task<HealthScoreDto> GetHealthScore();
     }
 }

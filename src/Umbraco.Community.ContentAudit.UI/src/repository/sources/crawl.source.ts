@@ -4,10 +4,10 @@ export interface CrawlDataSource {
 }
 
 export class ContentCrawlDataSource implements CrawlDataSource {
-    #host: UmbControllerHost;
+    _host: UmbControllerHost;
 
     constructor(host: UmbControllerHost) {
-        this.#host = host;
+        this._host = host;
     }
 
 }

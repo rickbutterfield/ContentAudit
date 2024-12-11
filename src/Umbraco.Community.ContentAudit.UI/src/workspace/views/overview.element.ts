@@ -1,6 +1,6 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { css, customElement, html, LitElement, nothing, state } from "@umbraco-cms/backoffice/external/lit";
-import { AuditIssueDto, AuditOverviewDto, PageResponseDto } from "../../api";
+import { AuditIssueDto, AuditOverviewDto, HealthScoreDto, PageResponseDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 
 @customElement('content-audit-scan-view')
@@ -18,6 +18,12 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     @state()
     _topIssues: Array<AuditIssueDto> = [];
 
+    @state()
+    _healthScore?: HealthScoreDto;
+
+    @state()
+    _pagesWithoutErrors?: number;
+
     constructor() {
         super();
 
@@ -28,7 +34,6 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 this._latestAuditOverview = latestAuditOverview;
             });
 
-
             this.observe(context.allIssues, (allIssues) => {
                 this._topIssues = allIssues;
 
@@ -37,8 +42,16 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 }
             });
 
+            this.observe(context.healthScore, (healthScore) => {
+                this._healthScore = healthScore;
+                if (this._healthScore != undefined) {
+                    this._pagesWithoutErrors = this._healthScore.totalPages - this._healthScore.pagesWithErrors;
+                }
+            });
+
             this.#context?.getLatestAuditOverview();
             this.#context?.getAllIssues();
+            this.#context?.getHealthScore();
         });
     }
 
@@ -87,7 +100,14 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 </uui-box>
 
                 <uui-box headline="Site health">
-                    <em>Chart showing overall health of site. Based on ahrefs health score? (internal URLs crawled without errors)</em>
+                    ${this._healthScore !== undefined ?
+                        html`
+                            <umb-donut-chart id="chart" description="Colors of fruits">
+		                        <umb-donut-slice color="green" name="Pages without errors" amount=${this._pagesWithoutErrors}></umb-donut-slice>
+		                        <umb-donut-slice color="red" name="Pages with errors" amount=${this._healthScore?.pagesWithErrors}></umb-donut-slice>
+	                        </umb-donut-chart>
+                        ` : nothing}
+                    <p>${this._healthScore?.healthScore} / 100</p>
                 </uui-box>
 
                 <uui-box headline="Top issues" class="grow" style="--uui-box-default-padding: 0;">
@@ -116,6 +136,22 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             .grow {
                 grid-column: span 2;
             }
+
+            #chart {
+				width: 150px;
+				aspect-ratio: 1;
+				background: radial-gradient(white 40%, transparent 41%),
+					conic-gradient(
+						var(--umb-log-viewer-debug-color) 0% 20%,
+						var(--umb-log-viewer-information-color) 20% 40%,
+						var(--umb-log-viewer-warning-color) 40% 60%,
+						var(--umb-log-viewer-error-color) 60% 80%,
+						var(--umb-log-viewer-fatal-color) 80% 100%
+					);
+				margin: 10px;
+				display: inline-block;
+				border-radius: 50%;
+			}
         `
     ]
 }

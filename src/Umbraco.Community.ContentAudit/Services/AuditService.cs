@@ -131,6 +131,46 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
+        public async Task<HealthScoreDto> GetHealthScore()
+        {
+            var result = new HealthScoreDto();
+            var latestRunId = await GetLatestAuditId();
+
+            using var scope = _scopeProvider.CreateScope();
+            string sqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0";
+            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+
+            if (data != null && data.Any())
+            {
+                var transformedData = data.Select(x => new PageResponseDto(x));
+
+                foreach (var page in transformedData)
+                {
+                    bool pageHasError = false;
+                    result.TotalPages++;
+
+                    foreach (var issue in _auditIssueCollection)
+                    {
+                        var issueCheck = issue.CheckPages(new List<PageResponseDto>() { page });
+                        if (issueCheck == 1)
+                        {
+                            pageHasError = true;
+                            break;
+                        }
+                    }
+
+                    if (pageHasError)
+                    {
+                        result.PagesWithErrors++;
+                    }
+                }
+
+                result.HealthScore = ((double)(result.TotalPages - result.PagesWithErrors) / result.TotalPages) * 100.0;
+            }
+
+            return result;
+        }
+
         private double CalculatePriorityScore(AuditIssueDto issue)
         {
             double typeCoefficient = 10.0;

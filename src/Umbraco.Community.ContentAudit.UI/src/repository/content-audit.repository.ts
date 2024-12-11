@@ -5,13 +5,13 @@ import { ContentCrawlDataSource } from "./sources/crawl.source";
 
 export class ContentAuditRepository extends UmbControllerBase {
     #auditDataSource: ContentAuditDataSource;
-    #crawlDataSource: ContentCrawlDataSource;
+    _crawlDataSource: ContentCrawlDataSource;
 
     constructor(host: UmbControllerHost) {
         super(host);
 
         this.#auditDataSource = new ContentAuditDataSource(this);
-        this.#crawlDataSource = new ContentCrawlDataSource(this);
+        this._crawlDataSource = new ContentCrawlDataSource(this);
     }
 
     async getLatestAuditOverview() {
@@ -24,5 +24,9 @@ export class ContentAuditRepository extends UmbControllerBase {
 
     async getAllIssues() {
         return this.#auditDataSource.getAllIssues();
+    }
+
+    async getHealthScore() {
+        return this.#auditDataSource.getHealthScore();
     }
 }

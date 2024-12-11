@@ -18,6 +18,12 @@ export type AuditOverviewDto = {
     totalPagesBlocked?: number | null;
 };
 
+export type HealthScoreDto = {
+    healthScore: number;
+    totalPages: number;
+    pagesWithErrors: number;
+};
+
 export enum IssuePriority {
     LOW = 'Low',
     MEDIUM = 'Medium',
@@ -54,12 +60,15 @@ export type PageResponseDto = {
     statusCode: number;
     contentType?: MediaTypeHeaderValue | null;
     id?: number | null;
+    nodeKey?: string | null;
     metaTitle?: string | null;
     metaDescription?: string | null;
     metaKeywords?: string | null;
+    metaRobots?: string | null;
     canonicalUrl?: string | null;
     canonicalised: boolean;
-    nodeKey?: string | null;
+    h1: Array<(string)>;
+    h2: Array<(string)>;
     resources: Array<(PageResourceDto)>;
     links: Array<(string)>;
 };
@@ -69,6 +78,8 @@ export type GetAllIssuesResponse = Array<(AuditIssueDto)>;
 export type GetDuplicateContentUrlsResponse = {
     [key: string]: Array<(PageResponseDto)>;
 };
+
+export type GetHealthScoreResponse = HealthScoreDto;
 
 export type GetLatestAuditOverviewResponse = AuditOverviewDto;
 
@@ -96,6 +107,16 @@ export type $OpenApiTs = {
                 200: {
                     [key: string]: Array<(PageResponseDto)>;
                 };
+            };
+        };
+    };
+    '/umbraco/content-audit/api/v1/health-score': {
+        get: {
+            res: {
+                /**
+                 * OK
+                 */
+                200: HealthScoreDto;
             };
         };
     };

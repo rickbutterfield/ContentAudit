@@ -6,7 +6,6 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
-		"preview": "vite preview",
 		"watch": "vite build --watch",
 		"generate": "openapi-ts --file openapi-ts.config.ts"
 	},
