@@ -1,1 +1,2 @@
-﻿export * from './issue-table.element';
+﻿export * from './issue-type-label.element';
+export * from './priority-type-label.element';

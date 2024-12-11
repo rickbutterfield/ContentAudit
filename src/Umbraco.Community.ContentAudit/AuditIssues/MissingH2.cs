@@ -6,6 +6,8 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 {
     public class MissingH2 : IAuditIssue
     {
+        public Guid Id => new Guid("da974a36-0f27-4cad-bd8b-d050f16551a3");
+
         public string Name => "H2s Missing";
 
         public string Description => "The page contains no H2s";

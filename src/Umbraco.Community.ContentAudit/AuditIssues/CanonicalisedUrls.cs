@@ -6,6 +6,8 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 {
     public class CanonicalisedUrls : IAuditIssue
     {
+        public Guid Id => new Guid("cccb0159-f35f-45be-a32d-b2f7832eb242");
+
         public string Name => "Canonicalised";
 
         public string Description => "Pages that have a canonical to a different URL";

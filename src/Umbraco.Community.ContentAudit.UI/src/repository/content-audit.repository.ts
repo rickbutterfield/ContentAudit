@@ -1,17 +1,17 @@
 ﻿import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditDataSource } from "./sources/audit.source";
-import { ContentCrawlDataSource } from "./sources/crawl.source";
+import { ContentAuditSettingsDataSource } from "./sources/settings.source";
 
 export class ContentAuditRepository extends UmbControllerBase {
     #auditDataSource: ContentAuditDataSource;
-    _crawlDataSource: ContentCrawlDataSource;
+    #settingsDataSource: ContentAuditSettingsDataSource;
 
     constructor(host: UmbControllerHost) {
         super(host);
 
         this.#auditDataSource = new ContentAuditDataSource(this);
-        this._crawlDataSource = new ContentCrawlDataSource(this);
+        this.#settingsDataSource = new ContentAuditSettingsDataSource(this);
     }
 
     async getLatestAuditOverview() {
@@ -22,11 +22,15 @@ export class ContentAuditRepository extends UmbControllerBase {
         return this.#auditDataSource.getPagesWithMissingMetadata();
     }
 
-    async getAllIssues() {
-        return this.#auditDataSource.getAllIssues();
+    async getTopIssues() {
+        return this.#auditDataSource.getTopIssues();
     }
 
     async getHealthScore() {
         return this.#auditDataSource.getHealthScore();
+    }
+
+    async getSettings() {
+        return this.#settingsDataSource.getSettings();
     }
 }

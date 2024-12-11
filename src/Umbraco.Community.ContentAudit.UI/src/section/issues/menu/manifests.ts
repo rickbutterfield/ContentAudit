@@ -1,5 +1,6 @@
 ﻿import type { ManifestMenuItem } from "@umbraco-cms/backoffice/menu";
 import { AUDIT_ISSUES_ROOT_ENTITY_TYPE } from '../entity';
+import { CONTENT_AUDIT_MENU_0_ALIAS } from "../../constants";
 
 const menuItem: ManifestMenuItem = {
     type: 'menuItem',
@@ -10,7 +11,7 @@ const menuItem: ManifestMenuItem = {
         label: 'Issues',
         icon: 'icon-alert',
         entityType: AUDIT_ISSUES_ROOT_ENTITY_TYPE,
-        menus: ["Umb.Menu.ContentAudit"],        
+        menus: [CONTENT_AUDIT_MENU_0_ALIAS],        
     }
 };
 

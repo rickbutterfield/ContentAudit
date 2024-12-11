@@ -3,12 +3,14 @@ using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Models
 {
-    public class AuditIssueDto
+    public class AuditIssueDto : ContentAuditDto
     {
         public AuditIssueDto() { }
 
         public AuditIssueDto(IAuditIssue issue)
         {
+            Unique = issue.Id;
+            EntityType = "audit-issue";
             Name = issue.Name;
             Description = issue.Description;
             Category = issue.Category;

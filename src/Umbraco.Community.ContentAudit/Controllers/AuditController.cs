@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata.Ecma335;
+using Umbraco.Cms.Api.Common.ViewModels.Pagination;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 
@@ -40,11 +41,52 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("all-issues")]
-        [ProducesResponseType(typeof(List<AuditIssueDto>), 200)]
-        public async Task<List<AuditIssueDto>> GetAllIssues()
+        [ProducesResponseType(typeof(PagedViewModel<AuditIssueDto>), 200)]
+        public async Task<PagedViewModel<AuditIssueDto>> GetAllIssues(
+            CancellationToken cancellationToken,
+            int skip = 0,
+            int take = 20)
         {
             var allIssues = await _auditService.GetAllIssues();
-            return allIssues.OrderByDescending(x => x.PriorityScore).ToList();
+            var orderedIssues = allIssues.OrderByDescending(x => x.PriorityScore).ToList();
+
+            var pagedModel = new PagedModel<AuditIssueDto>
+            {
+                Total = orderedIssues.Count(),
+                Items = orderedIssues.Skip(skip).Take(take)
+            };
+
+            var viewModel = new PagedViewModel<AuditIssueDto>
+            {
+                Total = pagedModel.Total,
+                Items = pagedModel.Items
+            };
+
+            return viewModel;
+        }
+
+        [HttpGet("latest-data")]
+        [ProducesResponseType(typeof(PagedViewModel<PageResponseDto>), 200)]
+        public async Task<PagedViewModel<PageResponseDto>> GetLatestAuditData(
+            CancellationToken cancellationToken,
+            int skip = 0,
+            int take = 20)
+        {
+            var latestData = await _auditService.GetLatestAuditData(skip, take);
+
+            var pagedModel = new PagedModel<PageResponseDto>
+            {
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
+            };
+
+            var viewModel = new PagedViewModel<PageResponseDto>
+            {
+                Total = pagedModel.Total,
+                Items = pagedModel.Items
+            };
+
+            return viewModel;
         }
 
         [HttpGet("health-score")]

@@ -6,6 +6,8 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 {
     public class MetaDescriptionMissing : IAuditIssue
     {
+        public Guid Id => new Guid("8f2a0c38-d8c3-4de9-91c2-c7005aadbfb9");
+
         public string Name => "Description missing";
 
         public string Description => "Pages where meta descriptions are missing";

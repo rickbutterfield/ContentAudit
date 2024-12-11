@@ -35,8 +35,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
             {
                 H2 = string.Join(',', pageContent.H2);
             }
+            if (pageContent.OutboundLinks.Any())
+            {
+                OutboundLinks = string.Join(',', pageContent.OutboundLinks);
+            }
 
-            PageSize = pageContent.Size.GetValueOrDefault();
+            PageBytes = pageContent.Size.GetValueOrDefault();
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -89,7 +93,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? H2 { get; set; }
 
-        [Column("PageSize")]
-        public double PageSize { get; set; }
+        [Column("OutboundLinks")]
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? OutboundLinks { get; set; }
+
+        [Column("PageBytes")]
+        public double PageBytes { get; set; }
     }
 }

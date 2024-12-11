@@ -6,6 +6,7 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface IAuditIssue : IDiscoverable
     {
+        Guid Id { get; }
         string Name { get; }
         string Description { get; }
         string Category { get; }

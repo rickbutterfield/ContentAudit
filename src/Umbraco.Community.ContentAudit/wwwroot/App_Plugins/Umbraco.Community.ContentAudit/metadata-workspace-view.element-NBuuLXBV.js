@@ -1,17 +1,17 @@
 import { html as s, css as M, customElement as v, repeat as y } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement as w } from "@umbraco-cms/backoffice/lit-element";
-import { CONTENT_AUDIT_CONTEXT_TOKEN as $ } from "./assets.js";
+import { C as $ } from "./index-CcxDD8J7.js";
 var W = Object.defineProperty, T = Object.getOwnPropertyDescriptor, m = (e) => {
   throw TypeError(e);
 }, x = (e, t, i, n) => {
   for (var l = n > 1 ? void 0 : n ? T(t, i) : t, h = e.length - 1, d; h >= 0; h--)
     (d = e[h]) && (l = (n ? d(t, i, l) : d(l)) || l);
   return n && l && W(t, i, l), l;
-}, b = (e, t, i) => t.has(e) || m("Cannot " + i), E = (e, t, i) => (b(e, t, "read from private field"), i ? i.call(e) : t.get(e)), p = (e, t, i) => t.has(e) ? m("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), K = (e, t, i, n) => (b(e, t, "write to private field"), t.set(e, i), i), u = (e, t, i) => (b(e, t, "access private method"), i), r, a, g, _, f, o;
+}, b = (e, t, i) => t.has(e) || m("Cannot " + i), E = (e, t, i) => (b(e, t, "read from private field"), i ? i.call(e) : t.get(e)), p = (e, t, i) => t.has(e) ? m("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), C = (e, t, i, n) => (b(e, t, "write to private field"), t.set(e, i), i), u = (e, t, i) => (b(e, t, "access private method"), i), r, a, g, _, f, o;
 let c = class extends w {
   constructor() {
     super(), p(this, a), p(this, r), this._pagesWithMissingMetadata = [], this.consumeContext($, (e) => {
-      K(this, r, e), this.observe(e.pagesWithMissingMetadata, (t) => {
+      C(this, r, e), this.observe(e.pagesWithMissingMetadata, (t) => {
         this._pagesWithMissingMetadata = t;
       }), E(this, r).getPagesWithMissingMetadata();
     });
@@ -121,4 +121,4 @@ export {
   c as AuditMetadataWorkspaceElement,
   D as default
 };
-//# sourceMappingURL=metadata-workspace-view.element-CEt9ukrj.js.map
+//# sourceMappingURL=metadata-workspace-view.element-NBuuLXBV.js.map

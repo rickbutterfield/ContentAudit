@@ -22,8 +22,7 @@ const section: ManifestSection = {
     }
 }
 
-const sectionView: ManifestSectionView =
-{
+const sectionView: ManifestSectionView = {
     type: 'sectionView',
     alias: 'Umb.SectionView.ContentAudit.Scan',
     name: 'Content Audit Scan Section View',

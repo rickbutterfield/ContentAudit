@@ -6,7 +6,7 @@ import { AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetLatestAu
 export interface AuditDataSource {
     getLatestAuditOverview(): Promise<UmbDataSourceResponse<GetLatestAuditOverviewResponse>>
     getPagesWithMissingMetadata(): Promise<UmbDataSourceResponse<GetPagesWithMissingMetadataResponse>>
-    getAllIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>>
+    getTopIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>>
     getHealthScore(): Promise<UmbDataSourceResponse<GetHealthScoreResponse>>
 }
 
@@ -25,8 +25,8 @@ export class ContentAuditDataSource implements AuditDataSource {
         return await tryExecuteAndNotify(this.#host, AuditService.getPagesWithMissingMetadata());
     }
 
-    async getAllIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>> {
-        return await tryExecuteAndNotify(this.#host, AuditService.getAllIssues());
+    async getTopIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>> {
+        return await tryExecuteAndNotify(this.#host, AuditService.getAllIssues({ skip: 0, take: 5 }));
     }
 
     async getHealthScore(): Promise<UmbDataSourceResponse<GetHealthScoreResponse>> {

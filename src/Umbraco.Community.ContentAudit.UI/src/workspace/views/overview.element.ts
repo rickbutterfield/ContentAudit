@@ -34,12 +34,8 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 this._latestAuditOverview = latestAuditOverview;
             });
 
-            this.observe(context.allIssues, (allIssues) => {
-                this._topIssues = allIssues;
-
-                if (this._topIssues.length > 5) {
-                    this._topIssues = this._topIssues.slice(0, 5);
-                }
+            this.observe(context.topIssues, (topIssues) => {
+                this._topIssues = topIssues;
             });
 
             this.observe(context.healthScore, (healthScore) => {
@@ -50,7 +46,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             });
 
             this.#context?.getLatestAuditOverview();
-            this.#context?.getAllIssues();
+            this.#context?.getTopIssues();
             this.#context?.getHealthScore();
         });
     }
@@ -76,11 +72,13 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         };
     }
 
-    override render() {
-        return html`
-            <div id="main">
+    #renderLatestAudit() {
+        if (this._latestAuditOverview !== undefined) {
+            return html`
                 <uui-box headline="Latest audit">
-                    <div slot="header">${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate!, { dateStyle: 'long', timeStyle: 'short' }) : nothing}</div>
+                    <div slot="header">
+                        ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate!, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
+                    </div>
                     <div slot="header-actions">
                         <uui-button
                             look="primary"
@@ -90,32 +88,47 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                     </div>
 
                     ${this._latestAuditOverview?.runDate == null ?
-                html`
+                    html`
                         <p>No scan has been run yet</p>`
-                : html`
+                    : html`
                         <p><strong>URLs found: </strong> ${this._latestAuditOverview?.totalPages}</p>
                         <p><strong>Pages crawled: </strong> ${this._latestAuditOverview?.totalPagesCrawled}</p>
                         <p><strong>Blocked URLs: </strong> ${this._latestAuditOverview?.totalPagesBlocked}</p>
                     `}
                 </uui-box>
+            `
+        }
+    }
 
+    #renderHealthScore() {
+        if (this._healthScore !== undefined) {
+            return html`
                 <uui-box headline="Site health">
-                    ${this._healthScore !== undefined ?
-                        html`
-                            <umb-donut-chart id="chart" description="Colors of fruits">
-		                        <umb-donut-slice color="green" name="Pages without errors" amount=${this._pagesWithoutErrors}></umb-donut-slice>
-		                        <umb-donut-slice color="red" name="Pages with errors" amount=${this._healthScore?.pagesWithErrors}></umb-donut-slice>
-	                        </umb-donut-chart>
-                        ` : nothing}
-                    <p>${this._healthScore?.healthScore} / 100</p>
+                    <p class="uui-h2">${this._healthScore?.healthScore} / 100</p>
                 </uui-box>
+            `;
+        }
+    }
 
+    #renderTopIssues() {
+        if (this._topIssues.length !== 0) {
+            return html`
                 <uui-box headline="Top issues" class="grow" style="--uui-box-default-padding: 0;">
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
                     </div>
-                    <audit-issue-table .data=${this._topIssues} />
+                    <content-audit-issues-table-collection-view data="ABC" .data=${this._topIssues}></content-audit-issues-table-collection-view>
                 </uui-box>
+            `
+        }
+    }
+
+    override render() {
+        return html`
+            <div id="main">
+                ${this.#renderLatestAudit()}
+                ${this.#renderHealthScore()}
+                ${this.#renderTopIssues()}
             </div>
         `
     }

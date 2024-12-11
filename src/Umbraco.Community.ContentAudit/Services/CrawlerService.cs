@@ -131,10 +131,6 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (pageResponse == null) continue;
                 _visitedUrls.Add(url);
 
-                var dto = new PageSchema(pageResponse, 0);
-                _data.Add(dto);
-                yield return pageResponse;
-
                 // If we're not using the sitemap, we want to crawl the found URLs on the page
                 if (!useSitemap)
                 {
@@ -158,6 +154,10 @@ namespace Umbraco.Community.ContentAudit.Services
                         _urlQueue.Enqueue(resource.Url);
                     }
                 }
+
+                var dto = new PageSchema(pageResponse, 0);
+                _data.Add(dto);
+                yield return pageResponse;
 
                 if (_urlQueue.IsEmpty)
                     break;

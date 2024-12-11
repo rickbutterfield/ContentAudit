@@ -36,6 +36,31 @@ namespace Umbraco.Community.ContentAudit.Services
             return auditOverview;
         }
 
+        public async Task<List<PageResponseDto>> GetLatestAuditData(int skip = 0, int take = 20)
+        {
+            var result = new List<PageResponseDto>();
+            var latestRunId = await GetLatestAuditId();
+
+            using var scope = _scopeProvider.CreateScope();
+
+            string sqlQuery = $@"
+                SELECT * 
+                FROM [{PageSchema.TableName}] 
+                WHERE RunId = @0
+                LIMIT @2 OFFSET @1";
+
+            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId, skip, take);
+
+            if (data != null && data.Any())
+            {
+                result.AddRange(data.Select(x => new PageResponseDto(x)));
+            }
+
+            scope.Complete();
+
+            return result;
+        }
+
         public async Task<Dictionary<string, List<PageResponseDto>>> GetDuplicateContentUrls()
         {
             var result = new Dictionary<string, List<PageResponseDto>>();

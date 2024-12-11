@@ -6,6 +6,8 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 {
     public class MetaDescription : IAuditIssue
     {
+        public Guid Id => new Guid("2bd498ae-9c39-479f-a90b-b54ffeaf5675");
+
         public string Name => "Description too long";
 
         public string Description => "Meta descriptions above the recommended limit";

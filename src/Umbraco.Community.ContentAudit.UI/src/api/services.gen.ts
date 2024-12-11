@@ -3,17 +3,24 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, StartCrawlResponse } from './types.gen';
+import type { GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
 
 export class AuditService {
     /**
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.take
      * @returns unknown OK
      * @throws ApiError
      */
-    public static getAllIssues(): CancelablePromise<GetAllIssuesResponse> {
+    public static getAllIssues(data: GetAllIssuesData = {}): CancelablePromise<GetAllIssuesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/umbraco/content-audit/api/v1/all-issues'
+            url: '/umbraco/content-audit/api/v1/all-issues',
+            query: {
+                skip: data.skip,
+                take: data.take
+            }
         });
     }
     
@@ -51,6 +58,24 @@ export class AuditService {
     }
     
     /**
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.take
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getLatestAuditData(data: GetLatestAuditDataData = {}): CancelablePromise<GetLatestAuditDataResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/latest-data',
+            query: {
+                skip: data.skip,
+                take: data.take
+            }
+        });
+    }
+    
+    /**
      * @returns unknown OK
      * @throws ApiError
      */
@@ -72,6 +97,20 @@ export class CrawlService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/umbraco/content-audit/api/v1/start-crawl'
+        });
+    }
+    
+}
+
+export class SettingsService {
+    /**
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getSettings(): CancelablePromise<GetSettingsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/get-settings'
         });
     }
     

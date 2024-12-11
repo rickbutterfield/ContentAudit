@@ -111,7 +111,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 response.Resources.Add(resourceDetails);
                 if (resourceDetails.Size.HasValue)
                 {
-                    totalAssetsSize += resourceDetails.Size.Value;
+                    totalAssetsSize += (long)resourceDetails.Size.Value;
                 }
             }
 
