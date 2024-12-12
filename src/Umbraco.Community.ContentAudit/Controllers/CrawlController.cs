@@ -21,7 +21,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
 
         [HttpGet("start-crawl")]
         [Produces("text/event-stream")]
-        [ProducesResponseType(typeof(List<PageResponseDto>), 200)]
+        [ProducesResponseType(typeof(List<CrawlDto>), 200)]
         public async Task StartCrawl(CancellationToken cancellationToken)
         {
             Response.ContentType = "text/event-stream";

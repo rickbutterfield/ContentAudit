@@ -1,5 +1,4 @@
 ﻿using NPoco;
-using System.Text.Json.Serialization;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 using Umbraco.Community.ContentAudit.Models;
 
@@ -14,10 +13,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         public PageSchema() { }
 
-        public PageSchema(PageResponseDto pageContent, int runId)
+        public PageSchema(PageDto pageContent, int runId)
         {
             RunId = runId;
             Url = pageContent.Url;
+            IsExternal = pageContent.IsExternal;
+            IsAsset = pageContent.IsAsset;
             NodeKey = pageContent.NodeKey;
             StatusCode = pageContent.StatusCode;
             ContentType = pageContent.ContentType?.ToString();
@@ -26,6 +27,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
             MetaDescription = pageContent.MetaDescription;
             MetaKeywords = pageContent.MetaKeywords;
             CanonicalUrl = pageContent.CanonicalUrl;
+            IsOrphaned = pageContent.IsOrphaned;
 
             if (pageContent.H1.Any())
             {
@@ -53,6 +55,15 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [Column("Url")]
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? Url { get; set; }
+
+        [Column("IsExternal")]
+        public bool IsExternal { get; set; }
+
+        [Column("IsAsset")]
+        public bool IsAsset { get; set; }
+
+        [Column("IsOrphaned")]
+        public bool IsOrphaned { get; set; }
 
         [Column("NodeKey")]
         [NullSetting(NullSetting = NullSettings.Null)]

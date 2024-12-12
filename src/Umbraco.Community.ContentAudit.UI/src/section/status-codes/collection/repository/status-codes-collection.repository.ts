@@ -1,10 +1,11 @@
 ﻿import { UmbRepositoryBase } from '@umbraco-cms/backoffice/repository';
-import type { UmbCollectionFilterModel, UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
+import type { UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditStatusCodesCollectionDataSource } from "./status-codes-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { PageResponseDto } from '../../../../api';
+import { PageDto } from '../../../../api';
+import { ContentAuditStatusCodesCollectionFilterModel } from '../types';
 
-export class ContentAuditStatusCodesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageResponseDto, UmbCollectionFilterModel> {
+export class ContentAuditStatusCodesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageDto, ContentAuditStatusCodesCollectionFilterModel> {
     #collectionSource: ContentAuditStatusCodesCollectionDataSource;
 
     constructor(host: UmbControllerHost) {
@@ -12,7 +13,7 @@ export class ContentAuditStatusCodesCollectionRepository extends UmbRepositoryBa
         this.#collectionSource = new ContentAuditStatusCodesCollectionDataSource(host);
     }
 
-    async requestCollection(filter: UmbCollectionFilterModel) {
+    async requestCollection(filter: ContentAuditStatusCodesCollectionFilterModel) {
         return this.#collectionSource.getCollection(filter);
     }
 }

@@ -2,9 +2,9 @@
 import type { UmbCollectionFilterModel, UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditIssuesCollectionDataSource } from "./issue-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { AuditIssueDto } from '../../../../api';
+import { IssueDto } from '../../../../api';
 
-export class ContentAuditIssuesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<AuditIssueDto, UmbCollectionFilterModel> {
+export class ContentAuditIssuesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<IssueDto, UmbCollectionFilterModel> {
     #collectionSource: ContentAuditIssuesCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

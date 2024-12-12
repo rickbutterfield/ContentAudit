@@ -22,8 +22,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [Column("TotalUrls")]
         public int TotalUrls { get; set; }
 
-        [Column("TotalUrlsCrawled")]
-        public int TotalUrlsCrawled { get; set; }
+        [Column("TotalPagesCrawled")]
+        public int TotalPagesCrawled { get; set; }
+
+        [Column("TotalAssetsCrawled")]
+        public int TotalAssetsCrawled { get; set; }
 
         [Column("TotalBlockedUrls")]
         public int TotalBlockedUrls { get; set; }

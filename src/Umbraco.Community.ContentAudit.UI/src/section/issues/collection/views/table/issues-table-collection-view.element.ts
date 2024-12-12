@@ -1,14 +1,14 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, property, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { AuditIssueDto } from '../../../../../api';
+import { IssueDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
 @customElement('content-audit-issues-table-collection-view')
 export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement {
 
     @property({ type: Array, attribute: false })
-    data: Array<AuditIssueDto> = [];
+    data: Array<IssueDto> = [];
 
     updated(changedProperties: Map<string, any>) {
         if (changedProperties.has('data')) {
@@ -51,7 +51,7 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<AuditIssueDto>;
+    #collectionContext?: UmbDefaultCollectionContext<IssueDto>;
 
     constructor() {
         super();
@@ -67,8 +67,8 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(issues: AuditIssueDto[]) {
-        this._tableItems = issues.map((issue, index) => {
+    #createTableItems(issues: IssueDto[]) {
+        this._tableItems = issues.map((issue) => {
             return {
                 id: issue.unique,
                 entityType: 'issue-type',

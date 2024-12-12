@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { PageResponseDto } from '../../../../../api';
+import { PageDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
 @customElement('content-audit-status-codes-table-collection-view')
@@ -20,6 +20,10 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
             alias: 'url',
         },
         {
+            name: 'Content Type',
+            alias: 'contentType'
+        },
+        {
             name: 'Status Code',
             alias: 'statusCode'
         }
@@ -28,7 +32,7 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<PageResponseDto>;
+    #collectionContext?: UmbDefaultCollectionContext<PageDto>;
 
     constructor() {
         super();
@@ -44,37 +48,24 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    _getColor(statusCode: number): string {
-        console.log(statusCode >= 200);
-        if (statusCode >= 200 && statusCode < 300) {
-            return "positive";
-        }
-
-        if (statusCode >= 300 && statusCode < 400) {
-            return "warning";
-        }
-
-        if (statusCode >= 400 && statusCode < 600) {
-            return "danger";
-        }
-
-        return "default";
-    }
-
-    #createTableItems(urls: PageResponseDto[]) {
-        this._tableItems = urls.map((url) => {
+    #createTableItems(pages: PageDto[]) {
+        this._tableItems = pages.map((page) => {
             return {
-                id: url.unique,
-                entityType: url.entityType,
+                id: page.unique,
+                entityType: page.entityType,
                 icon: 'icon-alert',
                 data: [
                     {
                         columnAlias: 'url',
-                        value: html`<a href=${url.url} target="_blank">${url.url}</a>`
+                        value: html`<a href=${page.url} target="_blank">${page.url}</a>`
+                    },
+                    {
+                        columnAlias: 'contentType',
+                        value: page.contentType?.mediaType,
                     },
                     {
                         columnAlias: 'statusCode',
-                        value: html`<uui-tag color=${this._getColor(url.statusCode)}>${url.statusCode}</uui-tag>`
+                        value: html`<content-audit-status-code-label .statusCode=${page.statusCode}></content-audit-status-code-label>`
                     }
                 ]
             }

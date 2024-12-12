@@ -1,6 +1,5 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, html, LitElement } from "@umbraco-cms/backoffice/external/lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, customElement, html, LitElement, property } from "@umbraco-cms/backoffice/external/lit";
 import { IssuePriorityConfigMap } from "../helpers";
 
 @customElement('content-audit-priority-type-label')

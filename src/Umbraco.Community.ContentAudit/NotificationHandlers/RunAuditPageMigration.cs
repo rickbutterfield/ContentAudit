@@ -51,8 +51,10 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
             var migrationPlan = new MigrationPlan("ContentAudit");
 
             migrationPlan.From(string.Empty)
-                .To<AddAuditPageTable>("contentaudit-init")
-                .To<AddAuditOverviewTable>("contentaudit-overview");
+                .To<AddPageTable>("contentaudit-init")
+                .To<AddOverviewTable>("contentaudit-overview")
+                .To<AddOrphanedTable>("contentaudit-orphaned")
+                .To<AddImageTable>("contentaudit-image");
 
             var upgrader = new Upgrader(migrationPlan);
             upgrader.Execute(

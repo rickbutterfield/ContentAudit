@@ -10,6 +10,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 		kind: 'default',
 		alias: CONTENT_AUDIT_STATUS_CODES_COLLECTION_ALIAS,
 		name: 'Status Codes Collection',
+		element: () => import('./status-codes.element'),
 		meta: {
 			repositoryAlias: CONTENT_AUDIT_STATUS_CODES_COLLECTION_REPOSITORY_ALIAS
 		}

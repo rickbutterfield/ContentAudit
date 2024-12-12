@@ -1,5 +1,4 @@
-﻿import { ManifestWorkspaceView } from '@umbraco-cms/backoffice/workspace';
-import { CONTENT_AUDIT_ISSUES_COLLECTION_ALIAS } from '../collection';
+﻿import { CONTENT_AUDIT_ISSUES_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_ISSUES_ROOT_ENTITY_TYPE } from '../entity';
 
 const workspaceAlias = 'Umb.Workspace.ContentAudit.Issues';

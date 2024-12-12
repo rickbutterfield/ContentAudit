@@ -1,4 +1,5 @@
-﻿using Umbraco.Cms.Infrastructure.Scoping;
+﻿using System.Linq;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -18,27 +19,28 @@ namespace Umbraco.Community.ContentAudit.Services
             _scopeProvider = scopeProvider;
             _auditIssueCollection = auditIssueCollection;
         }
-        
-        public async Task<AuditOverviewDto> GetLatestAuditOverview()
+
+        public async Task<OverviewDto> GetLatestAuditOverview()
         {
-            var auditOverview = new AuditOverviewDto();
+            var auditOverview = new OverviewDto();
+            var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
 
             var latestAudit = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC LIMIT 1");
+                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE Id = @0", latestRunId);
 
             if (latestAudit != null && latestAudit?.Any() == true)
-                auditOverview = new AuditOverviewDto(latestAudit.First());
+                auditOverview = new OverviewDto(latestAudit.First());
 
             scope.Complete();
 
             return auditOverview;
         }
 
-        public async Task<List<PageResponseDto>> GetLatestAuditData(int skip = 0, int take = 20)
+        public async Task<List<PageDto>> GetLatestAuditData(int skip = 0, int take = 20, string filter = "", int statusCode = 0)
         {
-            var result = new List<PageResponseDto>();
+            var result = new List<PageDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
@@ -53,17 +55,92 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (data != null && data.Any())
             {
-                result.AddRange(data.Select(x => new PageResponseDto(x)));
+                result.AddRange(data.Select(x => new PageDto(x)));
             }
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                result = result.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+            }
+
+            if (statusCode != 0)
+            {
+                result = result.Where(x => x.StatusCode == statusCode).ToList();
+            }
+
 
             scope.Complete();
 
             return result;
         }
 
-        public async Task<Dictionary<string, List<PageResponseDto>>> GetDuplicateContentUrls()
+        public async Task<List<PageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
         {
-            var result = new Dictionary<string, List<PageResponseDto>>();
+            var results = new List<PageDto>();
+            var latestRunId = await GetLatestAuditId();
+
+            using var scope = _scopeProvider.CreateScope();
+
+            string sqlQuery = $@"
+                SELECT * 
+                FROM [{PageSchema.TableName}] 
+                WHERE RunId = @0
+                AND IsOrphaned = 1";
+
+            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+
+            if (data != null && data.Any())
+            { 
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                }
+
+                data = data.Skip(skip).Take(take).ToList();
+
+                results.AddRange(data.Select(x => new PageDto(x)));
+            }
+
+            scope.Complete();
+
+            return results;
+        }
+
+
+        public async Task<List<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "")
+        {
+            var results = new List<ImageDto>();
+            var latestRunId = await GetLatestAuditId();
+
+            using var scope = _scopeProvider.CreateScope();
+
+            string sqlQuery = $@"
+                SELECT * 
+                FROM [{ImageSchema.TableName}] 
+                WHERE RunId = @0";
+
+            var data = await scope.Database.FetchAsync<ImageSchema>(sqlQuery, latestRunId);
+
+            if (data != null && data.Any())
+            {
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                }
+
+                data = data.Skip(skip).Take(take).ToList();
+
+                results.AddRange(data.Select(x => new ImageDto(x)));
+            }
+
+            scope.Complete();
+
+            return results;
+        }
+
+        public async Task<Dictionary<string, List<PageDto>>> GetDuplicateContentUrls()
+        {
+            var result = new Dictionary<string, List<PageDto>>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
@@ -77,10 +154,10 @@ namespace Umbraco.Community.ContentAudit.Services
                 // Group pages by CanonicalUrl
                 var groupedData = data
                     .GroupBy(page => page.CanonicalUrl)
-                    .Where(group => group.Count() > 1) 
+                    .Where(group => group.Count() > 1)
                     .ToDictionary(
                         group => group.Key,
-                        group => group.Select(x => new PageResponseDto(x)).ToList()
+                        group => group.Select(x => new PageDto(x)).ToList()
                     );
 
                 result = groupedData;
@@ -91,9 +168,9 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        public async Task<List<PageResponseDto>> GetPagesWithMissingMetadata()
+        public async Task<List<PageDto>> GetPagesWithMissingMetadata()
         {
-            var result = new List<PageResponseDto>();
+            var result = new List<PageDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
@@ -115,7 +192,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (data != null && data.Any())
             {
-                result.AddRange(data.Select(x => new PageResponseDto(x)));
+                result.AddRange(data.Select(x => new PageDto(x)));
             }
 
             scope.Complete();
@@ -123,9 +200,9 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        public async Task<List<AuditIssueDto>> GetAllIssues()
+        public async Task<List<IssueDto>> GetAllIssues()
         {
-            var result = new List<AuditIssueDto>();
+            var result = new List<IssueDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
@@ -134,14 +211,14 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (data != null && data.Any())
             {
-                var transformedData = data.Select(x => new PageResponseDto(x));
+                var transformedData = data.Select(x => new PageDto(x));
 
                 foreach (var issue in _auditIssueCollection)
                 {
                     var issueCheck = issue.CheckPages(transformedData);
                     double percent = ((double)issueCheck / (double)transformedData.Count()) * 100.0;
 
-                    var auditIssue = new AuditIssueDto(issue)
+                    var auditIssue = new IssueDto(issue)
                     {
                         NumberOfUrls = issueCheck,
                         PercentOfTotal = percent
@@ -167,7 +244,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (data != null && data.Any())
             {
-                var transformedData = data.Select(x => new PageResponseDto(x));
+                var transformedData = data.Select(x => new PageDto(x));
 
                 foreach (var page in transformedData)
                 {
@@ -176,7 +253,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     foreach (var issue in _auditIssueCollection)
                     {
-                        var issueCheck = issue.CheckPages(new List<PageResponseDto>() { page });
+                        var issueCheck = issue.CheckPages(new List<PageDto>() { page });
                         if (issueCheck == 1)
                         {
                             pageHasError = true;
@@ -196,7 +273,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        private double CalculatePriorityScore(AuditIssueDto issue)
+        private double CalculatePriorityScore(IssueDto issue)
         {
             double typeCoefficient = 10.0;
             double priorityCoefficient = 20.0;
@@ -206,7 +283,10 @@ namespace Umbraco.Community.ContentAudit.Services
             double priorityWeight = (int)issue.Priority * priorityCoefficient;
             double percentageWeight = issue.PercentOfTotal * percentageCoefficient;
 
-            return typeWeight + priorityWeight + percentageWeight;
+            if (issue.PercentOfTotal != 0)
+                return typeWeight + priorityWeight + percentageWeight;
+            
+            return 0;
         }
 
         private async Task<int?> GetLatestAuditId()

@@ -13,6 +13,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         IssueType Type { get; }
         IssuePriority Priority { get; }
 
-        int CheckPages(IEnumerable<PageResponseDto> pages);
+        int CheckPages(IEnumerable<PageDto> pages);
     }
 }

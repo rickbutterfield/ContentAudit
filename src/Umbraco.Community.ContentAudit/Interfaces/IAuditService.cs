@@ -4,11 +4,13 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface IAuditService
     {
-        Task<AuditOverviewDto> GetLatestAuditOverview();
-        Task<List<PageResponseDto>> GetLatestAuditData(int skip = 0, int take = 20);
-        Task<Dictionary<string, List<PageResponseDto>>> GetDuplicateContentUrls();
-        Task<List<PageResponseDto>> GetPagesWithMissingMetadata();
-        Task<List<AuditIssueDto>> GetAllIssues();
+        Task<OverviewDto> GetLatestAuditOverview();
+        Task<List<PageDto>> GetLatestAuditData(int skip = 0, int take = 20, string filter = "", int statusCode = 0);
+        Task<List<PageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "");
+        Task<List<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "");
+        Task<Dictionary<string, List<PageDto>>> GetDuplicateContentUrls();
+        Task<List<PageDto>> GetPagesWithMissingMetadata();
+        Task<List<IssueDto>> GetAllIssues();
         Task<HealthScoreDto> GetHealthScore();
     }
 }

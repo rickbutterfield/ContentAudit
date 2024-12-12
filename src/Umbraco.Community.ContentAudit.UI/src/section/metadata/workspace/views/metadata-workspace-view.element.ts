@@ -1,6 +1,6 @@
 ﻿import { css, customElement, html, repeat } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { PageResponseDto } from "../../../../api";
+import { PageDto } from "../../../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../../../context/audit.context";
 
 @customElement('metadata-audit-workspace')
@@ -8,7 +8,7 @@ export class AuditMetadataWorkspaceElement extends UmbLitElement {
 
     #context?: ContentAuditContext;
 
-    _pagesWithMissingMetadata?: PageResponseDto[] = [];
+    _pagesWithMissingMetadata?: PageDto[] = [];
 
     constructor() {
         super();
@@ -25,7 +25,7 @@ export class AuditMetadataWorkspaceElement extends UmbLitElement {
     }
 
     #renderMissingTitlePages() {
-        const filtered = this._pagesWithMissingMetadata?.filter(x => x.metaTitle == '') as PageResponseDto[];
+        const filtered = this._pagesWithMissingMetadata?.filter(x => x.metaTitle == '') as PageDto[];
 
         if (filtered?.length !== 0) {
             return html`
@@ -37,7 +37,7 @@ export class AuditMetadataWorkspaceElement extends UmbLitElement {
     }
 
     #renderMissingDescriptionPages() {
-        const filtered = this._pagesWithMissingMetadata?.filter(x => x.metaDescription == '') as PageResponseDto[];
+        const filtered = this._pagesWithMissingMetadata?.filter(x => x.metaDescription == '') as PageDto[];
 
         if (filtered?.length !== 0) {
             return html`
@@ -49,7 +49,7 @@ export class AuditMetadataWorkspaceElement extends UmbLitElement {
     }
 
     #renderMissingKeywordPages() {
-        const filtered = this._pagesWithMissingMetadata?.filter(x => x.metaKeywords == null) as PageResponseDto[];
+        const filtered = this._pagesWithMissingMetadata?.filter(x => x.metaKeywords == null) as PageDto[];
 
         if (filtered?.length !== 0) {
             return html`
@@ -60,7 +60,7 @@ export class AuditMetadataWorkspaceElement extends UmbLitElement {
         }
     }
 
-    #renderTable(data: PageResponseDto[]) {
+    #renderTable(data: PageDto[]) {
         debugger;
         if (data?.length !== 0) {
             return html`

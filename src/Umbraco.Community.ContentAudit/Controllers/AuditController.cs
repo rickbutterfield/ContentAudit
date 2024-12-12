@@ -20,29 +20,29 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("latest-audit")]
-        [ProducesResponseType(typeof(AuditOverviewDto), 200)]
-        public async Task<AuditOverviewDto> GetLatestAuditOverview()
+        [ProducesResponseType(typeof(OverviewDto), 200)]
+        public async Task<OverviewDto> GetLatestAuditOverview()
         {
             return await _auditService.GetLatestAuditOverview();
         }
 
         [HttpGet("duplicate-content")]
-        [ProducesResponseType(typeof(Dictionary<string, List<PageResponseDto>>), 200)]
-        public async Task<Dictionary<string, List<PageResponseDto>>> GetDuplicateContentUrls()
+        [ProducesResponseType(typeof(Dictionary<string, List<PageDto>>), 200)]
+        public async Task<Dictionary<string, List<PageDto>>> GetDuplicateContentUrls()
         {
             return await _auditService.GetDuplicateContentUrls();
         }
 
         [HttpGet("missing-metadata")]
-        [ProducesResponseType(typeof(List<PageResponseDto>), 200)]
-        public async Task<List<PageResponseDto>> GetPagesWithMissingMetadata()
+        [ProducesResponseType(typeof(List<PageDto>), 200)]
+        public async Task<List<PageDto>> GetPagesWithMissingMetadata()
         {
             return await _auditService.GetPagesWithMissingMetadata();
         }
 
         [HttpGet("all-issues")]
-        [ProducesResponseType(typeof(PagedViewModel<AuditIssueDto>), 200)]
-        public async Task<PagedViewModel<AuditIssueDto>> GetAllIssues(
+        [ProducesResponseType(typeof(PagedViewModel<IssueDto>), 200)]
+        public async Task<PagedViewModel<IssueDto>> GetAllIssues(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20)
@@ -50,13 +50,13 @@ namespace Umbraco.Community.ContentAudit.Controllers
             var allIssues = await _auditService.GetAllIssues();
             var orderedIssues = allIssues.OrderByDescending(x => x.PriorityScore).ToList();
 
-            var pagedModel = new PagedModel<AuditIssueDto>
+            var pagedModel = new PagedModel<IssueDto>
             {
                 Total = orderedIssues.Count(),
                 Items = orderedIssues.Skip(skip).Take(take)
             };
 
-            var viewModel = new PagedViewModel<AuditIssueDto>
+            var viewModel = new PagedViewModel<IssueDto>
             {
                 Total = pagedModel.Total,
                 Items = pagedModel.Items
@@ -66,21 +66,65 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("latest-data")]
-        [ProducesResponseType(typeof(PagedViewModel<PageResponseDto>), 200)]
-        public async Task<PagedViewModel<PageResponseDto>> GetLatestAuditData(
+        [ProducesResponseType(typeof(PagedViewModel<PageDto>), 200)]
+        public async Task<PagedViewModel<PageDto>> GetLatestAuditData(
             CancellationToken cancellationToken,
             int skip = 0,
-            int take = 20)
+            int take = 20,
+            string filter = "",
+            int statusCode = 0)
         {
-            var latestData = await _auditService.GetLatestAuditData(skip, take);
+            var latestData = await _auditService.GetLatestAuditData(skip, take, filter, statusCode);
 
-            var pagedModel = new PagedModel<PageResponseDto>
+            var pagedModel = new PagedModel<PageDto>
             {
                 Total = latestData.Count(),
-                Items = latestData.Skip(skip).Take(take)
+                Items = latestData
             };
 
-            var viewModel = new PagedViewModel<PageResponseDto>
+            var viewModel = new PagedViewModel<PageDto>
+            {
+                Total = pagedModel.Total,
+                Items = pagedModel.Items
+            };
+
+            return viewModel;
+        }
+
+        [HttpGet("orphaned-pages")]
+        [ProducesResponseType(typeof(PagedViewModel<PageDto>), 200)]
+        public async Task<PagedViewModel<PageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
+        {
+            var data = await _auditService.GetOrphanedPages(skip, take, filter);
+
+            var pagedModel = new PagedModel<PageDto>
+            {
+                Total = data.Count(),
+                Items = data
+            };
+
+            var viewModel = new PagedViewModel<PageDto>
+            {
+                Total = pagedModel.Total,
+                Items = pagedModel.Items
+            };
+
+            return viewModel;
+        }
+
+        [HttpGet("all-images")]
+        [ProducesResponseType(typeof(PagedViewModel<ImageDto>), 200)]
+        public async Task<PagedViewModel<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "")
+        {
+            var data = await _auditService.GetAllImages(skip, take, filter);
+
+            var pagedModel = new PagedModel<ImageDto>
+            {
+                Total = data.Count(),
+                Items = data
+            };
+
+            var viewModel = new PagedViewModel<ImageDto>
             {
                 Total = pagedModel.Total,
                 Items = pagedModel.Items

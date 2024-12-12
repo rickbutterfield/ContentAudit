@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
+import type { GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
 
 export class AuditService {
     /**
@@ -61,6 +61,8 @@ export class AuditService {
      * @param data The data for the request.
      * @param data.skip
      * @param data.take
+     * @param data.filter
+     * @param data.statusCode
      * @returns unknown OK
      * @throws ApiError
      */
@@ -70,7 +72,9 @@ export class AuditService {
             url: '/umbraco/content-audit/api/v1/latest-data',
             query: {
                 skip: data.skip,
-                take: data.take
+                take: data.take,
+                filter: data.filter,
+                statusCode: data.statusCode
             }
         });
     }
@@ -83,6 +87,26 @@ export class AuditService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/umbraco/content-audit/api/v1/missing-metadata'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.take
+     * @param data.filter
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getOrphanedPages(data: GetOrphanedPagesData = {}): CancelablePromise<GetOrphanedPagesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/orphaned-pages',
+            query: {
+                skip: data.skip,
+                take: data.take,
+                filter: data.filter
+            }
         });
     }
     

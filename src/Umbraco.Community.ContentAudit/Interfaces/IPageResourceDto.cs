@@ -6,6 +6,10 @@ namespace Umbraco.Community.ContentAudit.Interfaces
     {
         string? Url { get; set; }
 
+        bool IsExternal { get; set; }
+
+        bool IsAsset { get; set; }
+
         double? Size { get; set; }
 
         int StatusCode { get; set; }

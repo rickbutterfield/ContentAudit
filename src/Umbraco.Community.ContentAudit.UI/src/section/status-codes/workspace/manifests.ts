@@ -1,5 +1,4 @@
-﻿import { ManifestWorkspaceView } from '@umbraco-cms/backoffice/workspace';
-import { CONTENT_AUDIT_STATUS_CODES_COLLECTION_ALIAS } from '../collection';
+﻿import { CONTENT_AUDIT_STATUS_CODES_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_STATUS_CODES_ROOT_ENTITY_TYPE } from '../entity';
 
 const workspaceAlias = 'Umb.Workspace.ContentAudit.StatusCodes';
@@ -9,7 +8,7 @@ export const manifests: Array<UmbExtensionManifest> = [
         type: 'workspace',
         kind: 'default',
         alias: workspaceAlias,
-        name: 'StatusCodes Root Workspace',
+        name: 'Status Codes Root Workspace',
         meta: {
             entityType: AUDIT_STATUS_CODES_ROOT_ENTITY_TYPE,
             headline: 'Status Codes'

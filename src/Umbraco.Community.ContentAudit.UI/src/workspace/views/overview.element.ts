@@ -1,11 +1,11 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { css, customElement, html, LitElement, nothing, state } from "@umbraco-cms/backoffice/external/lit";
-import { AuditIssueDto, AuditOverviewDto, HealthScoreDto, PageResponseDto } from "../../api";
+import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 
 @customElement('content-audit-scan-view')
 export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
-    private auditData: PageResponseDto[] = [];
+    private crawlData: CrawlDto[] = [];
 
     #context?: ContentAuditContext;
 
@@ -13,10 +13,10 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     scanRunning?: boolean = false;
 
     @state()
-    _latestAuditOverview?: AuditOverviewDto;
+    _latestAuditOverview?: OverviewDto;
 
     @state()
-    _topIssues: Array<AuditIssueDto> = [];
+    _topIssues: Array<IssueDto> = [];
 
     @state()
     _healthScore?: HealthScoreDto;
@@ -45,19 +45,25 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 }
             });
 
-            this.#context?.getLatestAuditOverview();
-            this.#context?.getTopIssues();
-            this.#context?.getHealthScore();
+            this.#init();
         });
+    }
+
+    #init() {
+        this.#context?.getLatestAuditOverview();
+        this.#context?.getTopIssues();
+        this.#context?.getHealthScore();
     }
 
     startAudit() {
         const eventSource = new EventSource('/umbraco/content-audit/api/v1/start-crawl');
+
         this.scanRunning = true;
+        this.crawlData = [];
 
         eventSource.onmessage = (event) => {
-            const data: PageResponseDto = JSON.parse(event.data);
-            this.auditData.push(data);
+            const data: CrawlDto = JSON.parse(event.data);
+            this.crawlData.push(data);
             this.requestUpdate();
         };
 
@@ -68,8 +74,39 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 console.error('EventSource encountered an error:', error);
             }
             this.scanRunning = false;
+            this.#init();
             eventSource.close();
         };
+    }
+
+    #renderScanBox() {
+        if (!this.scanRunning) {
+            if (this._latestAuditOverview?.runDate == null) {
+                return html`<p>No scan has been run yet</p>`;
+            }
+            else {
+                return html`
+                    <p><strong>URLs found: </strong> ${this._latestAuditOverview?.totalUrls}</p>
+                    <p><strong>Pages crawled: </strong> ${this._latestAuditOverview?.totalPagesCrawled}</p>
+                    <p><strong>Assets crawled: </strong> ${this._latestAuditOverview?.totalAssetsCrawled}</p>
+                    <p><strong>Blocked URLs: </strong> ${this._latestAuditOverview?.totalPagesBlocked}</p>
+                `
+            }
+        }
+        else {
+            const total = this.crawlData.length;
+            const crawled = this.crawlData.filter(x => x.crawled && !x.asset).length;
+            const assets = this.crawlData.filter(x => x.crawled && x.asset).length;
+            const blocked = this.crawlData.filter(x => x.blocked).length;
+
+            return html`
+                <uui-loader-bar></uui-loader-bar>
+                <p><strong>URLs found: </strong> ${total}</p>
+                <p><strong>Pages crawled: </strong> ${crawled}</p>
+                <p><strong>Assets crawled: </strong> ${assets}</p>
+                <p><strong>Blocked URLs: </strong> ${blocked}</p>
+            `
+        }
     }
 
     #renderLatestAudit() {
@@ -87,14 +124,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                         >Run new scan</uui-button>
                     </div>
 
-                    ${this._latestAuditOverview?.runDate == null ?
-                    html`
-                        <p>No scan has been run yet</p>`
-                    : html`
-                        <p><strong>URLs found: </strong> ${this._latestAuditOverview?.totalPages}</p>
-                        <p><strong>Pages crawled: </strong> ${this._latestAuditOverview?.totalPagesCrawled}</p>
-                        <p><strong>Blocked URLs: </strong> ${this._latestAuditOverview?.totalPagesBlocked}</p>
-                    `}
+                    ${this.#renderScanBox()}
                 </uui-box>
             `
         }
@@ -104,7 +134,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         if (this._healthScore !== undefined) {
             return html`
                 <uui-box headline="Site health">
-                    <p class="uui-h2">${this._healthScore?.healthScore} / 100</p>
+                    <p class="uui-h2">${this._healthScore?.healthScore.toFixed(0)} / 100</p>
                 </uui-box>
             `;
         }
