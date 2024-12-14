@@ -80,6 +80,7 @@ namespace Umbraco.Community.ContentAudit.Services
             var baseUri = new Uri(_baseUrl);
             bool useSitemap = false;
 
+            Console.WriteLine("Should we attempt to use robots.txt? {0}", _contentAuditSettings.RespectRobotsTxt);
             if (_contentAuditSettings.RespectRobotsTxt)
             {
                 var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(baseUrl);
@@ -87,20 +88,23 @@ namespace Umbraco.Community.ContentAudit.Services
                     robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
             }
 
-            var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(baseUrl);
-            if (_contentAuditSettings.UseSitemapXml && sitemapUrls != null && sitemapUrls?.Any() == true)
+            Console.WriteLine("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
+            if (_contentAuditSettings.UseSitemapXml)
             {
                 useSitemap = true;
+                var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(baseUrl);
                 sitemapUrls.ForEach(x =>
                 {
-                    _urlQueue.Enqueue(x);
                     _internalPageUrls.Add(x);
+                    _urlQueue.Enqueue(x);
+                    Console.WriteLine("Adding {0} to the URL queue from sitemap.xml", x);
                 });
             }
             else
             {
                 _internalPageUrls.Add(_baseUrl);
                 _urlQueue.Enqueue(_baseUrl);
+                Console.WriteLine("Adding {0} to the URL queue", _baseUrl);
             }
 
             var umbracoContentData = LoadUmbracoContentUrls();
@@ -112,17 +116,19 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (Uri.TryCreate(baseUri, kvp.Value, out Uri? absoluteUri))
                 {
                     string absoluteUrl = absoluteUri.AbsoluteUri;
-                    _internalPageUrls.Add(absoluteUrl);
 
-                    if (!_visitedUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                    if (!_visitedUrls.Contains(absoluteUrl) && !_internalPageUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
                     {
+                        _internalPageUrls.Add(absoluteUrl);
                         _urlQueue.Enqueue(absoluteUrl);
+                        Console.WriteLine("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
                     }
                 }
             }
 
             while (_urlQueue.TryDequeue(out string? url))
             {
+                Console.WriteLine("Attempting to crawl {0}...", url);
                 // Turn the URL into a C# Uri
                 var currentUri = new Uri(url);
 
@@ -161,72 +167,80 @@ namespace Umbraco.Community.ContentAudit.Services
                 // - Find the matching internal Umbraco node (might be useful in the future)
                 // - Visit the page and get the assets
                 // - Add it to our visited list
-                var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
-                var pageResponse = await GetPageWithAssetsAsync(url, matchingUmbracoNode.Key);
-                if (pageResponse == null) continue;
-
-                pageResponse.IsExternal = !isInternal;
-                pageResponse.IsAsset = isAsset;
-
-                pageResponse.Images.ForEach(x => _imageData.Add(new ImageSchema(x)));
-
-                _visitedUrls.Add(url);
-
-                yield return new CrawlDto
+                if (isInternal)
                 {
-                    Url = url,
-                    Asset = isAsset,
-                    External = !isInternal,
-                    Crawled = true,
-                    Blocked = false
-                };
+                    var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
+                    var pageResponse = await GetPageWithAssetsAsync(url, matchingUmbracoNode.Key);
+                    if (pageResponse == null) continue;
 
-                var notVisitedLinks = pageResponse.Links.Where(x => !_linkedPages.Contains(x));
-                foreach (var link in notVisitedLinks)
-                {
-                    if (Uri.TryCreate(baseUri, link, out Uri? absoluteUri))
+                    pageResponse.IsExternal = !isInternal;
+                    pageResponse.IsAsset = isAsset;
+
+                    pageResponse.Images.ForEach(x => _imageData.Add(new ImageSchema(x)));
+
+                    _visitedUrls.Add(url);
+
+                    yield return new CrawlDto
                     {
-                        string absoluteUrl = absoluteUri.AbsoluteUri;
+                        Url = url,
+                        Asset = isAsset,
+                        External = !isInternal,
+                        Crawled = true,
+                        Blocked = false
+                    };
 
-                        _linkedPages.Add(absoluteUrl);
-
-                        bool hasBeenVisited = _visitedUrls.Contains(absoluteUrl);
-                        bool isDisallowed = IsDisallowed(absoluteUrl);
-                        if (!hasBeenVisited && !isDisallowed)
+                    var notVisitedLinks = pageResponse.Links.Where(x => !_linkedPages.Contains(x));
+                    foreach (var link in notVisitedLinks)
+                    {
+                        if (Uri.TryCreate(baseUri, link, out Uri? absoluteUri))
                         {
-                            _urlQueue.Enqueue(absoluteUrl);
-                        }
-                        else
-                        {
-                            // We've not visited this page yet
-                            _ = absoluteUri;
+                            string absoluteUrl = absoluteUri.AbsoluteUri;
+                            
+                            if (!_visitedUrls.Contains(absoluteUrl) && !_linkedPages.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                            {
+                                _urlQueue.Enqueue(absoluteUrl);
+                                _linkedPages.Add(absoluteUrl);
+                            }
+                            else
+                            {
+                                // We've not visited this page yet
+                                _ = absoluteUri;
+                            }
                         }
                     }
-                }
 
-                foreach (var resource in pageResponse.Resources)
-                {
-                    if (Uri.TryCreate(baseUri, resource.Url, out Uri? absoluteUri))
+                    foreach (var resource in pageResponse.Resources)
                     {
-                        string absoluteUrl = absoluteUri.AbsoluteUri;
-
-                        if (!resource.IsExternal)
+                        if (Uri.TryCreate(baseUri, resource.Url, out Uri? absoluteUri))
                         {
-                            _internalAssetUrls.Add(resource.Url);
+                            string absoluteUrl = absoluteUri.AbsoluteUri;
 
-                            if (!_visitedUrls.Contains(resource.Url) && !IsDisallowed(resource.Url))
-                                _urlQueue.Enqueue(resource.Url);
-                        }
-                        else
-                        {
-                            // This must be an external URL? We don't want to crawl these currently
-                            _ = absoluteUri;
+                            if (!resource.IsExternal)
+                            {
+                                if (!_visitedUrls.Contains(absoluteUrl) && !_internalAssetUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                                {
+                                    _internalAssetUrls.Add(absoluteUrl);
+                                    _urlQueue.Enqueue(absoluteUrl);
+                                }
+                            }
+                            else
+                            {
+                                // This must be an external URL? We don't want to crawl these currently
+                                _ = absoluteUri;
+                            }
                         }
                     }
+
+                    var dto = new PageSchema(pageResponse, 0);
+                    _crawledPages.Add(dto);
                 }
 
-                var dto = new PageSchema(pageResponse, 0);
-                _crawledPages.Add(dto);
+                else
+                {
+                    // This is an external page - we want to log at outbound link but NOT crawl it
+                    Console.WriteLine("Not crawling {0} as it is external", url);
+                    _ = url;
+                }
 
                 if (_urlQueue.IsEmpty)
                     break;
@@ -298,121 +312,130 @@ namespace Umbraco.Community.ContentAudit.Services
             response.StatusCode = (int)initialResponse.StatusCode;
             response.ContentType = initialResponse.Content.Headers.ContentType;
 
-            initialResponse.EnsureSuccessStatusCode();
-            var htmlBytes = await initialResponse.Content.ReadAsByteArrayAsync();
-            response.Size = htmlBytes.LongLength;
-
-            string html = System.Text.Encoding.UTF8.GetString(htmlBytes);
-            response.PageContent = html;
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            // Extract page title
-            var titleNode = doc.DocumentNode.SelectSingleNode("//title");
-            if (titleNode != null)
-                response.MetaTitle = titleNode.InnerText.Trim();
-
-            // Extract `meta`
-            var metaDescriptionNode = doc.DocumentNode.SelectSingleNode("//meta[@name='description']");
-            if (metaDescriptionNode != null)
-                response.MetaDescription = metaDescriptionNode.GetAttributeValue("content", "");
-
-            var metaKeywordsNode = doc.DocumentNode.SelectSingleNode("//meta[@name='keywords']");
-            if (metaKeywordsNode != null)
-                response.MetaKeywords = metaKeywordsNode.GetAttributeValue("content", "");
-
-            var metaRobotsNode = doc.DocumentNode.SelectSingleNode("//meta[@name='robots']");
-            if (metaRobotsNode != null)
-                response.MetaRobots = metaRobotsNode.GetAttributeValue("content", "");
-
-            // Check canonical URL
-            var canonical = doc.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
-            if (canonical != null)
+            try
             {
-                var canonicalUrl = canonical.GetAttributeValue("href", "");
-                response.CanonicalUrl = canonicalUrl;
-            }
+                initialResponse.EnsureSuccessStatusCode();
+                var htmlBytes = await initialResponse.Content.ReadAsByteArrayAsync();
+                response.Size = htmlBytes.LongLength;
 
-            // Collect links from <a> tags
-            List<string> linkUrls = new List<string>();
-            var aNodes = doc.DocumentNode.SelectNodes("//a[@href]");
-            if (aNodes != null)
-                linkUrls.AddRange(aNodes.Select(x => x.GetAttributeValue("href", "")));
+                string html = System.Text.Encoding.UTF8.GetString(htmlBytes);
+                response.PageContent = html;
 
-            response.Links.AddRange(linkUrls.Distinct());
+                var doc = new HtmlDocument();
+                doc.LoadHtml(html);
 
-            // Collect H1s and H2s
-            var h1s = doc.DocumentNode.SelectNodes("//h1");
-            if (h1s != null)
-                response.H1.AddRange(h1s.Select(x => x.InnerText));
+                // Extract page title
+                var titleNode = doc.DocumentNode.SelectSingleNode("//title");
+                if (titleNode != null)
+                    response.MetaTitle = titleNode.InnerText.Trim();
 
-            var h2s = doc.DocumentNode.SelectNodes("//h2");
-            if (h2s != null)
-                response.H2.AddRange(h2s.Select(x => x.InnerText));
+                // Extract `meta`
+                var metaDescriptionNode = doc.DocumentNode.SelectSingleNode("//meta[@name='description']");
+                if (metaDescriptionNode != null)
+                    response.MetaDescription = metaDescriptionNode.GetAttributeValue("content", "");
 
-            // Collect asset URLs (images, scripts, links for CSS)
-            List<string> assetUrls = new List<string>();
-            List<KeyValuePair<string, string>> imageData = new List<KeyValuePair<string, string>>();
+                var metaKeywordsNode = doc.DocumentNode.SelectSingleNode("//meta[@name='keywords']");
+                if (metaKeywordsNode != null)
+                    response.MetaKeywords = metaKeywordsNode.GetAttributeValue("content", "");
 
-            // Images
-            var imgNodes = doc.DocumentNode.SelectNodes("//img[@src]");
-            if (imgNodes != null)
-            {
-                assetUrls.AddRange(imgNodes.Select(x => x.GetAttributeValue("src", "")));
-                imageData.AddRange(imgNodes.Select(x => new KeyValuePair<string, string>(x.GetAttributeValue("src", ""), x.GetAttributeValue("alt", ""))));
-            }
+                var metaRobotsNode = doc.DocumentNode.SelectSingleNode("//meta[@name='robots']");
+                if (metaRobotsNode != null)
+                    response.MetaRobots = metaRobotsNode.GetAttributeValue("content", "");
 
-            // Scripts
-            var scriptNodes = doc.DocumentNode.SelectNodes("//script[@src]");
-            if (scriptNodes != null)
-                assetUrls.AddRange(scriptNodes.Select(x => x.GetAttributeValue("src", "")));
-
-            // Stylesheets
-            var linkNodes = doc.DocumentNode.SelectNodes("//link[@rel='stylesheet' and @href]");
-            if (linkNodes != null)
-                assetUrls.AddRange(linkNodes.Select(x => x.GetAttributeValue("href", "")));
-
-            // Resolve relative URLs and get sizes
-            long totalAssetsSize = 0;
-
-            foreach (var relativeUrl in assetUrls.Distinct())
-            {
-                if (string.IsNullOrWhiteSpace(relativeUrl))
-                    continue;
-
-                var assetUri = new Uri(baseUri, relativeUrl);
-                var resourceDetails = await GetResourceSizeAsync(assetUri);
-                resourceDetails.IsExternal = assetUri.Host != baseUri.Host;
-                resourceDetails.IsAsset = true;
-
-                response.Resources.Add(resourceDetails);
-                if (resourceDetails.Size.HasValue)
+                // Check canonical URL
+                var canonical = doc.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
+                if (canonical != null)
                 {
-                    totalAssetsSize += (long)resourceDetails.Size.Value;
+                    var canonicalUrl = canonical.GetAttributeValue("href", "");
+                    response.CanonicalUrl = canonicalUrl;
                 }
-            }
 
-            // Resolve relative URLs and get images
-            foreach (var kvp in imageData.Distinct())
-            {
-                if (string.IsNullOrWhiteSpace(kvp.Key))
-                    continue;
+                // Collect links from <a> tags
+                List<string> linkUrls = new List<string>();
+                var aNodes = doc.DocumentNode.SelectNodes("//a[@href]");
+                if (aNodes != null)
+                    linkUrls.AddRange(aNodes.Select(x => x.GetAttributeValue("href", "")));
 
-                var assetUri = new Uri(baseUri, kvp.Key);
-                var resourceDetails = await GetResourceSizeAsync(assetUri);
-                resourceDetails.IsExternal = assetUri.Host != baseUri.Host;
-                resourceDetails.IsAsset = true;
+                response.Links.AddRange(linkUrls.Distinct());
 
-                response.Images.Add(new ImageDto(resourceDetails)
+                // Collect H1s and H2s
+                var h1s = doc.DocumentNode.SelectNodes("//h1");
+                if (h1s != null)
+                    response.H1.AddRange(h1s.Select(x => x.InnerText));
+
+                var h2s = doc.DocumentNode.SelectNodes("//h2");
+                if (h2s != null)
+                    response.H2.AddRange(h2s.Select(x => x.InnerText));
+
+                // Collect asset URLs (images, scripts, links for CSS)
+                List<string> assetUrls = new List<string>();
+                List<KeyValuePair<string, string>> imageData = new List<KeyValuePair<string, string>>();
+
+                // Images
+                var imgNodes = doc.DocumentNode.SelectNodes("//img[@src]");
+                if (imgNodes != null)
                 {
-                    AltText = kvp.Value,
-                    FoundPage = url
-                });
-            }
+                    assetUrls.AddRange(imgNodes.Select(x => x.GetAttributeValue("src", "")));
+                    imageData.AddRange(imgNodes.Select(x =>
+                        new KeyValuePair<string, string>(x.GetAttributeValue("src", ""),
+                            x.GetAttributeValue("alt", ""))));
+                }
 
-            // Update total page size to include assets
-            response.Size += totalAssetsSize;
+                // Scripts
+                var scriptNodes = doc.DocumentNode.SelectNodes("//script[@src]");
+                if (scriptNodes != null)
+                    assetUrls.AddRange(scriptNodes.Select(x => x.GetAttributeValue("src", "")));
+
+                // Stylesheets
+                var linkNodes = doc.DocumentNode.SelectNodes("//link[@rel='stylesheet' and @href]");
+                if (linkNodes != null)
+                    assetUrls.AddRange(linkNodes.Select(x => x.GetAttributeValue("href", "")));
+
+                // Resolve relative URLs and get sizes
+                long totalAssetsSize = 0;
+
+                foreach (var relativeUrl in assetUrls.Distinct())
+                {
+                    if (string.IsNullOrWhiteSpace(relativeUrl))
+                        continue;
+
+                    var assetUri = new Uri(baseUri, relativeUrl);
+                    var resourceDetails = await GetResourceSizeAsync(assetUri);
+                    resourceDetails.IsExternal = assetUri.Host != baseUri.Host;
+                    resourceDetails.IsAsset = true;
+
+                    response.Resources.Add(resourceDetails);
+                    if (resourceDetails.Size.HasValue)
+                    {
+                        totalAssetsSize += (long)resourceDetails.Size.Value;
+                    }
+                }
+
+                // Resolve relative URLs and get images
+                foreach (var kvp in imageData.Distinct())
+                {
+                    if (string.IsNullOrWhiteSpace(kvp.Key))
+                        continue;
+
+                    var assetUri = new Uri(baseUri, kvp.Key);
+                    var resourceDetails = await GetResourceSizeAsync(assetUri);
+                    resourceDetails.IsExternal = assetUri.Host != baseUri.Host;
+                    resourceDetails.IsAsset = true;
+
+                    response.Images.Add(new ImageDto(resourceDetails)
+                    {
+                        AltText = kvp.Value,
+                        FoundPage = url
+                    });
+                }
+
+                // Update total page size to include assets
+                response.Size += totalAssetsSize;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Page could not be retrieved: {0}", url);
+            }
 
             return response;
         }
