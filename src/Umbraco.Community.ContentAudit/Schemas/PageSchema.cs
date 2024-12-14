@@ -9,7 +9,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
     [ExplicitColumns]
     public class PageSchema
     {
-        public const string TableName = "umbContentAuditPages";
+        public const string TableName = "umbContentAuditPage";
 
         public PageSchema() { }
 

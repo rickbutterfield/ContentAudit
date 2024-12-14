@@ -1,6 +1,6 @@
 import { UmbElementMixin as $ } from "@umbraco-cms/backoffice/element-api";
 import { LitElement as C, html as l, css as D, state as v, customElement as k, nothing as x } from "@umbraco-cms/backoffice/external/lit";
-import { C as R } from "./index-DUm4UDoO.js";
+import { C as R } from "./index-xpyZp-Sa.js";
 var T = Object.defineProperty, I = Object.getOwnPropertyDescriptor, S = (t) => {
   throw TypeError(t);
 }, h = (t, e, s, a) => {
@@ -161,4 +161,4 @@ export {
   i as ContentAuditScanViewElement,
   W as default
 };
-//# sourceMappingURL=overview.element-BIwdCYLv.js.map
+//# sourceMappingURL=overview.element-BWLKjr4_.js.map

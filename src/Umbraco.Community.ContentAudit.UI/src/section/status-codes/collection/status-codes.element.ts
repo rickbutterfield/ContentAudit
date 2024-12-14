@@ -1,7 +1,7 @@
 ﻿import { css, customElement, html } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { PageDto } from '../../../api';
-import { UUISelectEvent } from '@umbraco-cms/backoffice/external/uui';
+import { UUISelectEvent, UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
 import { ContentAuditStatusCodesCollectionFilterModel } from './types';
 
 @customElement('content-audit-status-codes-collection')
@@ -47,7 +47,16 @@ export class ContentAuditStatusCodesCollectionElement extends UmbCollectionDefau
 	}
 
 	static override styles = [
+		UUITextStyles,
 		css`
+			:host {
+				display: flex;
+				flex-direction: column;
+				box-sizing: border-box;
+				gap: var(--uui-size-space-5);
+				height: 100%;
+			}
+
 			#toolbar {
 				flex: 1;
 				display: flex;
@@ -62,6 +71,12 @@ export class ContentAuditStatusCodesCollectionElement extends UmbCollectionDefau
 
 			uui-select {
 				width: 100%;
+			}
+
+			#empty-state {
+				height: 80%;
+				align-content: center;
+				text-align: center;
 			}
 		`,
 	];

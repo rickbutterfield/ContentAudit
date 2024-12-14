@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Models
@@ -23,7 +24,7 @@ namespace Umbraco.Community.ContentAudit.Models
             IsExternal = schema.IsExternal;
             Size = schema.Size;
             StatusCode = schema.StatusCode;
-            ContentType = schema.ContentType;
+            ContentType = MediaTypeHeaderValue.Parse(schema.ContentType);
         }
 
         [JsonPropertyName("altText")]

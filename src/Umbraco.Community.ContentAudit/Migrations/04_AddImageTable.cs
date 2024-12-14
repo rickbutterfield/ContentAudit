@@ -13,7 +13,6 @@ namespace Umbraco.Community.ContentAudit.Migrations
         {
             Logger.LogDebug("Running migration {MigrationStep}", "AddImageTable");
 
-            // Lots of methods available in the MigrationBase class - discover with this.
             if (TableExists(ImageSchema.TableName) == false)
             {
                 Create.Table<ImageSchema>().Do();

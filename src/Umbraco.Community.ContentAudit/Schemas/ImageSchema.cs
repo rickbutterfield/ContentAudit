@@ -10,14 +10,17 @@ namespace Umbraco.Community.ContentAudit.Schemas
     [ExplicitColumns]
     public class ImageSchema
     {
-        public const string TableName = "umbContentAuditImages";
+        public const string TableName = "umbContentAuditImage";
+
+        public ImageSchema() { }
+
         public ImageSchema(ImageDto image)
         {
             Url = image.Url;
             IsExternal = image.IsExternal;
             Size = image.Size;
             StatusCode = image.StatusCode;
-            ContentType = image.ContentType;
+            ContentType = image.ContentType.ToString();
             AltText = image.AltText;
             FoundPage = image.FoundPage;
         }
@@ -42,7 +45,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int StatusCode { get; set; }
 
         [Column("ContentType")]
-        public MediaTypeHeaderValue? ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         [Column("AltText")]
         public string? AltText { get; set; }

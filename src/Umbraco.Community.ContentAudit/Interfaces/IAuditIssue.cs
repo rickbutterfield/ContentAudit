@@ -1,6 +1,5 @@
 ﻿using Umbraco.Cms.Core.Composing;
 using Umbraco.Community.ContentAudit.Common.Enums;
-using Umbraco.Community.ContentAudit.Models;
 
 namespace Umbraco.Community.ContentAudit.Interfaces
 {
@@ -12,7 +11,5 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         string Category { get; }
         IssueType Type { get; }
         IssuePriority Priority { get; }
-
-        int CheckPages(IEnumerable<PageDto> pages);
     }
 }

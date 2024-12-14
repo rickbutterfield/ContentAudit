@@ -1314,7 +1314,7 @@ const Ds = A, Ms = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: le,
     name: "Status Codes Collection Repository",
-    api: () => import("./status-codes-collection.repository-CZcsfGzy.js")
+    api: () => import("./status-codes-collection.repository-6Wb47N7q.js")
   }
 ], js = [
   {
@@ -1340,7 +1340,7 @@ const Ds = A, Ms = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     kind: "default",
     alias: At,
     name: "Status Codes Collection",
-    element: () => import("./status-codes.element-FiDT7inv.js"),
+    element: () => import("./status-codes.element-BcFO_vK8.js"),
     meta: {
       repositoryAlias: le
     }
@@ -1473,7 +1473,7 @@ const Ys = T, Ks = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: me,
     name: "Orphaned Pages Collection Repository",
-    api: () => import("./orphaned-pages-collection.repository-Mkk-ibH0.js")
+    api: () => import("./orphaned-pages-collection.repository-DqPlEAhI.js")
   }
 ], Qs = [
   {
@@ -1603,7 +1603,7 @@ const Ys = T, Ks = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Scan",
     name: "Content Audit Scan Workspace View",
-    element: () => import("./overview.element-BIwdCYLv.js"),
+    element: () => import("./overview.element-BWLKjr4_.js"),
     meta: {
       label: "Overview",
       pathname: "overview",
@@ -1620,7 +1620,7 @@ const Ys = T, Ks = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Settings",
     name: "Content Audit Settings Workspace View",
-    element: () => import("./settings.element-DQ0xlkAL.js"),
+    element: () => import("./settings.element-Dl_Oagkm.js"),
     meta: {
       label: "Settings",
       pathname: "settings",
@@ -1678,4 +1678,4 @@ export {
   fs as s,
   f as t
 };
-//# sourceMappingURL=index-DUm4UDoO.js.map
+//# sourceMappingURL=index-xpyZp-Sa.js.map

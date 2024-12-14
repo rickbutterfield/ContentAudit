@@ -4,7 +4,7 @@ using Umbraco.Community.ContentAudit.Models;
 
 namespace Umbraco.Community.ContentAudit.AuditIssues
 {
-    public class MissingH2 : IAuditIssue
+    public class MissingH2 : IAuditPageIssue
     {
         public Guid Id => new Guid("da974a36-0f27-4cad-bd8b-d050f16551a3");
 

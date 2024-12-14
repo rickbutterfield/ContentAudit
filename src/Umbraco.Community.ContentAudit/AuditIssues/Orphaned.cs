@@ -5,7 +5,7 @@ using Umbraco.Community.ContentAudit.Models;
 
 namespace Umbraco.Community.ContentAudit.AuditIssues
 {
-    public class Orphaned : IAuditIssue
+    public class Orphaned : IAuditPageIssue
     {
         public Guid Id => new Guid("7d873de4-3822-4ec0-8ba0-dd662cc77e99");
 

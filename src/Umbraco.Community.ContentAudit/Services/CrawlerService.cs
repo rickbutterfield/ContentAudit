@@ -112,21 +112,11 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (Uri.TryCreate(baseUri, kvp.Value, out Uri? absoluteUri))
                 {
                     string absoluteUrl = absoluteUri.AbsoluteUri;
+                    _internalPageUrls.Add(absoluteUrl);
 
-                    bool isLinkedPageInternal = absoluteUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase);
-                    if (isLinkedPageInternal)
+                    if (!_visitedUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
                     {
-                        _internalPageUrls.Add(absoluteUrl);
-
-                        if (!_visitedUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
-                        {
-                            _urlQueue.Enqueue(absoluteUrl);
-                        }
-                    }
-                    else
-                    {
-                        // This must be an external URL?
-                        _ = kvp.Value;
+                        _urlQueue.Enqueue(absoluteUrl);
                     }
                 }
             }
@@ -139,8 +129,13 @@ namespace Umbraco.Community.ContentAudit.Services
                 // Check if it's an internal or external link
                 bool isInternal = currentUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase);
                 if (isInternal)
+                {
                     _internalUrls.Add(url);
-                else _externalUrls.Add(url);
+                }
+                else
+                {
+                    _externalUrls.Add(url);
+                }
 
                 bool isAsset = _internalAssetUrls.Contains(url);
 
@@ -186,30 +181,25 @@ namespace Umbraco.Community.ContentAudit.Services
                     Blocked = false
                 };
 
-                // If we're not using the sitemap, we want to crawl the found URLs on the page
-                if (!useSitemap)
+                var notVisitedLinks = pageResponse.Links.Where(x => !_linkedPages.Contains(x));
+                foreach (var link in notVisitedLinks)
                 {
-                    foreach (var link in pageResponse.Links)
+                    if (Uri.TryCreate(baseUri, link, out Uri? absoluteUri))
                     {
-                        if (Uri.TryCreate(baseUri, link, out Uri? absoluteUri))
+                        string absoluteUrl = absoluteUri.AbsoluteUri;
+
+                        _linkedPages.Add(absoluteUrl);
+
+                        bool hasBeenVisited = _visitedUrls.Contains(absoluteUrl);
+                        bool isDisallowed = IsDisallowed(absoluteUrl);
+                        if (!hasBeenVisited && !isDisallowed)
                         {
-                            string absoluteUrl = absoluteUri.AbsoluteUri;
-
-                            _linkedPages.Add(absoluteUrl);
-
-                            bool isLinkedPageInternal = absoluteUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase);
-                            if (isLinkedPageInternal)
-                            {
-                                if (!_visitedUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
-                                {
-                                    _urlQueue.Enqueue(absoluteUrl);
-                                }
-                            }
-                            else
-                            {
-                                // This must be an external URL?
-                                _ = link;
-                            }
+                            _urlQueue.Enqueue(absoluteUrl);
+                        }
+                        else
+                        {
+                            // We've not visited this page yet
+                            _ = absoluteUri;
                         }
                     }
                 }
@@ -229,7 +219,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         }
                         else
                         {
-                            // This must be an external URL?
+                            // This must be an external URL? We don't want to crawl these currently
                             _ = absoluteUri;
                         }
                     }
@@ -246,16 +236,24 @@ namespace Umbraco.Community.ContentAudit.Services
             _orphanedPages = _internalPageUrls.Except(_linkedPages).ToHashSet();
 
             using var scope = _scopeProvider.CreateScope();
-            var overview = await scope.Database.InsertAsync(new OverviewSchema()
+            int runId = 0;
+            try
             {
-                RunDate = DateTime.Now,
-                TotalUrls = totalUrls,
-                TotalPagesCrawled = _internalPageUrls.Count,
-                TotalAssetsCrawled = _internalAssetUrls.Count,
-                TotalBlockedUrls = _disallowedUrls.Count
-            });
+                var overview = await scope.Database.InsertAsync(new OverviewSchema()
+                {
+                    RunDate = DateTime.Now,
+                    TotalUrls = totalUrls,
+                    TotalPagesCrawled = _internalPageUrls.Count,
+                    TotalAssetsCrawled = _internalAssetUrls.Count,
+                    TotalBlockedUrls = _disallowedUrls.Count
+                });
 
-            int.TryParse(overview.ToString(), out int runId);
+                int.TryParse(overview.ToString(), out runId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
 
             try
             {
@@ -490,7 +488,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private bool IsDisallowed(string url)
         {
-            return _robotsDisallowedPaths.Any(disallowed => url.StartsWith(disallowed, StringComparison.OrdinalIgnoreCase)) || !url.StartsWith(_baseUrl);
+            return _robotsDisallowedPaths.Any(disallowed => url.StartsWith(disallowed, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

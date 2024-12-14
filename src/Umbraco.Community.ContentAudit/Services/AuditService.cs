@@ -206,17 +206,17 @@ namespace Umbraco.Community.ContentAudit.Services
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
-            string sqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0";
-            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+            string pageSqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0";
+            var pageData = await scope.Database.FetchAsync<PageSchema>(pageSqlQuery, latestRunId);
 
-            if (data != null && data.Any())
+            if (pageData != null && pageData.Any())
             {
-                var transformedData = data.Select(x => new PageDto(x));
+                var transformedPageData = pageData.Select(x => new PageDto(x));
 
-                foreach (var issue in _auditIssueCollection)
+                foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
                 {
-                    var issueCheck = issue.CheckPages(transformedData);
-                    double percent = ((double)issueCheck / (double)transformedData.Count()) * 100.0;
+                    var issueCheck = issue.CheckPages(transformedPageData);
+                    double percent = ((double)issueCheck / (double)transformedPageData.Count()) * 100.0;
 
                     var auditIssue = new IssueDto(issue)
                     {
@@ -228,7 +228,32 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     result.Add(auditIssue);
                 }
+
+                string imageSqlQuery = $"SELECT * FROM [{ImageSchema.TableName}] WHERE RunId = @0";
+                var imageData = await scope.Database.FetchAsync<ImageSchema>(imageSqlQuery, latestRunId);
+
+                if (imageData != null && imageData.Any())
+                {
+                    var transformedImageData = imageData.Select(x => new ImageDto(x));
+
+                    foreach (IAuditImageIssue issue in _auditIssueCollection.Where(x => x is IAuditImageIssue))
+                    {
+                        var issueCheck = issue.CheckImages(transformedImageData, transformedPageData);
+                        double percent = ((double)issueCheck / (double)transformedImageData.Count()) * 100.0;
+
+                        var auditIssue = new IssueDto(issue)
+                        {
+                            NumberOfUrls = issueCheck,
+                            PercentOfTotal = percent
+                        };
+
+                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+
+                        result.Add(auditIssue);
+                    }
+                }
             }
+
 
             return result;
         }
@@ -251,7 +276,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     bool pageHasError = false;
                     result.TotalPages++;
 
-                    foreach (var issue in _auditIssueCollection)
+                    foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
                     {
                         var issueCheck = issue.CheckPages(new List<PageDto>() { page });
                         if (issueCheck == 1)
