@@ -2,9 +2,9 @@
 import type { UmbCollectionFilterModel, UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditOrphanedPagesCollectionDataSource } from "./orphaned-pages-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { PageDto } from '../../../../api';
+import { InternalPageDto } from '../../../../api';
 
-export class ContentAuditOrphanedPagesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageDto, UmbCollectionFilterModel> {
+export class ContentAuditOrphanedPagesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<InternalPageDto, UmbCollectionFilterModel> {
     #collectionSource: ContentAuditOrphanedPagesCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

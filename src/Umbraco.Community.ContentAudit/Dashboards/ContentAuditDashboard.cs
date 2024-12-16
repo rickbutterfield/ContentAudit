@@ -9,7 +9,7 @@ namespace Umbraco.Community.ContentAudit.Dashboards
 
         public string[] Sections => new[] { Constants.SectionAlias };
 
-        public string View => "/App_Plugins/Umbraco.Community.ContentAudit/views/dashboard.html";
+        public string View => "/App_Plugins/UmbracoCommunityContentAudit/views/dashboard.html";
 
         public IAccessRule[] AccessRules => Array.Empty<IAccessRule>();
     }

@@ -19,16 +19,19 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [Column("RunDate")]
         public DateTime RunDate { get; set; }
 
-        [Column("TotalUrls")]
-        public int TotalUrls { get; set; }
+        [Column("Total")]
+        public int Total { get; set; }
 
-        [Column("TotalPagesCrawled")]
-        public int TotalPagesCrawled { get; set; }
+        [Column("TotalInternal")]
+        public int TotalInternal { get; set; }
 
-        [Column("TotalAssetsCrawled")]
-        public int TotalAssetsCrawled { get; set; }
+        [Column("TotalExternal")]
+        public int TotalExternal { get; set; }
 
-        [Column("TotalBlockedUrls")]
-        public int TotalBlockedUrls { get; set; }
+        [Column("TotalAssets")]
+        public int TotalAssets { get; set; }
+
+        [Column("TotalBlocked")]
+        public int TotalBlocked { get; set; }
     }
 }

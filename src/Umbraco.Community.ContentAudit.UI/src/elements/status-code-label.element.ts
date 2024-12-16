@@ -1,5 +1,5 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, nothing, property } from "@umbraco-cms/backoffice/external/lit";
+import { customElement, html, LitElement, nothing, property } from "@umbraco-cms/backoffice/external/lit";
 
 @customElement('content-audit-status-code-label')
 export class ContentAuditStatusCodeLabel extends UmbElementMixin(LitElement) {

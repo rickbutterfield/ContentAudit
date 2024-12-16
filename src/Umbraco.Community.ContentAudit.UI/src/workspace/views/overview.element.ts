@@ -86,24 +86,27 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
             else {
                 return html`
-                    <p><strong>URLs found: </strong> ${this._latestAuditOverview?.totalUrls}</p>
-                    <p><strong>Pages crawled: </strong> ${this._latestAuditOverview?.totalPagesCrawled}</p>
-                    <p><strong>Assets crawled: </strong> ${this._latestAuditOverview?.totalAssetsCrawled}</p>
-                    <p><strong>Blocked URLs: </strong> ${this._latestAuditOverview?.totalPagesBlocked}</p>
+                    <p><strong>URLs found: </strong> ${this._latestAuditOverview?.total}</p>
+                    <p><strong>Internal URLs: </strong> ${this._latestAuditOverview?.totalInternal}</p>
+                    <p><strong>External URLs: </strong> ${this._latestAuditOverview?.totalExternal}</p>
+                    <p><strong>Asset URLs: </strong> ${this._latestAuditOverview?.totalAssets}</p>
+                    <p><strong>Blocked URLs: </strong> ${this._latestAuditOverview?.totalBlocked}</p>
                 `
             }
         }
         else {
             const total = this.crawlData.length;
-            const crawled = this.crawlData.filter(x => x.crawled && !x.asset).length;
+            const internal = this.crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
+            const external = this.crawlData.filter(x => x.crawled && x.external && !x.asset).length;
             const assets = this.crawlData.filter(x => x.crawled && x.asset).length;
             const blocked = this.crawlData.filter(x => x.blocked).length;
 
             return html`
                 <uui-loader-bar></uui-loader-bar>
                 <p><strong>URLs found: </strong> ${total}</p>
-                <p><strong>Pages crawled: </strong> ${crawled}</p>
-                <p><strong>Assets crawled: </strong> ${assets}</p>
+                <p><strong>Internal URLs: </strong> ${internal}</p>
+                <p><strong>External URLs: </strong> ${external}</p>
+                <p><strong>Asset URLs: </strong> ${assets}</p>
                 <p><strong>Blocked URLs: </strong> ${blocked}</p>
             `
         }

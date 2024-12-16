@@ -1,5 +1,6 @@
 ﻿using Examine;
 using HtmlAgilityPack;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using Umbraco.Cms.Core.Configuration.Models;
@@ -19,20 +20,20 @@ namespace Umbraco.Community.ContentAudit.Services
     public class CrawlerService : ICrawlerService
     {
         private string? _baseUrl;
+        private Uri? _baseUri;
 
-        private readonly ConcurrentQueue<string> _urlQueue = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<string> _internalUrlQueue = new ConcurrentQueue<string>();
         private readonly HashSet<string> _visitedUrls = new HashSet<string>();
         private readonly HashSet<string> _disallowedUrls = new HashSet<string>();
         private readonly HashSet<string> _robotsDisallowedPaths = new HashSet<string>();
-        private readonly HashSet<string> _internalUrls = new HashSet<string>();
         private readonly HashSet<string> _internalPageUrls = new HashSet<string>();
         private readonly HashSet<string> _internalAssetUrls = new HashSet<string>();
-        private readonly HashSet<string> _externalUrls = new HashSet<string>();
         private readonly HashSet<string> _linkedPages = new HashSet<string>();
         private HashSet<string> _orphanedPages = new HashSet<string>();
 
-        private readonly HashSet<PageSchema> _crawledPages = new HashSet<PageSchema>();
+        private readonly HashSet<InternalPageSchema> _crawledPages = new HashSet<InternalPageSchema>();
         private readonly HashSet<ImageSchema> _imageData = new HashSet<ImageSchema>();
+        private readonly HashSet<ExternalPageSchema> _externalUrls = new HashSet<ExternalPageSchema>();
 
         private readonly HashSet<KeyValuePair<Guid, string>> _umbracoContent = new HashSet<KeyValuePair<Guid, string>>();
 
@@ -68,241 +69,134 @@ namespace Umbraco.Community.ContentAudit.Services
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
         }
-
+        
         public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl)
         {
-            if (_requestHandlerSettings.AddTrailingSlash)
+            _baseUrl = _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
+            _baseUri = new Uri(_baseUrl);
+
+            await GetSitemap();
+            await GetRobots();
+            LoadUmbracoContentUrls();
+            QueueUmbracoContent();
+
+            while (_internalUrlQueue.TryDequeue(out string? url))
             {
-                baseUrl = baseUrl.EnsureEndsWith('/');
+                Console.WriteLine("Dequeuing internal URL: {0}", url);
+                var crawlResult = await CrawlInternalUrl(url);
+                if (crawlResult != null)
+                    yield return crawlResult;
             }
 
-            _baseUrl = baseUrl;
-            var baseUri = new Uri(_baseUrl);
-            bool useSitemap = false;
-
-            Console.WriteLine("Should we attempt to use robots.txt? {0}", _contentAuditSettings.RespectRobotsTxt);
-            if (_contentAuditSettings.RespectRobotsTxt)
+            foreach (var externalUrl in _externalUrls.DistinctBy(x => x.Url))
             {
-                var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(baseUrl);
-                if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
-                    robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
-            }
-
-            Console.WriteLine("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
-            if (_contentAuditSettings.UseSitemapXml)
-            {
-                useSitemap = true;
-                var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(baseUrl);
-                sitemapUrls.ForEach(x =>
+                yield return new CrawlDto()
                 {
-                    _internalPageUrls.Add(x);
-                    _urlQueue.Enqueue(x);
-                    Console.WriteLine("Adding {0} to the URL queue from sitemap.xml", x);
-                });
-            }
-            else
-            {
-                _internalPageUrls.Add(_baseUrl);
-                _urlQueue.Enqueue(_baseUrl);
-                Console.WriteLine("Adding {0} to the URL queue", _baseUrl);
+                    Url = externalUrl.Url,
+                    External = true,
+                    Crawled = true,
+                    Asset = false,
+                    Blocked = false
+                };
             }
 
-            var umbracoContentData = LoadUmbracoContentUrls();
-            if (umbracoContentData.Any())
-                umbracoContentData.ForEach(x => _umbracoContent.Add(x));
-
-            foreach (var kvp in _umbracoContent)
-            {
-                if (Uri.TryCreate(baseUri, kvp.Value, out Uri? absoluteUri))
-                {
-                    string absoluteUrl = absoluteUri.AbsoluteUri;
-
-                    if (!_visitedUrls.Contains(absoluteUrl) && !_internalPageUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
-                    {
-                        _internalPageUrls.Add(absoluteUrl);
-                        _urlQueue.Enqueue(absoluteUrl);
-                        Console.WriteLine("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
-                    }
-                }
-            }
-
-            while (_urlQueue.TryDequeue(out string? url))
-            {
-                Console.WriteLine("Attempting to crawl {0}...", url);
-                // Turn the URL into a C# Uri
-                var currentUri = new Uri(url);
-
-                // Check if it's an internal or external link
-                bool isInternal = currentUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase);
-                if (isInternal)
-                {
-                    _internalUrls.Add(url);
-                }
-                else
-                {
-                    _externalUrls.Add(url);
-                }
-
-                bool isAsset = _internalAssetUrls.Contains(url);
-
-                // Skip if this page has already been visited
-                if (_visitedUrls.Contains(url)) continue;
-
-                // Check if robots.txt is saying we shouldn't visit
-                if (IsDisallowed(url))
-                {
-                    _disallowedUrls.Add(url);
-                    yield return new CrawlDto
-                    {
-                        Url = url,
-                        External = !isInternal,
-                        Asset = isAsset,
-                        Crawled = false,
-                        Blocked = true
-                    };
-                    continue;
-                }
-
-                // Now let's get the actual URL and associated data
-                // - Find the matching internal Umbraco node (might be useful in the future)
-                // - Visit the page and get the assets
-                // - Add it to our visited list
-                if (isInternal)
-                {
-                    var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
-                    var pageResponse = await GetPageWithAssetsAsync(url, matchingUmbracoNode.Key);
-                    if (pageResponse == null) continue;
-
-                    pageResponse.IsExternal = !isInternal;
-                    pageResponse.IsAsset = isAsset;
-
-                    pageResponse.Images.ForEach(x => _imageData.Add(new ImageSchema(x)));
-
-                    _visitedUrls.Add(url);
-
-                    yield return new CrawlDto
-                    {
-                        Url = url,
-                        Asset = isAsset,
-                        External = !isInternal,
-                        Crawled = true,
-                        Blocked = false
-                    };
-
-                    var notVisitedLinks = pageResponse.Links.Where(x => !_linkedPages.Contains(x));
-                    foreach (var link in notVisitedLinks)
-                    {
-                        if (Uri.TryCreate(baseUri, link, out Uri? absoluteUri))
-                        {
-                            string absoluteUrl = absoluteUri.AbsoluteUri;
-                            
-                            if (!_visitedUrls.Contains(absoluteUrl) && !_linkedPages.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
-                            {
-                                _urlQueue.Enqueue(absoluteUrl);
-                                _linkedPages.Add(absoluteUrl);
-                            }
-                            else
-                            {
-                                // We've not visited this page yet
-                                _ = absoluteUri;
-                            }
-                        }
-                    }
-
-                    foreach (var resource in pageResponse.Resources)
-                    {
-                        if (Uri.TryCreate(baseUri, resource.Url, out Uri? absoluteUri))
-                        {
-                            string absoluteUrl = absoluteUri.AbsoluteUri;
-
-                            if (!resource.IsExternal)
-                            {
-                                if (!_visitedUrls.Contains(absoluteUrl) && !_internalAssetUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
-                                {
-                                    _internalAssetUrls.Add(absoluteUrl);
-                                    _urlQueue.Enqueue(absoluteUrl);
-                                }
-                            }
-                            else
-                            {
-                                // This must be an external URL? We don't want to crawl these currently
-                                _ = absoluteUri;
-                            }
-                        }
-                    }
-
-                    var dto = new PageSchema(pageResponse, 0);
-                    _crawledPages.Add(dto);
-                }
-
-                else
-                {
-                    // This is an external page - we want to log at outbound link but NOT crawl it
-                    Console.WriteLine("Not crawling {0} as it is external", url);
-                    _ = url;
-                }
-
-                if (_urlQueue.IsEmpty)
-                    break;
-            }
-
-            var totalUrls = _visitedUrls.Count + _disallowedUrls.Count;
-            _orphanedPages = _internalPageUrls.Except(_linkedPages).ToHashSet();
-
-            using var scope = _scopeProvider.CreateScope();
-            int runId = 0;
-            try
-            {
-                var overview = await scope.Database.InsertAsync(new OverviewSchema()
-                {
-                    RunDate = DateTime.Now,
-                    TotalUrls = totalUrls,
-                    TotalPagesCrawled = _internalPageUrls.Count,
-                    TotalAssetsCrawled = _internalAssetUrls.Count,
-                    TotalBlockedUrls = _disallowedUrls.Count
-                });
-
-                int.TryParse(overview.ToString(), out runId);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message, ex);
-            }
-
-            try
-            {
-                foreach (var page in _crawledPages)
-                {
-                    page.RunId = runId;
-                    page.IsOrphaned = _orphanedPages.Contains(page.Url);
-                    await scope.Database.InsertAsync(page);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message, ex);
-            }
-
-            try
-            {
-                foreach (var image in _imageData)
-                {
-                    image.RunId = runId;
-                    await scope.Database.InsertAsync(image);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message, ex);
-            }
-            scope.Complete();
+            await SaveCrawlResults();
         }
 
-        private async Task<PageDto> GetPageWithAssetsAsync(string url, Guid? nodeKey = null)
+        private async Task<CrawlDto?> CrawlInternalUrl(string url)
+        {
+            Console.WriteLine("Starting crawl: {0}", url);
+            if (!_visitedUrls.Contains(url) && !IsDisallowed(url))
+            {
+                _visitedUrls.Add(url);
+
+                var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
+                var pageData = await GetPageData(url, matchingUmbracoNode.Key);
+                if (pageData == null)
+                    return null;
+
+                foreach (var link in pageData.Links.Where(x => !_linkedPages.Contains(x.Url)))
+                {
+                    if (Uri.TryCreate(_baseUri, link.Url, out var absoluteUri))
+                    {
+                        var absoluteUrl = absoluteUri.AbsoluteUri;
+                        bool isInternal = absoluteUri.Host == _baseUri.Host;
+
+                        if (isInternal && !_linkedPages.Contains(link.Url))
+                        {
+                            _linkedPages.Add(absoluteUrl);
+
+                            if (!_visitedUrls.Contains(absoluteUrl) && !_internalUrlQueue.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                            {
+                                _internalUrlQueue.Enqueue(absoluteUrl);
+                            }
+                        }
+
+                        else
+                        {
+                            // External link?
+                            _externalUrls.Add(new ExternalPageSchema()
+                            {
+                                Url = link.Url,
+                                FoundPage = url,
+                                NodeKey = matchingUmbracoNode.Key,
+                                IsAsset = false,
+                                ContentType = link.ContentType.ToString(),
+                                StatusCode = link.StatusCode
+                            });
+                        }
+                    }
+                }
+
+                foreach (var resource in pageData.Resources)
+                {
+                    if (!resource.IsExternal && Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
+                    {
+                        var absoluteUrl = absoluteUri.AbsoluteUri;
+                        if (!_visitedUrls.Contains(absoluteUrl) && !_internalAssetUrls.Contains(absoluteUrl))
+                        {
+                            _internalAssetUrls.Add(absoluteUrl);
+                            _internalUrlQueue.Enqueue(absoluteUrl);
+                        }
+                    }
+                    else
+                    {
+                        // External resource?
+                        _externalUrls.Add(new ExternalPageSchema()
+                        {
+                            Url = resource.Url,
+                            FoundPage = url,
+                            NodeKey = matchingUmbracoNode.Key,
+                            IsAsset = true,
+                            ContentType = resource.ContentType.ToString(),
+                            StatusCode = resource.StatusCode
+                        });
+                    }
+                }
+
+                _crawledPages.Add(new InternalPageSchema(pageData, 0));
+                foreach (var image in pageData.Images)
+                    _imageData.Add(new ImageSchema(image));
+
+                return new CrawlDto
+                {
+                    Url = url,
+                    Crawled = true,
+                    Asset = _internalAssetUrls.Contains(url),
+                    External = false,
+                    Blocked = false
+                };
+            }
+
+            Console.WriteLine("URL has already been crawled: {0}", url);
+            return null;
+        }
+
+        private async Task<InternalPageDto> GetPageData(string url, Guid? nodeKey = null)
         {
             Uri baseUri = new Uri(url);
 
-            var response = new PageDto
+            var response = new InternalPageDto
             {
                 Url = url,
                 NodeKey = nodeKey
@@ -356,7 +250,18 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (aNodes != null)
                     linkUrls.AddRange(aNodes.Select(x => x.GetAttributeValue("href", "")));
 
-                response.Links.AddRange(linkUrls.Distinct());
+                foreach (var relativeUrl in linkUrls.Distinct())
+                {
+                    if (string.IsNullOrEmpty(relativeUrl))
+                        continue;
+
+                    var linkUri = new Uri(baseUri, relativeUrl);
+                    var linkDetails = await GetResourceSizeAsync(linkUri);
+                    linkDetails.IsExternal = linkUri.Host != baseUri.Host;
+                    linkDetails.IsAsset = false;
+
+                    response.Links.Add(linkDetails);
+                }
 
                 // Collect H1s and H2s
                 var h1s = doc.DocumentNode.SelectNodes("//h1");
@@ -425,7 +330,8 @@ namespace Umbraco.Community.ContentAudit.Services
                     response.Images.Add(new ImageDto(resourceDetails)
                     {
                         AltText = kvp.Value,
-                        FoundPage = url
+                        FoundPage = url,
+                        NodeKey = nodeKey
                     });
                 }
 
@@ -438,6 +344,101 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return response;
+        }
+
+        private async Task SaveCrawlResults()
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var externalUrls = _externalUrls.DistinctBy(x => x.Url);
+            var totalUrls = _visitedUrls.Count + _disallowedUrls.Count + externalUrls.Count();
+            var pagesCrawled = _visitedUrls.Except(_internalAssetUrls).Count();
+
+            var overview = new OverviewSchema
+            {
+                RunDate = DateTime.Now,
+                Total = totalUrls,
+                TotalInternal = pagesCrawled,
+                TotalExternal = externalUrls.Count(),
+                TotalAssets = _internalAssetUrls.Count,
+                TotalBlocked = _robotsDisallowedPaths.Count
+            };
+
+            var runData = await scope.Database.InsertAsync(overview);
+
+            if (int.TryParse(runData.ToString(), out int runId))
+            {
+                _orphanedPages = _visitedUrls.Except(_linkedPages).Except(_internalAssetUrls).ToHashSet();
+                foreach (var page in _crawledPages)
+                {
+                    page.RunId = runId;
+                    page.IsOrphaned = _orphanedPages.Contains(page.Url);
+                    await scope.Database.InsertAsync(page);
+                }
+
+                foreach (var externalPage in _externalUrls)
+                {
+                    externalPage.RunId = runId;
+                    await scope.Database.InsertAsync(externalPage);
+                }
+
+                foreach (var image in _imageData)
+                {
+                    image.RunId = runId;
+                    await scope.Database.InsertAsync(image);
+                }
+            }
+
+            scope.Complete();
+        }
+
+        private async Task GetSitemap()
+        {
+            Console.WriteLine("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
+            if (_contentAuditSettings.UseSitemapXml)
+            {
+                var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(_baseUrl);
+                sitemapUrls.ForEach(x =>
+                {
+                    _internalPageUrls.Add(x);
+                    _internalUrlQueue.Enqueue(x);
+                    Console.WriteLine("Adding {0} to the URL queue from sitemap.xml", x);
+                });
+            }
+            else
+            {
+                _internalPageUrls.Add(_baseUrl);
+                _internalUrlQueue.Enqueue(_baseUrl);
+                Console.WriteLine("Adding {0} to the URL queue", _baseUrl);
+            }
+        }
+
+        private async Task GetRobots()
+        {
+            Console.WriteLine("Should we attempt to use robots.txt? {0}", _contentAuditSettings.RespectRobotsTxt);
+            if (_contentAuditSettings.RespectRobotsTxt)
+            {
+                var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(_baseUrl);
+                if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
+                    robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
+            }
+        }
+
+        private void QueueUmbracoContent()
+        {
+            foreach (var (key, url) in _umbracoContent)
+            {
+                if (Uri.TryCreate(_baseUri, url, out var absoluteUri))
+                {
+                    var absoluteUrl = absoluteUri.AbsoluteUri;
+                    if (!_visitedUrls.Contains(absoluteUrl) && !_internalPageUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                    {
+                        _internalPageUrls.Add(absoluteUrl);
+                        _internalUrlQueue.Enqueue(absoluteUrl);
+
+                        Console.WriteLine("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
+                    }
+                }
+            }
         }
 
         private async Task<ResourceDto> GetResourceSizeAsync(Uri assetUri)
@@ -477,10 +478,8 @@ namespace Umbraco.Community.ContentAudit.Services
             return resource;
         }
 
-        private List<KeyValuePair<Guid, string>> LoadUmbracoContentUrls()
+        private void LoadUmbracoContentUrls()
         {
-            List<KeyValuePair<Guid, string>> contentData = new List<KeyValuePair<Guid, string>>();
-
             if (_examineManager.TryGetIndex(UmbracoIndexes.InternalIndexName, out var contentIndex))
             {
                 var searcher = contentIndex.Searcher;
@@ -498,15 +497,12 @@ namespace Umbraco.Community.ContentAudit.Services
                         int.TryParse(idString, out var nodeId))
                     {
                         var url = _urlProvider.GetUrl(nodeId, UrlMode.Absolute);
+
                         if (!string.IsNullOrEmpty(url))
-                        {
-                            contentData.Add(new KeyValuePair<Guid, string>(key, url));
-                        }
+                            _umbracoContent.Add(new KeyValuePair<Guid, string>(key, url));
                     }
                 }
             }
-
-            return contentData;
         }
 
         private bool IsDisallowed(string url)

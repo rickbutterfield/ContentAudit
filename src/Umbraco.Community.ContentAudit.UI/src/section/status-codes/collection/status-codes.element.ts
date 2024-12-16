@@ -1,12 +1,12 @@
 ﻿import { css, customElement, html } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
-import { PageDto } from '../../../api';
+import { InternalPageDto } from '../../../api';
 import { UUISelectEvent, UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
 import { ContentAuditStatusCodesCollectionFilterModel } from './types';
 
 @customElement('content-audit-status-codes-collection')
 export class ContentAuditStatusCodesCollectionElement extends UmbCollectionDefaultElement {
-	#collectionContext?: UmbDefaultCollectionContext<PageDto, ContentAuditStatusCodesCollectionFilterModel>;
+	#collectionContext?: UmbDefaultCollectionContext<InternalPageDto, ContentAuditStatusCodesCollectionFilterModel>;
 
 	#options: Array<Option> = [];
 

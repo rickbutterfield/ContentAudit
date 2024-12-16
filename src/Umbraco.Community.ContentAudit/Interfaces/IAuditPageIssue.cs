@@ -4,6 +4,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface IAuditPageIssue : IAuditIssue
     {
-        int CheckPages(IEnumerable<PageDto> pages);
+        int CheckPages(IEnumerable<InternalPageDto> pages);
     }
 }

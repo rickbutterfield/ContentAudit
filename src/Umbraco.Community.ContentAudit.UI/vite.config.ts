@@ -6,7 +6,7 @@ export default defineConfig({
             entry: "src/index.ts", // your web component source file
             formats: ["es"],
         },
-        outDir: "../Umbraco.Community.ContentAudit/wwwroot/App_Plugins/Umbraco.Community.ContentAudit", 
+        outDir: "../Umbraco.Community.ContentAudit/wwwroot/App_Plugins/UmbracoCommunityContentAudit", 
         emptyOutDir: true,
         sourcemap: true,
         rollupOptions: {

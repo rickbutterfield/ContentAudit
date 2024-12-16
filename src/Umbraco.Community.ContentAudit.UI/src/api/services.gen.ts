@@ -3,9 +3,29 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
+import type { GetAllImagesData, GetAllImagesResponse, GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetExternalLinksData, GetExternalLinksResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
 
 export class AuditService {
+    /**
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.take
+     * @param data.filter
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getAllImages(data: GetAllImagesData = {}): CancelablePromise<GetAllImagesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/all-images',
+            query: {
+                skip: data.skip,
+                take: data.take,
+                filter: data.filter
+            }
+        });
+    }
+    
     /**
      * @param data The data for the request.
      * @param data.skip
@@ -32,6 +52,26 @@ export class AuditService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/umbraco/content-audit/api/v1/duplicate-content'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.take
+     * @param data.filter
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getExternalLinks(data: GetExternalLinksData = {}): CancelablePromise<GetExternalLinksResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/external-links',
+            query: {
+                skip: data.skip,
+                take: data.take,
+                filter: data.filter
+            }
         });
     }
     

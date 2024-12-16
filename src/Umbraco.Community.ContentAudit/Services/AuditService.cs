@@ -38,56 +38,56 @@ namespace Umbraco.Community.ContentAudit.Services
             return auditOverview;
         }
 
-        public async Task<List<PageDto>> GetLatestAuditData(int skip = 0, int take = 20, string filter = "", int statusCode = 0)
+        public async Task<List<InternalPageDto>> GetLatestAuditData(int skip = 0, int take = 20, string filter = "", int statusCode = 0)
         {
-            var result = new List<PageDto>();
+            var result = new List<InternalPageDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
 
             string sqlQuery = $@"
                 SELECT * 
-                FROM [{PageSchema.TableName}] 
-                WHERE RunId = @0
-                LIMIT @2 OFFSET @1";
+                FROM [{InternalPageSchema.TableName}] 
+                WHERE RunId = @0";
 
-            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId, skip, take);
+            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
             {
-                result.AddRange(data.Select(x => new PageDto(x)));
-            }
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                }
 
-            if (!string.IsNullOrEmpty(filter))
-            {
-                result = result.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
-            }
+                if (statusCode != 0)
+                {
+                    data = data.Where(x => x.StatusCode == statusCode).ToList();
+                }
 
-            if (statusCode != 0)
-            {
-                result = result.Where(x => x.StatusCode == statusCode).ToList();
-            }
+                data = data.Skip(skip).Take(take).ToList();
 
+                result.AddRange(data.Select(x => new InternalPageDto(x)));
+            }
 
             scope.Complete();
 
             return result;
         }
 
-        public async Task<List<PageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
+        public async Task<List<InternalPageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
         {
-            var results = new List<PageDto>();
+            var results = new List<InternalPageDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
 
             string sqlQuery = $@"
                 SELECT * 
-                FROM [{PageSchema.TableName}] 
+                FROM [{InternalPageSchema.TableName}] 
                 WHERE RunId = @0
                 AND IsOrphaned = 1";
 
-            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
             { 
@@ -98,14 +98,13 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 data = data.Skip(skip).Take(take).ToList();
 
-                results.AddRange(data.Select(x => new PageDto(x)));
+                results.AddRange(data.Select(x => new InternalPageDto(x)));
             }
 
             scope.Complete();
 
             return results;
         }
-
 
         public async Task<List<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "")
         {
@@ -116,7 +115,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             string sqlQuery = $@"
                 SELECT * 
-                FROM [{ImageSchema.TableName}] 
+                FROM [{ImageSchema.TableName}]
                 WHERE RunId = @0";
 
             var data = await scope.Database.FetchAsync<ImageSchema>(sqlQuery, latestRunId);
@@ -128,7 +127,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
                 }
 
-                data = data.Skip(skip).Take(take).ToList();
+                data = data.OrderByDescending(x => string.IsNullOrEmpty(x.AltText)).Skip(skip).Take(take).ToList();
 
                 results.AddRange(data.Select(x => new ImageDto(x)));
             }
@@ -138,16 +137,16 @@ namespace Umbraco.Community.ContentAudit.Services
             return results;
         }
 
-        public async Task<Dictionary<string, List<PageDto>>> GetDuplicateContentUrls()
+        public async Task<Dictionary<string, List<InternalPageDto>>> GetDuplicateContentUrls()
         {
-            var result = new Dictionary<string, List<PageDto>>();
+            var result = new Dictionary<string, List<InternalPageDto>>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
 
             // Define the SQL query to fetch only the latest Id
-            string sqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0 AND CanonicalUrl IS NOT NULL";
-            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+            string sqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0 AND CanonicalUrl IS NOT NULL";
+            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
             {
@@ -157,7 +156,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     .Where(group => group.Count() > 1)
                     .ToDictionary(
                         group => group.Key,
-                        group => group.Select(x => new PageDto(x)).ToList()
+                        group => group.Select(x => new InternalPageDto(x)).ToList()
                     );
 
                 result = groupedData;
@@ -168,9 +167,9 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        public async Task<List<PageDto>> GetPagesWithMissingMetadata()
+        public async Task<List<InternalPageDto>> GetPagesWithMissingMetadata()
         {
-            var result = new List<PageDto>();
+            var result = new List<InternalPageDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
@@ -178,7 +177,7 @@ namespace Umbraco.Community.ContentAudit.Services
             // Define the SQL query to fetch only the latest Id
             string sqlQuery = $@"
                 SELECT * 
-                FROM [{PageSchema.TableName}] 
+                FROM [{InternalPageSchema.TableName}] 
                 WHERE RunId = @0 
                   AND NodeKey IS NOT NULL
                 AND NodeKey IS NOT '00000000-0000-0000-0000-000000000000'
@@ -188,11 +187,11 @@ namespace Umbraco.Community.ContentAudit.Services
                         OR MetaKeywords IS NULL OR MetaKeywords = ''
                       )";
 
-            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
             {
-                result.AddRange(data.Select(x => new PageDto(x)));
+                result.AddRange(data.Select(x => new InternalPageDto(x)));
             }
 
             scope.Complete();
@@ -206,12 +205,12 @@ namespace Umbraco.Community.ContentAudit.Services
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
-            string pageSqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0";
-            var pageData = await scope.Database.FetchAsync<PageSchema>(pageSqlQuery, latestRunId);
+            string pageSqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0";
+            var pageData = await scope.Database.FetchAsync<InternalPageSchema>(pageSqlQuery, latestRunId);
 
             if (pageData != null && pageData.Any())
             {
-                var transformedPageData = pageData.Select(x => new PageDto(x));
+                var transformedPageData = pageData.Select(x => new InternalPageDto(x));
 
                 foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
                 {
@@ -264,12 +263,12 @@ namespace Umbraco.Community.ContentAudit.Services
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
-            string sqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0";
-            var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+            string sqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0";
+            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
             {
-                var transformedData = data.Select(x => new PageDto(x));
+                var transformedData = data.Select(x => new InternalPageDto(x));
 
                 foreach (var page in transformedData)
                 {
@@ -278,7 +277,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
                     {
-                        var issueCheck = issue.CheckPages(new List<PageDto>() { page });
+                        var issueCheck = issue.CheckPages(new List<InternalPageDto>() { page });
                         if (issueCheck == 1)
                         {
                             pageHasError = true;
@@ -327,6 +326,47 @@ namespace Umbraco.Community.ContentAudit.Services
             scope.Complete();
 
             return latestId;
+        }
+
+        public async Task<List<ExternalPageGroupDto>> GetExternalLinks(int skip = 0, int take = 20, string filter = "")
+        {
+            var result = new List<ExternalPageGroupDto>();
+            var latestRunId = await GetLatestAuditId();
+
+            using var scope = _scopeProvider.CreateScope();
+
+            string sqlQuery = $@"
+                SELECT * 
+                FROM [{ExternalPageSchema.TableName}] 
+                WHERE RunId = @0";
+
+            var data = await scope.Database.FetchAsync<ExternalPageSchema>(sqlQuery, latestRunId);
+
+            if (data != null && data.Any())
+            {
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                }
+
+                var convertedData = data.Select(x => new ExternalPageDto(x));
+
+                var groupedData = convertedData.GroupBy(x => x.Url);
+
+                var finalGrouping = groupedData.Select(x => new ExternalPageGroupDto()
+                {
+                    Url = x.Key,
+                    ExternalPages = x.ToList(),
+                    StatusCode = x.FirstOrDefault()?.StatusCode,
+                    ContentType = x.FirstOrDefault()?.ContentType,
+                });
+
+                result = finalGrouping.Skip(skip).Take(take).ToList();
+            }
+
+            scope.Complete();
+
+            return result;
         }
     }
 }

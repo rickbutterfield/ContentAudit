@@ -1,10 +1,10 @@
 ﻿import { UmbCollectionDataSource } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { AuditService, PageDto } from "../../../../api";
+import { AuditService, InternalPageDto } from "../../../../api";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { ContentAuditStatusCodesCollectionFilterModel } from "../types";
 
-export class ContentAuditStatusCodesCollectionDataSource implements UmbCollectionDataSource<PageDto> {
+export class ContentAuditStatusCodesCollectionDataSource implements UmbCollectionDataSource<InternalPageDto> {
     #host: UmbControllerHost;
 
     constructor(host: UmbControllerHost) {

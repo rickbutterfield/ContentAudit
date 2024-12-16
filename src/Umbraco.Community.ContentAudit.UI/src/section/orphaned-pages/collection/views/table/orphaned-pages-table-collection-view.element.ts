@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { PageDto } from '../../../../../api';
+import { InternalPageDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
 @customElement('content-audit-orphaned-pages-table-collection-view')
@@ -24,7 +24,7 @@ export class ContentAuditOrphanedPagesTableCollectionViewElement extends UmbLitE
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<PageDto>;
+    #collectionContext?: UmbDefaultCollectionContext<InternalPageDto>;
 
     constructor() {
         super();
@@ -40,7 +40,7 @@ export class ContentAuditOrphanedPagesTableCollectionViewElement extends UmbLitE
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(urls: PageDto[]) {
+    #createTableItems(urls: InternalPageDto[]) {
         this._tableItems = urls.map((page) => {
             return {
                 id: page.unique,

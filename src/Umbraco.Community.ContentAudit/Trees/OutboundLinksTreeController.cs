@@ -1,15 +1,18 @@
 ﻿#if NET8_0
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Trees;
 using Umbraco.Cms.Web.BackOffice.Trees;
+using Umbraco.Cms.Web.Common.Attributes;
+using Umbraco.Cms.Web.Common.ModelBinders;
 
 namespace Umbraco.Community.ContentAudit.Trees
 {
-    [Tree("contentAudit", "contentAuditTree", TreeGroup = "contentMetadata", SortOrder = 5)]
+    [Tree("audit", "audit", TreeGroup = "Audit", TreeTitle = "Audit")]
+    [PluginController("UmbracoCommunityContentAudit")]
     public class OutboundLinksTreeController : TreeController
     {
         private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
@@ -18,14 +21,13 @@ namespace Umbraco.Community.ContentAudit.Trees
             UmbracoApiControllerTypeCollection umbracoApiControllerTypeCollection,
             IMenuItemCollectionFactory menuItemCollectionFactory,
             IEventAggregator eventAggregator)
-            : base(localizedTextService, umbracoApiControllerTypeCollection, eventAggregator)
+         : base(localizedTextService, umbracoApiControllerTypeCollection, eventAggregator)
         {
             _menuItemCollectionFactory = menuItemCollectionFactory ?? throw new ArgumentNullException(nameof(menuItemCollectionFactory));
         }
+        protected override ActionResult<MenuItemCollection> GetMenuForNode(string id, [ModelBinder(typeof(HttpQueryStringModelBinder))] FormCollection queryStrings) => _menuItemCollectionFactory.Create();
 
         protected override ActionResult<TreeNodeCollection> GetTreeNodes(string id, FormCollection queryStrings) => new TreeNodeCollection();
-
-        protected override ActionResult<MenuItemCollection> GetMenuForNode(string id, FormCollection queryStrings) => _menuItemCollectionFactory.Create();
 
         protected override ActionResult<TreeNode?> CreateRootNode(FormCollection queryStrings)
         {
@@ -39,7 +41,7 @@ namespace Umbraco.Community.ContentAudit.Trees
 
             if (root is not null)
             {
-                root.RoutePath = $"{Constants.SectionAlias}/{Constants.MetadataTreeAlias}/outboundLinks";
+                root.RoutePath = $"{Constants.SectionAlias}/audit/outbound-links";
                 root.Name = "Outbound Links";
                 root.Icon = "icon-fullscreen";
                 root.HasChildren = false;

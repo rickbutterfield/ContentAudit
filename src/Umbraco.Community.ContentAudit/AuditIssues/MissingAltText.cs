@@ -18,7 +18,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IssuePriority Priority => IssuePriority.High;
 
-        public int CheckImages(IEnumerable<ImageDto> images, IEnumerable<PageDto> pages)
+        public int CheckImages(IEnumerable<ImageDto> images, IEnumerable<InternalPageDto> pages)
         {
             return images.Where(x => string.IsNullOrEmpty(x.AltText)).Select(x => x.FoundPage).Distinct().Count();
         }

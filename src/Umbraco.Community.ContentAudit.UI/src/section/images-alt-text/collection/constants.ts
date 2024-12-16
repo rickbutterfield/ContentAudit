@@ -1,0 +1,2 @@
+﻿export const CONTENT_AUDIT_IMAGES_ALT_TEXT_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.ImagesAltText';
+export const CONTENT_AUDIT_IMAGES_ALT_TEXT_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.ImagesAltText.Table';

@@ -8,7 +8,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
     [ExplicitColumns]
     public class OrphanedPageSchema
     {
-        public const string TableName = "umbContentAuditOrphanedPage";
+        public const string TableName = "umbContentAuditOrphanedPages";
 
         public OrphanedPageSchema() { }
 

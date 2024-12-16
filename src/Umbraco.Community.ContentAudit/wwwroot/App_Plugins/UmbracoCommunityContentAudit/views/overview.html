@@ -1,0 +1,50 @@
+﻿<div ng-controller="Umbraco.Community.ContentAudit.OverviewController as vm">
+
+    <div class="content-audit-dashboard">
+        <uui-box headline="Latest audit">
+            <div slot="header-actions">
+                <uui-button look="primary"
+                            ng-click="vm.startAudit()"
+                            ng-disabled="vm.buttonState === 'busy'"
+                            state={{vm.buttonState}}>
+                    Run new scan
+                </uui-button>
+            </div>
+
+            <div>
+                <div ng-if="vm.latestAuditOverview.runDate === null">
+                    <p>No scan has been run yet</p>
+                </div>
+
+                <uui-loader-bar ng-if="vm.scanRunning"></uui-loader-bar>
+
+                <div ng-if="vm.latestAuditOverview.runDate !== null && !vm.scanRunning">
+                    <p><strong>URLs found: </strong> {{vm.latestAuditOverview.total}}</p>
+                    <p><strong>Pages crawled: </strong> {{vm.latestAuditOverview.totalInternal}}</p>
+                    <p><strong>Assets crawled: </strong> {{vm.latestAuditOverview.totalAssets}}</p>
+                    <p><strong>Blocked URLs: </strong> {{vm.latestAuditOverview.totalBlocked}}</p>
+                </div>
+
+                <div ng-if="vm.scanRunning">
+                    <p><strong>URLs found: </strong> {{vm.urlsFound}}</p>
+                    <p><strong>Pages crawled: </strong> {{vm.pagesCrawled}}</p>
+                    <p><strong>Assets crawled: </strong> {{vm.assetsCrawled}}</p>
+                    <p><strong>Blocked URLs: </strong> {{vm.blockedUrls}}</p>
+                </div>
+            </div>
+        </uui-box>
+
+        <uui-box headline="Site health">
+        </uui-box>
+
+        <uui-box headline="Top issues" class="grow">
+            <umb-table
+                ng-if="vm.topIssues"
+                items="vm.topIssues"
+                item-properties="vm.topIssuesProperties"
+                allow-select="false">
+            </umb-table>
+        </uui-box>
+    </div>
+
+</div>

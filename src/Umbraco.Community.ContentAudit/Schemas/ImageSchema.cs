@@ -10,7 +10,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
     [ExplicitColumns]
     public class ImageSchema
     {
-        public const string TableName = "umbContentAuditImage";
+        public const string TableName = "umbContentAuditImages";
 
         public ImageSchema() { }
 
@@ -23,6 +23,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
             ContentType = image.ContentType.ToString();
             AltText = image.AltText;
             FoundPage = image.FoundPage;
+            NodeKey = image.NodeKey;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -52,5 +53,8 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         [Column("FoundPage")]
         public string? FoundPage { get; set; }
+
+        [Column("NodeKey")]
+        public Guid? NodeKey { get; set; }
     }
 }

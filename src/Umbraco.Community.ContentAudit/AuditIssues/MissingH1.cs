@@ -18,9 +18,9 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IssuePriority Priority => IssuePriority.High;
 
-        public int CheckPages(IEnumerable<PageDto> pages)
+        public int CheckPages(IEnumerable<InternalPageDto> pages)
         {
-            return pages.Count(x => !x.IsAsset && !x.IsExternal && (x.H1 == null || x.H1?.Any() == false));
+            return pages.Count(x => !x.IsAsset && (x.H1 == null || x.H1?.Any() == false));
         }
     }
 }

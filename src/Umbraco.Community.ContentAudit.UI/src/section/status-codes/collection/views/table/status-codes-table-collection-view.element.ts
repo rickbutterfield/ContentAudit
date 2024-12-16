@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { PageDto } from '../../../../../api';
+import { InternalPageDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
 @customElement('content-audit-status-codes-table-collection-view')
@@ -32,7 +32,7 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<PageDto>;
+    #collectionContext?: UmbDefaultCollectionContext<InternalPageDto>;
 
     constructor() {
         super();
@@ -48,7 +48,7 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(pages: PageDto[]) {
+    #createTableItems(pages: InternalPageDto[]) {
         this._tableItems = pages.map((page) => {
             return {
                 id: page.unique,

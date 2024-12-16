@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../wor
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
 import { UmbArrayState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
-import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageDto } from "../api";
+import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, InternalPageDto } from "../api";
 
 export class ContentAuditContext extends UmbControllerBase implements UmbWorkspaceContext {
 	public readonly workspaceAlias: string = CONTENT_AUDIT_WORKSPACE_ALIAS;
@@ -19,7 +19,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#latestAuditOverview = new UmbObjectState<OverviewDto | undefined>(undefined);
 	public readonly latestAuditOverview = this.#latestAuditOverview.asObservable();
 
-	#pagesWithMissingMetadata = new UmbArrayState<PageDto>([], (x) => x.id);
+	#pagesWithMissingMetadata = new UmbArrayState<InternalPageDto>([], (x) => x.id);
 	public readonly pagesWithMissingMetadata = this.#pagesWithMissingMetadata.asObservable();
 
 	#topIssues = new UmbArrayState<IssueDto>([], (x) => x.name);

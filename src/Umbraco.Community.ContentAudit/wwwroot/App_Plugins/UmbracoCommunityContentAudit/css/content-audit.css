@@ -1,0 +1,9 @@
+﻿.content-audit-dashboard {
+    display: grid;
+    gap: var(--uui-size-space-5);
+    grid-template-columns: repeat(2, 1fr);
+}
+
+uui-box.grow {
+    grid-column: span 2;
+}

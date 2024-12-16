@@ -35,6 +35,7 @@
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[13.0.0, 14.0.0)" />
+		<PackageReference Include="Umbraco.AuthorizedServices" Version="10.0.1" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
@@ -43,6 +44,7 @@
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[15.0.0, 16.0.0)" />
+		<PackageReference Include="Umbraco.AuthorizedServices" Version="15.0.0" />
 	</ItemGroup>
 
 	<!--<ItemGroup>
