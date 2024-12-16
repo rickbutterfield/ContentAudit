@@ -1,6 +1,6 @@
 import { UmbElementMixin as c } from "@umbraco-cms/backoffice/element-api";
 import { LitElement as h, html as _, css as u, state as m, customElement as f } from "@umbraco-cms/backoffice/external/lit";
-import { C as g } from "./index-CuyXz4G1.js";
+import { C as g } from "./index-DaGunpdO.js";
 import "@umbraco-cms/backoffice/repository";
 import "@umbraco-cms/backoffice/resources";
 var C = Object.defineProperty, E = Object.getOwnPropertyDescriptor, d = (t) => {
@@ -55,4 +55,4 @@ export {
   n as ContentAuditSettingsViewElement,
   P as default
 };
-//# sourceMappingURL=settings.element-nA3rBw4m.js.map
+//# sourceMappingURL=settings.element-BZGTSJPS.js.map

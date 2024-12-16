@@ -21,10 +21,6 @@
         vm.blockedUrls = 0;
 
         vm.topIssues = [];
-        vm.topIssuesProperties = [
-            { alias: 'numberOfUrls', header: 'Number of URLs' },
-            { alias: 'percentOfTotal', header: 'Percent of total', expression: 'exp' },
-        ];
 
         vm.startAudit = startAudit;
 

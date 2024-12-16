@@ -38,12 +38,30 @@
         </uui-box>
 
         <uui-box headline="Top issues" class="grow">
-            <umb-table
-                ng-if="vm.topIssues"
-                items="vm.topIssues"
-                item-properties="vm.topIssuesProperties"
-                allow-select="false">
-            </umb-table>
+            <div class="umb-table" ng-if="vm.topIssues.length !== 0">
+                <div class="umb-table-head">
+                    <div class="umb-table-row">
+                        <div class="umb-table-cell umb-table__name not-fixed">Issue</div>
+                        <div class="umb-table-cell">Type</div>
+                        <div class="umb-table-cell">Priority</div>
+                        <div class="umb-table-cell">Number of URLs affected</div>
+                        <div class="umb-table-cell">Percentage of all pages</div>
+                    </div>
+                </div>
+                <div class="umb-table-body">
+                    <div class="umb-table-row" ng-repeat="issue in vm.topIssues">
+                        <div class="umb-table-cell umb-table__name not-fixed">
+                            <span>
+                                <strong>{{issue.category}}: {{issue.name}}</strong><br />{{issue.description}}
+                            </span>
+                        </div>
+                        <div class="umb-table-cell">{{issue.type}}</div>
+                        <div class="umb-table-cell">{{issue.priority}}</div>
+                        <div class="umb-table-cell">{{issue.numberOfUrls}}</div>
+                        <div class="umb-table-cell">{{issue.percentOfTotal.toFixed(2)}}%</div>
+                    </div>
+                </div>
+            </div>
         </uui-box>
     </div>
 

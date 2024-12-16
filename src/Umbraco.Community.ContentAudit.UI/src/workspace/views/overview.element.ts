@@ -150,7 +150,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
                     </div>
-                    <content-audit-issues-table-collection-view data="ABC" .data=${this._topIssues}></content-audit-issues-table-collection-view>
+                    <content-audit-issues-table-collection-view .data=${this._topIssues}></content-audit-issues-table-collection-view>
                 </uui-box>
             `
         }

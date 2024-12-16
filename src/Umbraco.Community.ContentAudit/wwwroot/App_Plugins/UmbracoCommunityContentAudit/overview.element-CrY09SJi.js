@@ -1,6 +1,6 @@
 import { UmbElementMixin as D } from "@umbraco-cms/backoffice/element-api";
-import { LitElement as L, html as l, css as x, state as v, customElement as C, nothing as U } from "@umbraco-cms/backoffice/external/lit";
-import { C as I } from "./index-CuyXz4G1.js";
+import { LitElement as L, html as l, css as x, state as v, customElement as U, nothing as C } from "@umbraco-cms/backoffice/external/lit";
+import { C as I } from "./index-DaGunpdO.js";
 var k = Object.defineProperty, T = Object.getOwnPropertyDescriptor, S = (t) => {
   throw TypeError(t);
 }, d = (t, e, s, n) => {
@@ -72,7 +72,7 @@ m = function() {
     return l`
                 <uui-box headline="Latest audit">
                     <div slot="header">
-                        ${((t = this._latestAuditOverview) == null ? void 0 : t.runDate) != null ? this.localize.date((e = this._latestAuditOverview) == null ? void 0 : e.runDate, { dateStyle: "long", timeStyle: "short" }) : U}
+                        ${((t = this._latestAuditOverview) == null ? void 0 : t.runDate) != null ? this.localize.date((e = this._latestAuditOverview) == null ? void 0 : e.runDate, { dateStyle: "long", timeStyle: "short" }) : C}
                     </div>
                     <div slot="header-actions">
                         <uui-button
@@ -102,7 +102,7 @@ E = function() {
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
                     </div>
-                    <content-audit-issues-table-collection-view data="ABC" .data=${this._topIssues}></content-audit-issues-table-collection-view>
+                    <content-audit-issues-table-collection-view .data=${this._topIssues}></content-audit-issues-table-collection-view>
                 </uui-box>
             `;
 };
@@ -156,11 +156,11 @@ d([
   v()
 ], a.prototype, "_pagesWithoutErrors", 2);
 a = d([
-  C("content-audit-scan-view")
+  U("content-audit-scan-view")
 ], a);
 const z = a;
 export {
   a as ContentAuditScanViewElement,
   z as default
 };
-//# sourceMappingURL=overview.element-SF54Ezhu.js.map
+//# sourceMappingURL=overview.element-CrY09SJi.js.map

@@ -4,7 +4,7 @@ var u = (o) => {
 var l = (o, e, t) => e.has(o) || u("Cannot " + t);
 var s = (o, e, t) => (l(o, e, "read from private field"), t ? t.call(o) : e.get(o)), a = (o, e, t) => e.has(o) ? u("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(o) : e.set(o, t), c = (o, e, t, r) => (l(o, e, "write to private field"), r ? r.call(o, t) : e.set(o, t), t);
 import { UmbRepositoryBase as f } from "@umbraco-cms/backoffice/repository";
-import { A as p } from "./index-CuyXz4G1.js";
+import { A as p } from "./index-DaGunpdO.js";
 import { tryExecuteAndNotify as C } from "@umbraco-cms/backoffice/resources";
 var n;
 class y {
@@ -39,4 +39,4 @@ export {
   g as ContentAuditOutboundLinksCollectionRepository,
   g as default
 };
-//# sourceMappingURL=outbound-links-collection.repository-Cc1mWK65.js.map
+//# sourceMappingURL=outbound-links-collection.repository-CF_WuMIo.js.map

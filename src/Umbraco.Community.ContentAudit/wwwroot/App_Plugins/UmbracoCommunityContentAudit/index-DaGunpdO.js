@@ -1352,7 +1352,7 @@ const pn = g, hn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: Ee,
     name: "Status Codes Collection Repository",
-    api: () => import("./status-codes-collection.repository-BPbOF3BW.js")
+    api: () => import("./status-codes-collection.repository-wfudBYfC.js")
   }
 ], fn = [
   {
@@ -1511,7 +1511,7 @@ const On = v, En = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: Le,
     name: "Orphaned Pages Collection Repository",
-    api: () => import("./orphaned-pages-collection.repository-DtXWdkSW.js")
+    api: () => import("./orphaned-pages-collection.repository-Cddvc-12.js")
   }
 ], $n = [
   {
@@ -1686,7 +1686,7 @@ const Mn = S, Vn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: Me,
     name: "Images Alt Text Collection Repository",
-    api: () => import("./images-alt-text-collection.repository-cUsxVbYI.js")
+    api: () => import("./images-alt-text-collection.repository-DWYF-FOK.js")
   }
 ], qn = [
   {
@@ -1870,7 +1870,7 @@ const Jn = O, Qn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: Be,
     name: "Outbound Links Collection Repository",
-    api: () => import("./outbound-links-collection.repository-Cc1mWK65.js")
+    api: () => import("./outbound-links-collection.repository-CF_WuMIo.js")
   }
 ], ei = [
   {
@@ -1998,7 +1998,7 @@ const Jn = O, Qn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Scan",
     name: "Content Audit Scan Workspace View",
-    element: () => import("./overview.element-SF54Ezhu.js"),
+    element: () => import("./overview.element-CrY09SJi.js"),
     meta: {
       label: "Overview",
       pathname: "overview",
@@ -2015,7 +2015,7 @@ const Jn = O, Qn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Settings",
     name: "Content Audit Settings Workspace View",
-    element: () => import("./settings.element-nA3rBw4m.js"),
+    element: () => import("./settings.element-BZGTSJPS.js"),
     meta: {
       label: "Settings",
       pathname: "settings",
@@ -2073,4 +2073,4 @@ export {
   zs as s,
   b as t
 };
-//# sourceMappingURL=index-CuyXz4G1.js.map
+//# sourceMappingURL=index-DaGunpdO.js.map
