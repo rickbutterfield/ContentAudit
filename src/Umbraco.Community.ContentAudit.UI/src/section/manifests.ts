@@ -5,9 +5,8 @@ import { manifests as issuesManifests } from './issues/manifests';
 import { manifests as statusCodesManifests } from './status-codes/manifests';
 import { manifests as orphanedPagesManifests } from './orphaned-pages/manifests';
 import { manifests as imagesAltTextManifests } from './images-alt-text/manifests';
-//import { manifests as duplicateContentManifests } from './duplicate-content/manifests';
-//import { manifests as inboundLinksManifests } from './inbound-links/manifests';
 import { manifests as outboundLinksManifests } from './outbound-links/manifests';
+import { manifests as metadataManifests } from './metadata/manifests';
 import { CONTENT_AUDIT_MENU_0_ALIAS, CONTENT_AUDIT_MENU_1_ALIAS } from './constants';
 
 const sectionAlias = 'Umb.Section.ContentAudit';
@@ -97,5 +96,6 @@ export const manifests = [
     ...statusCodesManifests,
     ...orphanedPagesManifests,
     ...imagesAltTextManifests,
-    ...outboundLinksManifests
+    ...outboundLinksManifests,
+    ...metadataManifests
 ]

@@ -9,7 +9,7 @@
 			"name": "Umbraco.Community.ContentAudit.EntryPoint",
 			"alias": "Umbraco.Community.ContentAudit.EntryPoint",
 			"type": "backofficeEntryPoint",
-			"js": "/App_Plugins/Umbraco.Community.ContentAudit/assets.js"
+			"js": "/App_Plugins/UmbracoCommunityContentAudit/assets.js"
 		}
 	]
 }

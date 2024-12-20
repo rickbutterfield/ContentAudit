@@ -1,4 +1,9 @@
-﻿@{
+﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+@using Umbraco.Extensions
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Person>
+@{
 	Layout = "master.cshtml";
 }
+
+<h1>@Model.Name</h1>
 <p>Nothing to see, but we could make a lesson to display a person</p>

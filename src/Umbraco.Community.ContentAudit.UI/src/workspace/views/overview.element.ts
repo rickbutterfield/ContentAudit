@@ -115,7 +115,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     #renderLatestAudit() {
         if (this._latestAuditOverview !== undefined) {
             return html`
-                <uui-box headline="Latest audit">
+                <uui-box headline="Latest audit" class="span-2">
                     <div slot="header">
                         ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate!, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
                     </div>
@@ -135,9 +135,34 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
     #renderHealthScore() {
         if (this._healthScore !== undefined) {
+            let scoreClass = "score--danger";
+
+            if (this._healthScore.healthScore >= 90) {
+                scoreClass = "score--success";
+            }
+
+            if (this._healthScore.healthScore >= 50) {
+                scoreClass = "score--warning";
+            }
+
             return html`
                 <uui-box headline="Site health">
-                    <p class="uui-h2">${this._healthScore?.healthScore.toFixed(0)} / 100</p>
+                    <div class="score">
+                        <svg viewBox="0 0 36 36" class="score__inner ${scoreClass}">
+                            <path class="score__bg"
+                                d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <path class="score__fill"
+                                stroke-dasharray="${this._healthScore.healthScore}, 100"
+                                d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                        </svg>
+                        <p class="score__text">${this._healthScore.healthScore.toFixed(0)} / 100</p>
+                    </div>
                 </uui-box>
             `;
         }
@@ -146,7 +171,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     #renderTopIssues() {
         if (this._topIssues.length !== 0) {
             return html`
-                <uui-box headline="Top issues" class="grow" style="--uui-box-default-padding: 0;">
+                <uui-box headline="Top issues" class="span-3" style="--uui-box-default-padding: 0;">
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
                     </div>
@@ -176,28 +201,74 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             #main {
                 display: grid;
                 gap: var(--uui-size-space-5); 
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
 
-            .grow {
+            .span-2 {
                 grid-column: span 2;
             }
 
-            #chart {
-				width: 150px;
-				aspect-ratio: 1;
-				background: radial-gradient(white 40%, transparent 41%),
-					conic-gradient(
-						var(--umb-log-viewer-debug-color) 0% 20%,
-						var(--umb-log-viewer-information-color) 20% 40%,
-						var(--umb-log-viewer-warning-color) 40% 60%,
-						var(--umb-log-viewer-error-color) 60% 80%,
-						var(--umb-log-viewer-fatal-color) 80% 100%
-					);
-				margin: 10px;
-				display: inline-block;
-				border-radius: 50%;
-			}
+            .span-3 {
+                grid-column: span 3;
+            }
+
+            .score {
+                text-align: center;
+                position: relative;
+            }
+
+            .score__inner {
+                width: 200px;
+                height: 200px;
+            }
+
+            .score__bg {
+                fill: none;
+                stroke: #eee;
+                stroke-width: 1.75;
+            }
+
+            .score__fill {
+                fill: none;
+                stroke: none;
+                stroke-width: 1.75;
+                stroke-linecap: round;
+                animation: progress 1000ms ease-out forwards;
+                stroke: #000;
+            }
+
+            .score--danger .score__fill {
+                stroke: var(--uui-color-danger, #d42054);
+            }
+
+            .score--warning .score__fill {
+                stroke: var(--uui-color-warning, #fbd142);
+            }
+
+            .score--success .score__fill {
+                stroke: var(--uui-color-positive);
+            }
+
+            .score__text {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
+                z-index: 1;
+                font-weight: 700;
+            }
+
+            @keyframes progress {
+                0% {
+                    stroke-dasharray: 0 100;
+                }
+            }
         `
     ]
 }

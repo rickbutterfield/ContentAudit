@@ -1,11 +1,10 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Umbraco.AuthorizedServices.Services;
 using Umbraco.Cms.Api.Common.ViewModels.Pagination;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
-using Umbraco.AuthorizedServices.Services;
-using Umbraco.Cms.Core;
 
 namespace Umbraco.Community.ContentAudit.Controllers
 {
@@ -14,14 +13,11 @@ namespace Umbraco.Community.ContentAudit.Controllers
     public class AuditController : ContentAuditControllerBase
     {
         private readonly IAuditService _auditService;
-        private readonly IAuthorizedServiceCaller _authorizedServiceCaller;
 
         public AuditController(
-            IAuditService auditService,
-            IAuthorizedServiceCaller authorizedServiceCaller)
+            IAuditService auditService)
         {
             _auditService = auditService;
-            _authorizedServiceCaller = authorizedServiceCaller;
         }
 
         [HttpGet("latest-audit")]
@@ -39,10 +35,28 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("missing-metadata")]
-        [ProducesResponseType(typeof(List<InternalPageDto>), 200)]
-        public async Task<List<InternalPageDto>> GetPagesWithMissingMetadata()
+        [ProducesResponseType(typeof(PagedViewModel<InternalPageDto>), 200)]
+        public async Task<PagedViewModel<InternalPageDto>> GetPagesWithMissingMetadata(
+            CancellationToken cancellationToken,
+            int skip = 0,
+            int take = 20,
+            string filter = "")
         {
-            return await _auditService.GetPagesWithMissingMetadata();
+            var latestData = await _auditService.GetPagesWithMissingMetadata(skip, take, filter);
+
+            var pagedModel = new PagedModel<InternalPageDto>
+            {
+                Total = latestData.Count(),
+                Items = latestData
+            };
+
+            var viewModel = new PagedViewModel<InternalPageDto>
+            {
+                Total = pagedModel.Total,
+                Items = pagedModel.Items
+            };
+
+            return viewModel;
         }
 
         [HttpGet("all-issues")]
@@ -68,6 +82,13 @@ namespace Umbraco.Community.ContentAudit.Controllers
             };
 
             return viewModel;
+        }
+
+        [HttpGet("issue")]
+        [ProducesResponseType(typeof(IssueDto), 200)]
+        public async Task<IssueDto?> GetIssue(Guid issueGuid)
+        {
+            return await _auditService.GetIssue(issueGuid);
         }
 
         [HttpGet("latest-data")]

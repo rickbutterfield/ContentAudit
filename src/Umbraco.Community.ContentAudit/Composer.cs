@@ -25,6 +25,7 @@ namespace Umbraco.Community.ContentAudit
             builder.Services.AddScoped<IRobotsService, RobotsService>();
             builder.Services.AddScoped<ISitemapService, SitemapService>();
             builder.Services.AddScoped<IAuditService, AuditService>();
+            builder.Services.AddScoped<IPageScanningService, PageScanningService>();
             builder.Services.AddScoped<ICrawlerService, CrawlerService>();
 
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();

@@ -90,6 +90,8 @@ export type IssueDto = {
     priority: IssuePriority;
     numberOfUrls?: number | null;
     percentOfTotal: number;
+    pages?: Array<(InternalPageDto)> | null;
+    images?: Array<(ImageDto)> | null;
     priorityScore: number;
 };
 
@@ -183,6 +185,12 @@ export type GetExternalLinksResponse = PagedExternalPageGroupDtoModel;
 
 export type GetHealthScoreResponse = HealthScoreDto;
 
+export type GetIssueData = {
+    issueGuid?: string;
+};
+
+export type GetIssueResponse = IssueDto;
+
 export type GetLatestAuditOverviewResponse = OverviewDto;
 
 export type GetLatestAuditDataData = {
@@ -194,7 +202,13 @@ export type GetLatestAuditDataData = {
 
 export type GetLatestAuditDataResponse = PagedInternalPageDtoModel;
 
-export type GetPagesWithMissingMetadataResponse = Array<(InternalPageDto)>;
+export type GetPagesWithMissingMetadataData = {
+    filter?: string;
+    skip?: number;
+    take?: number;
+};
+
+export type GetPagesWithMissingMetadataResponse = PagedInternalPageDtoModel;
 
 export type GetOrphanedPagesData = {
     filter?: string;
@@ -264,6 +278,17 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/umbraco/content-audit/api/v1/issue': {
+        get: {
+            req: GetIssueData;
+            res: {
+                /**
+                 * OK
+                 */
+                200: IssueDto;
+            };
+        };
+    };
     '/umbraco/content-audit/api/v1/latest-audit': {
         get: {
             res: {
@@ -287,11 +312,12 @@ export type $OpenApiTs = {
     };
     '/umbraco/content-audit/api/v1/missing-metadata': {
         get: {
+            req: GetPagesWithMissingMetadataData;
             res: {
                 /**
                  * OK
                  */
-                200: Array<(InternalPageDto)>;
+                200: PagedInternalPageDtoModel;
             };
         };
     };

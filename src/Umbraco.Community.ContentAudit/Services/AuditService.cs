@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Umbraco.Cms.Infrastructure.Scoping;
+﻿using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -90,7 +89,7 @@ namespace Umbraco.Community.ContentAudit.Services
             var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
-            { 
+            {
                 if (!string.IsNullOrEmpty(filter))
                 {
                     data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
@@ -167,30 +166,36 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        public async Task<List<InternalPageDto>> GetPagesWithMissingMetadata()
+        public async Task<List<InternalPageDto>> GetPagesWithMissingMetadata(int skip = 0, int take = 20, string filter = "")
         {
             var result = new List<InternalPageDto>();
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
 
-            // Define the SQL query to fetch only the latest Id
             string sqlQuery = $@"
                 SELECT * 
                 FROM [{InternalPageSchema.TableName}] 
                 WHERE RunId = @0 
-                  AND NodeKey IS NOT NULL
+                AND NodeKey IS NOT NULL
                 AND NodeKey IS NOT '00000000-0000-0000-0000-000000000000'
-                  AND (
-                        MetaTitle IS NULL OR MetaTitle = ''
-                        OR MetaDescription IS NULL OR MetaDescription = ''
-                        OR MetaKeywords IS NULL OR MetaKeywords = ''
-                      )";
+                AND (
+                    MetaTitle IS NULL OR MetaTitle = ''
+                    OR MetaDescription IS NULL OR MetaDescription = ''
+                    OR MetaKeywords IS NULL OR MetaKeywords = ''
+                )";
 
             var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
 
             if (data != null && data.Any())
             {
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                }
+
+                data = data.Skip(skip).Take(take).ToList();
+
                 result.AddRange(data.Select(x => new InternalPageDto(x)));
             }
 
@@ -215,12 +220,14 @@ namespace Umbraco.Community.ContentAudit.Services
                 foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
                 {
                     var issueCheck = issue.CheckPages(transformedPageData);
-                    double percent = ((double)issueCheck / (double)transformedPageData.Count()) * 100.0;
+                    var pagesWithIssues = issueCheck.Count();
+                    double percent = ((double)pagesWithIssues / (double)transformedPageData.Count()) * 100.0;
 
                     var auditIssue = new IssueDto(issue)
                     {
-                        NumberOfUrls = issueCheck,
-                        PercentOfTotal = percent
+                        NumberOfUrls = pagesWithIssues,
+                        PercentOfTotal = percent,
+                        Pages = issueCheck
                     };
 
                     auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
@@ -238,12 +245,15 @@ namespace Umbraco.Community.ContentAudit.Services
                     foreach (IAuditImageIssue issue in _auditIssueCollection.Where(x => x is IAuditImageIssue))
                     {
                         var issueCheck = issue.CheckImages(transformedImageData, transformedPageData);
-                        double percent = ((double)issueCheck / (double)transformedImageData.Count()) * 100.0;
+                        var imagesWithIssues = issueCheck.DistinctBy(x => x.FoundPage).Count();
+
+                        double percent = ((double)imagesWithIssues / (double)transformedPageData.Count()) * 100.0;
 
                         var auditIssue = new IssueDto(issue)
                         {
-                            NumberOfUrls = issueCheck,
-                            PercentOfTotal = percent
+                            NumberOfUrls = imagesWithIssues,
+                            PercentOfTotal = percent,
+                            Images = issueCheck
                         };
 
                         auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
@@ -252,9 +262,70 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
                 }
             }
-
-
             return result;
+        }
+
+        public async Task<IssueDto?> GetIssue(Guid issueGuid)
+        {
+            var result = new List<IssueDto>();
+            var latestRunId = await GetLatestAuditId();
+
+            using var scope = _scopeProvider.CreateScope();
+
+            string pageSqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0";
+            var pageData = await scope.Database.FetchAsync<InternalPageSchema>(pageSqlQuery, latestRunId);
+
+            if (pageData != null && pageData.Any())
+            {
+                var transformedPageData = pageData.Select(x => new InternalPageDto(x));
+
+                var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == issueGuid);
+                if (issue is IAuditPageIssue pageIssue)
+                {
+                    var issueCheck = pageIssue.CheckPages(transformedPageData);
+                    var pagesWithIssue = issueCheck.Count();
+                    double percent = ((double)pagesWithIssue / (double)transformedPageData.Count()) * 100.0;
+
+                    var auditIssue = new IssueDto(pageIssue)
+                    {
+                        NumberOfUrls = pagesWithIssue,
+                        PercentOfTotal = percent,
+                        Pages = issueCheck
+                    };
+
+                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+
+                    return auditIssue;
+                }
+
+                else if (issue is IAuditImageIssue imageIssue)
+                {
+                    string imageSqlQuery = $"SELECT * FROM [{ImageSchema.TableName}] WHERE RunId = @0";
+                    var imageData = await scope.Database.FetchAsync<ImageSchema>(imageSqlQuery, latestRunId);
+
+                    if (imageData != null && imageData.Any())
+                    {
+                        var transformedImageData = imageData.Select(x => new ImageDto(x));
+
+                        var issueCheck = imageIssue.CheckImages(transformedImageData, transformedPageData);
+                        var imagesWithIssues = issueCheck.Count();
+                        double percent = ((double)imagesWithIssues / (double)transformedImageData.Count()) * 100.0;
+
+                        var auditIssue = new IssueDto(issue)
+                        {
+                            NumberOfUrls = imagesWithIssues,
+                            PercentOfTotal = percent,
+                            Images = issueCheck
+                        };
+
+                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+
+                        return auditIssue;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public async Task<HealthScoreDto> GetHealthScore()
@@ -278,7 +349,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
                     {
                         var issueCheck = issue.CheckPages(new List<InternalPageDto>() { page });
-                        if (issueCheck == 1)
+                        if (issueCheck.Count() == 1)
                         {
                             pageHasError = true;
                             break;
@@ -309,7 +380,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (issue.PercentOfTotal != 0)
                 return typeWeight + priorityWeight + percentageWeight;
-            
+
             return 0;
         }
 

@@ -7,3 +7,13 @@
 uui-box.grow {
     grid-column: span 2;
 }
+
+uui-table-cell uui-tag,
+.umb-table-cell uui-tag {
+    font-size: 14px;
+}
+
+    uui-table-cell uui-tag uui-icon,
+    .umb-table-cell uui-tag uui-icon {
+        margin-right: 4px;
+    }

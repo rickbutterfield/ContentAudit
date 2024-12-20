@@ -14,13 +14,13 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public string Category => "Metadata";
 
-        public IssueType Type => IssueType.Issue;
+        public IssueType Type => IssueType.Warning;
 
-        public IssuePriority Priority => IssuePriority.High;
+        public IssuePriority Priority => IssuePriority.Medium;
 
-        public int CheckPages(IEnumerable<InternalPageDto> pages)
+        public IEnumerable<InternalPageDto> CheckPages(IEnumerable<InternalPageDto> pages)
         {
-            return pages.Count(x => !x.IsAsset && string.IsNullOrEmpty(x.MetaDescription));
+            return pages.Where(x => !x.IsAsset && string.IsNullOrEmpty(x.MetaDescription));
         }
     }
 }

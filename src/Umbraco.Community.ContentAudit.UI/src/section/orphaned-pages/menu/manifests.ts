@@ -6,7 +6,7 @@ const menuItem: ManifestMenuItem = {
     type: 'menuItem',
     alias: 'Umb.MenuItem.ContentAudit.OrphanedPages',
     name: 'Orphaned Pages Menu Item',
-    weight: 2000,
+    weight: 100,
     meta: {
         label: 'Orphaned Pages',
         icon: 'icon-tactics',

@@ -37,7 +37,10 @@
         <uui-box headline="Site health">
         </uui-box>
 
-        <uui-box headline="Top issues" class="grow">
+        <uui-box headline="Top issues" class="grow" style="--uui-box-default-padding: 0;">
+            <div slot="header-actions">
+                <uui-button look="secondary" ng-href="#/audit/audit/issues">See all issues</uui-button>
+            </div>
             <div class="umb-table" ng-if="vm.topIssues.length !== 0">
                 <div class="umb-table-head">
                     <div class="umb-table-row">
@@ -55,10 +58,10 @@
                                 <strong>{{issue.category}}: {{issue.name}}</strong><br />{{issue.description}}
                             </span>
                         </div>
-                        <div class="umb-table-cell">{{issue.type}}</div>
-                        <div class="umb-table-cell">{{issue.priority}}</div>
+                        <div class="umb-table-cell" ng-bind-html="vm.renderTypeLabel(issue.type)"></div>
+                        <div class="umb-table-cell" ng-bind-html="vm.renderPriorityLabel(issue.priority)"></div>
                         <div class="umb-table-cell">{{issue.numberOfUrls}}</div>
-                        <div class="umb-table-cell">{{issue.percentOfTotal.toFixed(2)}}%</div>
+                        <div class="umb-table-cell">{{issue.percentOfTotal.toFixed(0)}}%</div>
                     </div>
                 </div>
             </div>

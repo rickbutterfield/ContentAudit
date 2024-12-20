@@ -10,8 +10,9 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<List<ExternalPageGroupDto>> GetExternalLinks(int skip = 0, int take = 20, string filter = "");
         Task<List<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "");
         Task<Dictionary<string, List<InternalPageDto>>> GetDuplicateContentUrls();
-        Task<List<InternalPageDto>> GetPagesWithMissingMetadata();
+        Task<List<InternalPageDto>> GetPagesWithMissingMetadata(int skip = 0, int take = 20, string filter = "");
         Task<List<IssueDto>> GetAllIssues();
+        Task<IssueDto?> GetIssue(Guid issueGuid);
         Task<HealthScoreDto> GetHealthScore();
     }
 }

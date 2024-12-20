@@ -4,6 +4,8 @@ import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { IssueDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
+import './column-layouts/issues-table-name-column-layout.element';
+
 @customElement('content-audit-issues-table-collection-view')
 export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement {
 
@@ -29,6 +31,7 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
         {
             name: 'Issue',
             alias: 'name',
+            elementName: 'content-audit-issues-table-name-column-layout'
         },
         {
             name: 'Type',
@@ -76,7 +79,12 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
                 data: [
                     {
                         columnAlias: 'name',
-                        value: html`<strong>${issue.category}: ${issue.name}</strong><br/>${issue.description}`,
+                        value: {
+                            unique: issue.unique,
+                            name: issue.name,
+                            category: issue.category,
+                            description: issue.description
+                        }
                     },
                     {
                         columnAlias: 'type',

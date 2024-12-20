@@ -4,11 +4,17 @@
 
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
 @{
+
     Layout = null;
     // Get basic design settings from the homepage
     var home = (Home)Model.Root();
     var font = home.Font;
     var colorTheme = home.ColorTheme;
+    INavigationBase? seo = null;
+    if (Model.IsComposedOf(NavigationBase.ModelTypeAlias))
+    {
+        seo = Model as INavigationBase;
+    }
 }
 
 <!doctype html>
@@ -18,8 +24,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>@Model.Name - @home.Sitename</title>
-    <meta name="description" content="@Model.Name">
+    <meta name="description" content="@seo?.SeoMetaDescription">
     <meta name="author" content="">
+    <meta name="keywords" content="@string.Join(',', seo?.Keywords)" />
     
     <link rel="canonical" href="@Model.Url(mode: UrlMode.Absolute)"/>
     <link rel="stylesheet" href="@Url.Content("~/css/umbraco-starterkit-style.css")" />
@@ -62,6 +69,8 @@
 
     <main>
         @RenderBody()
+
+        <h2>Test H2</h2>
     </main>
 
     <footer class="section--themed">
