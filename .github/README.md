@@ -4,7 +4,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/rickbutterfield/Umbraco.Community.ContentAudit)
 
 ## Description
-ContentAudit is a tool designed for auditing content within Umbraco CMS. This repository aims to provide a comprehensive solution for managing and auditing content effectively in Umbraco projects.
+ContentAudit is a tool designed for auditing content and SEO within Umbraco CMS.
 
 ## Features
 - Audit content in Umbraco 13 and 15
