@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<TargetFrameworks>net9.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<StaticWebAssetBasePath>/</StaticWebAssetBasePath>
@@ -16,7 +16,7 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<VersionPrefix>0.0.0-alpha</VersionPrefix>
+		<VersionPrefix>1.0.0-alpha</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
@@ -29,16 +29,17 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.AuthorizedServices" Version="10.0.1" />
-	</ItemGroup>
+	</ItemGroup>-->
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">-->
+	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms.Core" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[15.0.0, 16.0.0)" />
