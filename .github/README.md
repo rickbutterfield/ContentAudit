@@ -3,6 +3,8 @@
 ![License](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)
 ![GitHub issues](https://img.shields.io/github/issues/rickbutterfield/Umbraco.Community.ContentAudit)
 
+<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150" align="right">
+
 ## Description
 ContentAudit is a tool designed for auditing content and SEO within Umbraco CMS.
 

@@ -67,7 +67,7 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
                     },
                     {
                         columnAlias: 'contentType',
-                        value: externalPageGroup.contentType?.mediaType
+                        value: externalPageGroup.contentType
                     },
                     {
                         columnAlias: 'outlinks',

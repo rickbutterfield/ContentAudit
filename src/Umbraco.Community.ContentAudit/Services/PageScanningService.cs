@@ -1,5 +1,7 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1;
+using Polly.Caching;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 
@@ -81,14 +83,15 @@ namespace Umbraco.Community.ContentAudit.Services
                     if (string.IsNullOrEmpty(relativeUrl))
                         continue;
 
-                    if (relativeUrl.Contains("X.com"))
-                    {
-                        _ = relativeUrl;
-                    }
                     var linkUri = new Uri(baseUri, relativeUrl);
-                    var linkDetails = await GetResourceSizeAsync(linkUri);
-                    linkDetails.IsExternal = linkUri.Host != baseUri.Host;
-                    linkDetails.IsAsset = false;
+                    bool isExternal = linkUri.Host != baseUri.Host;
+
+                    var linkDetails = new ResourceDto()
+                    {
+                        Url = relativeUrl,
+                        IsExternal = isExternal,
+                        IsAsset = false
+                    };
 
                     response.Links.Add(linkDetails);
                 }
@@ -135,9 +138,14 @@ namespace Umbraco.Community.ContentAudit.Services
                         continue;
 
                     var assetUri = new Uri(baseUri, relativeUrl);
-                    var resourceDetails = await GetResourceSizeAsync(assetUri);
-                    resourceDetails.IsExternal = assetUri.Host != baseUri.Host;
-                    resourceDetails.IsAsset = true;
+                    bool isExternal = assetUri.Host != baseUri.Host;
+
+                    var resourceDetails = new ResourceDto()
+                    {
+                        Url = relativeUrl,
+                        IsExternal = isExternal,
+                        IsAsset = true
+                    };
 
                     response.Resources.Add(resourceDetails);
                     if (resourceDetails.Size.HasValue)
@@ -153,9 +161,14 @@ namespace Umbraco.Community.ContentAudit.Services
                         continue;
 
                     var assetUri = new Uri(baseUri, kvp.Key);
-                    var resourceDetails = await GetResourceSizeAsync(assetUri);
-                    resourceDetails.IsExternal = assetUri.Host != baseUri.Host;
-                    resourceDetails.IsAsset = true;
+                    bool isExternal = assetUri.Host != baseUri.Host;
+
+                    var resourceDetails = new ResourceDto()
+                    {
+                        Url = kvp.Key,
+                        IsExternal = isExternal,
+                        IsAsset = true
+                    };
 
                     response.Images.Add(new ImageDto(resourceDetails)
                     {

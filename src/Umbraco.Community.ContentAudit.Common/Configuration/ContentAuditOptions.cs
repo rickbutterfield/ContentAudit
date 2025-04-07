@@ -12,6 +12,9 @@ namespace Umbraco.Community.ContentAudit.Common.Configuration
         [DefaultValue(true)]
         public bool RespectRobotsTxt { get; set; } = true;
 
+        [DefaultValue(false)]
+        public bool UseUmbracoContentIndex { get; set; } = false;
+
         [DefaultValue(true)]
         public bool UseSitemapXml { get; set; } = true;
 

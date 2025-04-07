@@ -1,6 +1,6 @@
 import { UmbLitElement as w } from "@umbraco-cms/backoffice/lit-element";
-import { u as C, f as I, t as $ } from "./index-BtsMjuJm.js";
-import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT as E } from "./issues-workspace.context-ChojdVoV.js";
+import { u as C, f as I, t as $ } from "./index-BCc-rpq4.js";
+import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT as E } from "./issues-workspace.context-AO3u7spi.js";
 import { html as m, css as O } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles as S } from "@umbraco-cms/backoffice/style";
 /**
@@ -8,29 +8,29 @@ import { UmbTextStyles as S } from "@umbraco-cms/backoffice/style";
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const T = { attribute: !0, type: String, converter: C, reflect: !1, hasChanged: I }, A = (t = T, e, a) => {
+const T = { attribute: !0, type: String, converter: C, reflect: !1, hasChanged: I }, x = (t = T, e, a) => {
   const { kind: r, metadata: i } = a;
   let o = globalThis.litPropertyMetadata.get(i);
   if (o === void 0 && globalThis.litPropertyMetadata.set(i, o = /* @__PURE__ */ new Map()), o.set(a.name, t), r === "accessor") {
     const { name: s } = a;
-    return { set(n) {
-      const l = e.get.call(this);
-      e.set.call(this, n), this.requestUpdate(s, l, t);
-    }, init(n) {
-      return n !== void 0 && this.P(s, void 0, t), n;
+    return { set(l) {
+      const n = e.get.call(this);
+      e.set.call(this, l), this.requestUpdate(s, n, t);
+    }, init(l) {
+      return l !== void 0 && this.P(s, void 0, t), l;
     } };
   }
   if (r === "setter") {
     const { name: s } = a;
-    return function(n) {
-      const l = this[s];
-      e.call(this, n), this.requestUpdate(s, l, t);
+    return function(l) {
+      const n = this[s];
+      e.call(this, l), this.requestUpdate(s, n, t);
     };
   }
   throw Error("Unsupported decorator location: " + r);
 };
-function x(t) {
-  return (e, a) => typeof a == "object" ? A(t, e, a) : ((r, i, o) => {
+function A(t) {
+  return (e, a) => typeof a == "object" ? x(t, e, a) : ((r, i, o) => {
     const s = i.hasOwnProperty(o);
     return i.constructor.createProperty(o, s ? { ...r, wrapped: !0 } : r), s ? Object.getOwnPropertyDescriptor(i, o) : void 0;
   })(t, e, a);
@@ -41,7 +41,7 @@ function x(t) {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 function D(t) {
-  return x({ ...t, state: !0, attribute: !1 });
+  return A({ ...t, state: !0, attribute: !1 });
 }
 var U = Object.defineProperty, W = Object.getOwnPropertyDescriptor, _ = (t) => {
   throw TypeError(t);
@@ -49,10 +49,10 @@ var U = Object.defineProperty, W = Object.getOwnPropertyDescriptor, _ = (t) => {
   for (var i = r > 1 ? void 0 : r ? W(e, a) : e, o = t.length - 1, s; o >= 0; o--)
     (s = t[o]) && (i = (r ? s(e, a, i) : s(i)) || i);
   return r && i && U(e, a, i), i;
-}, h = (t, e, a) => e.has(t) || _("Cannot " + a), k = (t, e, a) => (h(t, e, "read from private field"), a ? a.call(t) : e.get(t)), v = (t, e, a) => e.has(t) ? _("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), M = (t, e, a, r) => (h(t, e, "write to private field"), e.set(t, a), a), y = (t, e, a) => (h(t, e, "access private method"), a), d, c, b, g;
+}, h = (t, e, a) => e.has(t) || _("Cannot " + a), k = (t, e, a) => (h(t, e, "read from private field"), a ? a.call(t) : e.get(t)), y = (t, e, a) => e.has(t) ? _("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), M = (t, e, a, r) => (h(t, e, "write to private field"), e.set(t, a), a), v = (t, e, a) => (h(t, e, "access private method"), a), d, c, b, g;
 let p = class extends w {
   constructor() {
-    super(), v(this, c), v(this, d), this._tableConfig = {
+    super(), y(this, c), y(this, d), this._tableConfig = {
       allowSelection: !1,
       hideIcon: !0
     }, this.consumeContext(E, (t) => {
@@ -73,7 +73,7 @@ let p = class extends w {
     }), t;
   }
   get _tableItems() {
-    var e, a, r, i, o, s, n, l;
+    var e, a, r, i, o, s, l, n;
     let t;
     return ((a = (e = this._data) == null ? void 0 : e.pages) == null ? void 0 : a.length) !== 0 && (t = (i = (r = this._data) == null ? void 0 : r.pages) == null ? void 0 : i.map((u) => ({
       id: u.unique,
@@ -83,7 +83,7 @@ let p = class extends w {
           value: u.url
         }
       ]
-    }))), ((o = this._data) == null ? void 0 : o.images) != null && ((s = this._data) == null ? void 0 : s.images.length) !== 0 && (t = (l = (n = this._data) == null ? void 0 : n.images) == null ? void 0 : l.map((u) => ({
+    }))), ((o = this._data) == null ? void 0 : o.images) != null && ((s = this._data) == null ? void 0 : s.images.length) !== 0 && (t = (n = (l = this._data) == null ? void 0 : l.images) == null ? void 0 : n.map((u) => ({
       id: u.unique,
       data: [
         {
@@ -99,8 +99,8 @@ let p = class extends w {
   }
   render() {
     return m`
-			${y(this, c, b).call(this)}
-			${y(this, c, g).call(this)}
+			${v(this, c, b).call(this)}
+			${v(this, c, g).call(this)}
 		`;
   }
 };
@@ -120,7 +120,7 @@ b = function() {
 g = function() {
   var t, e, a, r, i;
   return m`
-			<uui-box>
+			<uui-box style="align-self: flex-start;">
 				<umb-property-layout label="Name" orientation="vertical">
 					<div slot="editor">${(t = this._data) == null ? void 0 : t.name}</div>
 				</umb-property-layout>
@@ -166,4 +166,4 @@ export {
   p as ContentAuditIssuesDetailsWorkspaceViewElement,
   R as default
 };
-//# sourceMappingURL=issues-details-workspace-view.element-D-s6gWu2.js.map
+//# sourceMappingURL=issues-details-workspace-view.element-_wVraGV0.js.map

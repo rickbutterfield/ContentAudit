@@ -8,9 +8,9 @@ import { UmbContextToken as A } from "@umbraco-cms/backoffice/context-api";
 import { UMB_WORKSPACE_PATH_PATTERN as f, UmbWorkspaceRouteManager as y } from "@umbraco-cms/backoffice/workspace";
 import { state as O, customElement as S, html as w } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement as U } from "@umbraco-cms/backoffice/lit-element";
-import { ContentAuditIssuesDetailRepository as P } from "./issues-detail.repository-CvFYzWGH.js";
+import { ContentAuditIssuesDetailRepository as P } from "./issues-detail.repository-2ySJ_gfe.js";
 import { UmbObjectState as I } from "@umbraco-cms/backoffice/observable-api";
-import { a as W } from "./index-BtsMjuJm.js";
+import { a as W } from "./index-BCc-rpq4.js";
 var k = Object.defineProperty, b = Object.getOwnPropertyDescriptor, l = (t) => {
   throw TypeError(t);
 }, v = (t, e, s, r) => {
@@ -92,4 +92,4 @@ export {
   X as ContentAuditIssuesWorkspaceContext,
   X as api
 };
-//# sourceMappingURL=issues-workspace.context-ChojdVoV.js.map
+//# sourceMappingURL=issues-workspace.context-AO3u7spi.js.map

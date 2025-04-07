@@ -1,5 +1,5 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, nothing, state } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
 import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 
@@ -86,11 +86,31 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
             else {
                 return html`
-                    <p><strong>URLs found: </strong> ${this._latestAuditOverview?.total}</p>
-                    <p><strong>Internal URLs: </strong> ${this._latestAuditOverview?.totalInternal}</p>
-                    <p><strong>External URLs: </strong> ${this._latestAuditOverview?.totalExternal}</p>
-                    <p><strong>Asset URLs: </strong> ${this._latestAuditOverview?.totalAssets}</p>
-                    <p><strong>Blocked URLs: </strong> ${this._latestAuditOverview?.totalBlocked}</p>
+                    <uui-table>
+                        <uui-table-column></uui-table-column>
+                        <uui-table-column style="text-align: right;"></uui-table-column>
+
+                        <uui-table-row>
+                            <uui-table-cell>Total URLs:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.total}</uui-table-cell>
+                        </uui-table-row>
+                        <uui-table-row>
+                            <uui-table-cell>Internal URLs:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalInternal}</uui-table-cell>
+                        </uui-table-row>
+                        <uui-table-row>
+                            <uui-table-cell>External URLs:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalExternal}</uui-table-cell>
+                        </uui-table-row>
+                        <uui-table-row>
+                            <uui-table-cell>Asset URLs:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalAssets}</uui-table-cell>
+                        </uui-table-row>
+                        <uui-table-row>
+                            <uui-table-cell>Blocked URLs:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalBlocked}</uui-table-cell>
+                        </uui-table-row>
+                    </uui-table>
                 `
             }
         }
@@ -103,11 +123,32 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
             return html`
                 <uui-loader-bar></uui-loader-bar>
-                <p><strong>URLs found: </strong> ${total}</p>
-                <p><strong>Internal URLs: </strong> ${internal}</p>
-                <p><strong>External URLs: </strong> ${external}</p>
-                <p><strong>Asset URLs: </strong> ${assets}</p>
-                <p><strong>Blocked URLs: </strong> ${blocked}</p>
+
+                <uui-table>
+                    <uui-table-column></uui-table-column>
+                    <uui-table-column style="text-align: right;"></uui-table-column>
+
+                    <uui-table-row>
+                        <uui-table-cell>URLs crawled:</uui-table-cell>
+                        <uui-table-cell>${total}</uui-table-cell>
+                    </uui-table-row>
+                    <uui-table-row>
+                        <uui-table-cell>Internal URLs:</uui-table-cell>
+                        <uui-table-cell>${internal}</uui-table-cell>
+                    </uui-table-row>
+                    <uui-table-row>
+                        <uui-table-cell>External URLs:</uui-table-cell>
+                        <uui-table-cell>${external}</uui-table-cell>
+                    </uui-table-row>
+                    <uui-table-row>
+                        <uui-table-cell>Asset URLs:</uui-table-cell>
+                        <uui-table-cell>${assets}</uui-table-cell>
+                    </uui-table-row>
+                    <uui-table-row>
+                        <uui-table-cell>Blocked URLs:</uui-table-cell>
+                        <uui-table-cell>${blocked}</uui-table-cell>
+                    </uui-table-row>
+                </uui-table>
             `
         }
     }
@@ -115,7 +156,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     #renderLatestAudit() {
         if (this._latestAuditOverview !== undefined) {
             return html`
-                <uui-box headline="Latest audit" class="span-2">
+                <uui-box headline="Latest audit" class="span-2" style="--uui-box-default-padding: 0;">
                     <div slot="header">
                         ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate!, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
                     </div>
@@ -165,6 +206,36 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                     </div>
                 </uui-box>
             `;
+        }
+    }
+
+    #renderScanData() {
+        if (this.crawlData.length !== 0) {
+            const total = this.crawlData.length;
+            const internal = this.crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
+            const external = this.crawlData.filter(x => x.crawled && x.external && !x.asset).length;
+            const assets = this.crawlData.filter(x => x.crawled && x.asset).length;
+            const blocked = this.crawlData.filter(x => x.blocked).length;
+
+            return html`
+                <uui-box headline="Debug scan data" class="span-3">
+                    <p>Total: ${total}</p>
+                    <p>Internal: ${internal}</p>
+                    <p>External: ${external}</p>
+                    <p>Assets: ${assets}</p>
+                    <p>Blocked: ${blocked}</p>
+
+                    ${repeat(
+                        this.crawlData,
+                        (data) => data.url,
+                        (data) => 
+                            html`
+                                ${JSON.stringify(data)}<br/>
+                            `
+                    )}
+
+                </uui-box>
+            `
         }
     }
 

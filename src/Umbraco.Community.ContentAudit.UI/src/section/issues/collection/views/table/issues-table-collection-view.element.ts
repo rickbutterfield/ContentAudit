@@ -100,7 +100,7 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
                     },
                     {
                         columnAlias: 'percentOfTotal',
-                        value: `${issue.percentOfTotal.toFixed(2)}%`
+                        value: `${issue.percentOfTotal.toFixed(0)}%`
                     }
                 ]
             }

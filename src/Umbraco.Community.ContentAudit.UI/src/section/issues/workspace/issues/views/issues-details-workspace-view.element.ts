@@ -107,7 +107,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 
 	#renderProperties() {
 		return html`
-			<uui-box>
+			<uui-box style="align-self: flex-start;">
 				<umb-property-layout label="Name" orientation="vertical">
 					<div slot="editor">${this._data?.name}</div>
 				</umb-property-layout>

@@ -1,0 +1,14 @@
+
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="120" rx="20" fill="#3c46ac"/>
+  <g transform="translate(20, 15)">
+    <!-- Rounded document shape -->
+    <rect x="0" y="0" width="80" height="90" rx="12" fill="white"/>
+    
+    <!-- Dog-ear effect using a triangle overlay -->
+    <path d="M0,0 L0,25 L25,0 Z" fill="#efc2bd"/>
+
+    <!-- Tick mark -->
+    <path d="M20 60 l12 12 l25 -30" fill="none" stroke="#efc2bd" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

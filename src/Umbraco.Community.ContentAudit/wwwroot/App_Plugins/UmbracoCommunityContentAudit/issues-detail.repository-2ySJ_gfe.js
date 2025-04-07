@@ -5,7 +5,7 @@ var d = (r, s, t) => s.has(r) || m("Cannot " + t);
 var e = (r, s, t) => (d(r, s, "read from private field"), t ? t.call(r) : s.get(r)), n = (r, s, t) => s.has(r) ? m("Cannot add the same private member more than once") : s instanceof WeakSet ? s.add(r) : s.set(r, t), c = (r, s, t, i) => (d(r, s, "write to private field"), i ? i.call(r, t) : s.set(r, t), t);
 import { UmbRepositoryBase as w } from "@umbraco-cms/backoffice/repository";
 import { CONTENT_AUDIT_ISSUES_DETAIL_STORE_CONTEXT as y } from "./issues-detail.store-C6E-MPVJ.js";
-import { A as p } from "./index-BtsMjuJm.js";
+import { A as p } from "./index-BCc-rpq4.js";
 import { tryExecuteAndNotify as U } from "@umbraco-cms/backoffice/resources";
 var u;
 class l {
@@ -52,4 +52,4 @@ export {
   I as ContentAuditIssuesDetailRepository,
   I as default
 };
-//# sourceMappingURL=issues-detail.repository-CvFYzWGH.js.map
+//# sourceMappingURL=issues-detail.repository-2ySJ_gfe.js.map

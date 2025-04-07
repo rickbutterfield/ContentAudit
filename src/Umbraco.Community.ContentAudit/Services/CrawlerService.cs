@@ -21,9 +21,10 @@ namespace Umbraco.Community.ContentAudit.Services
         private string? _baseUrl;
         private Uri? _baseUri;
 
-        private readonly ConcurrentQueue<string> _internalUrlQueue = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<UrlQueueItem> _urlQueue = new ConcurrentQueue<UrlQueueItem>();
 
-        private readonly HashSet<string> _visitedUrls = new HashSet<string>();
+        private readonly HashSet<string> _visitedInternalUrls = new HashSet<string>();
+        private readonly HashSet<string> _visitedExternalUrls = new HashSet<string>();
         private readonly HashSet<string> _disallowedUrls = new HashSet<string>();
         private readonly HashSet<string> _robotsDisallowedPaths = new HashSet<string>();
         private readonly HashSet<string> _internalPageUrls = new HashSet<string>();
@@ -71,7 +72,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
         }
-        
+
         public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, CancellationToken cancellationToken)
         {
             _baseUrl = _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
@@ -79,27 +80,63 @@ namespace Umbraco.Community.ContentAudit.Services
 
             await GetSitemap();
             await GetRobots();
+
             LoadUmbracoContentUrls();
             QueueUmbracoContent();
 
-            while (_internalUrlQueue.TryDequeue(out string? url))
+            while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
             {
-                _logger.LogInformation("Dequeuing internal URL: {0}", url);
-                var crawlResult = await CrawlInternalUrl(url);
+                _logger.LogInformation("Dequeuing URL: {0} (IsExternal: {1}, IsAsset: {2})", queueItem.Url, queueItem.IsExternal, queueItem.IsAsset);
+
+                CrawlDto? crawlResult = null;
+
+                if (!queueItem.IsExternal)
+                {
+                    if (!queueItem.IsAsset)
+                    {
+                        crawlResult = await CrawlInternalUrl(queueItem.Url);
+                    }
+                    else
+                    {
+                        crawlResult = new CrawlDto
+                        {
+                            Url = queueItem.Url,
+                            External = queueItem.IsExternal,
+                            Crawled = true,
+                            Asset = queueItem.IsAsset,
+                            Blocked = false
+                        };
+                    }
+                }
+                else
+                {
+                    if (!_visitedExternalUrls.Contains(queueItem.Url))
+                    {
+                        _visitedExternalUrls.Add(queueItem.Url);
+
+                        _externalDtos.Add(new ExternalPageSchema
+                        {
+                            Url = queueItem.Url,
+                            FoundPage = queueItem.SourceUrl,
+                            NodeKey = queueItem.NodeKey,
+                            IsAsset = queueItem.IsAsset,
+                            ContentType = queueItem.ContentType,
+                            StatusCode = queueItem.StatusCode
+                        });
+
+                        crawlResult = new CrawlDto
+                        {
+                            Url = queueItem.Url,
+                            External = queueItem.IsExternal,
+                            Crawled = true,
+                            Asset = queueItem.IsAsset,
+                            Blocked = false
+                        };
+                    }
+                }
+
                 if (crawlResult != null)
                     yield return crawlResult;
-            }
-
-            foreach (var externalUrl in _externalDtos.DistinctBy(x => x.Url))
-            {
-                yield return new CrawlDto()
-                {
-                    Url = externalUrl.Url,
-                    External = true,
-                    Crawled = true,
-                    Asset = false,
-                    Blocked = false
-                };
             }
 
             await SaveCrawlResults();
@@ -107,10 +144,10 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private async Task<CrawlDto?> CrawlInternalUrl(string url)
         {
-            _logger.LogInformation("Starting crawl: {0}", url);
-            if (!_visitedUrls.Contains(url) && !IsDisallowed(url))
+            _logger.LogInformation("Starting internal crawl: {0}", url);
+            if (!_visitedInternalUrls.Contains(url) && !IsDisallowed(url))
             {
-                _visitedUrls.Add(url);
+                _visitedInternalUrls.Add(url);
 
                 var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
                 var pageData = await _pageScanningService.GetPageData(url, matchingUmbracoNode.Key);
@@ -124,55 +161,76 @@ namespace Umbraco.Community.ContentAudit.Services
                         var absoluteUrl = absoluteUri.AbsoluteUri;
                         bool isInternal = absoluteUri.Host == _baseUri.Host;
 
-                        if (isInternal && !_linkedPages.Contains(link.Url))
+                        if (!_linkedPages.Contains(link.Url))
                         {
                             _linkedPages.Add(absoluteUrl);
 
-                            if (!_visitedUrls.Contains(absoluteUrl) && !_internalUrlQueue.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                            if (isInternal)
                             {
-                                _internalUrlQueue.Enqueue(absoluteUrl);
+                                if (!_visitedInternalUrls.Contains(absoluteUrl) && !IsUrlInQueue(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                                {
+                                    EnqueueUrl(new UrlQueueItem
+                                    {
+                                        Url = absoluteUrl,
+                                        IsExternal = false,
+                                        IsAsset = false,
+                                        SourceUrl = url,
+                                        NodeKey = matchingUmbracoNode.Key
+                                    });
+                                }
                             }
-                        }
 
-                        else
-                        {
-                            // External link?
-                            _externalDtos.Add(new ExternalPageSchema()
+                            else
                             {
-                                Url = link.Url,
-                                FoundPage = url,
-                                NodeKey = matchingUmbracoNode.Key,
-                                IsAsset = false,
-                                ContentType = link.ContentType.ToString(),
-                                StatusCode = link.StatusCode
-                            });
+                                EnqueueUrl(new UrlQueueItem
+                                {
+                                    Url = link.Url,
+                                    IsExternal = true,
+                                    IsAsset = false,
+                                    SourceUrl = url,
+                                    NodeKey = matchingUmbracoNode.Key,
+                                    ContentType = link.ContentType,
+                                    StatusCode = link.StatusCode
+                                });
+                            }
                         }
                     }
                 }
 
                 foreach (var resource in pageData.Resources)
                 {
-                    if (!resource.IsExternal && Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
+                    if (Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
                     {
                         var absoluteUrl = absoluteUri.AbsoluteUri;
-                        if (!_visitedUrls.Contains(absoluteUrl) && !_internalAssetUrls.Contains(absoluteUrl))
+                        bool isInternal = absoluteUri.Host == _baseUri.Host;
+
+                        if (isInternal && !_visitedInternalUrls.Contains(absoluteUrl) && !_internalAssetUrls.Contains(absoluteUrl))
                         {
                             _internalAssetUrls.Add(absoluteUrl);
-                            _internalUrlQueue.Enqueue(absoluteUrl);
+
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = absoluteUrl,
+                                IsExternal = false,
+                                IsAsset = true,
+                                SourceUrl = url,
+                                NodeKey = matchingUmbracoNode.Key
+                            });
                         }
-                    }
-                    else
-                    {
-                        // External resource?
-                        _externalDtos.Add(new ExternalPageSchema()
+                        else if (!isInternal)
                         {
-                            Url = resource.Url,
-                            FoundPage = url,
-                            NodeKey = matchingUmbracoNode.Key,
-                            IsAsset = true,
-                            ContentType = resource.ContentType.ToString(),
-                            StatusCode = resource.StatusCode
-                        });
+                            // External resource
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = resource.Url,
+                                IsExternal = true,
+                                IsAsset = true,
+                                SourceUrl = url,
+                                NodeKey = matchingUmbracoNode.Key,
+                                ContentType = resource.ContentType,
+                                StatusCode = resource.StatusCode
+                            });
+                        }
                     }
                 }
 
@@ -186,7 +244,8 @@ namespace Umbraco.Community.ContentAudit.Services
                     Crawled = true,
                     Asset = _internalAssetUrls.Contains(url),
                     External = false,
-                    Blocked = false
+                    Blocked = false,
+                    NodeKey = matchingUmbracoNode.Key
                 };
             }
 
@@ -194,12 +253,54 @@ namespace Umbraco.Community.ContentAudit.Services
             return null;
         }
 
+        private void EnqueueUrl(UrlQueueItem item)
+        {
+            // Strip query string from the URL
+            var uri = new Uri(item.Url, UriKind.RelativeOrAbsolute);
+            if (uri.IsAbsoluteUri)
+            {
+                // For absolute URLs, rebuild without query string
+                var uriBuilder = new UriBuilder(uri)
+                {
+                    Query = string.Empty // Remove query string
+                };
+                item.Url = uriBuilder.Uri.ToString();
+            }
+            else
+            {
+                // For relative URLs, manually remove query string
+                int queryIndex = item.Url.IndexOf('?');
+                if (queryIndex >= 0)
+                {
+                    item.Url = item.Url.Substring(0, queryIndex);
+                }
+            }
+
+            // Strip fragment identifier (hash) if present
+            int fragmentIndex = item.Url.IndexOf('#');
+            if (fragmentIndex >= 0)
+            {
+                item.Url = item.Url.Substring(0, fragmentIndex);
+            }
+
+            // Don't queue URLs that are already in the queue
+            if (!IsUrlInQueue(item.Url))
+            {
+                _urlQueue.Enqueue(item);
+                _logger.LogInformation("Enqueuing URL: {0} (IsExternal: {1}, IsAsset: {2})",
+                    item.Url, item.IsExternal, item.IsAsset);
+            }
+        }
+
+        private bool IsUrlInQueue(string url) =>
+            _urlQueue.Any(item => item.Url.Equals(url, StringComparison.OrdinalIgnoreCase));
+
         private async Task SaveCrawlResults()
         {
             using var scope = _scopeProvider.CreateScope();
             var externalUrls = _externalDtos.DistinctBy(x => x.Url);
-            var totalUrls = _visitedUrls.Count + _disallowedUrls.Count + externalUrls.Count();
-            var pagesCrawled = _visitedUrls.Except(_internalAssetUrls).Count();
+            var totalUrls = _visitedInternalUrls.Count + _disallowedUrls.Count + _internalAssetUrls.Count + externalUrls.Count();
+            var pagesCrawled = _visitedInternalUrls.Except(_internalAssetUrls).Count();
 
             var overview = new OverviewSchema
             {
@@ -215,7 +316,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (int.TryParse(runData.ToString(), out int runId))
             {
-                _orphanedPages = _visitedUrls.Except(_linkedPages).Except(_internalAssetUrls).ToHashSet();
+                _orphanedPages = _visitedInternalUrls.Except(_linkedPages).Except(_internalAssetUrls).ToHashSet();
                 foreach (var page in _internalDtos)
                 {
                     page.RunId = runId;
@@ -249,14 +350,24 @@ namespace Umbraco.Community.ContentAudit.Services
                 sitemapUrls.ForEach(x =>
                 {
                     _internalPageUrls.Add(x);
-                    _internalUrlQueue.Enqueue(x);
+                    EnqueueUrl(new UrlQueueItem
+                    {
+                        Url = x,
+                        IsExternal = false,
+                        IsAsset = false
+                    });
                     _logger.LogInformation("Adding {0} to the URL queue from sitemap.xml", x);
                 });
             }
             else
             {
                 _internalPageUrls.Add(_baseUrl);
-                _internalUrlQueue.Enqueue(_baseUrl);
+                EnqueueUrl(new UrlQueueItem
+                {
+                    Url = _baseUrl,
+                    IsExternal = false,
+                    IsAsset = false
+                });
                 _logger.LogInformation("Adding {0} to the URL queue", _baseUrl);
             }
         }
@@ -274,17 +385,27 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private void QueueUmbracoContent()
         {
-            foreach (var (key, url) in _umbracoContent)
+            _logger.LogInformation("Should we attempt to use Umbraco's content index? {0}", _contentAuditSettings.UseUmbracoContentIndex);
+            if (_contentAuditSettings.UseUmbracoContentIndex)
             {
-                if (Uri.TryCreate(_baseUri, url, out var absoluteUri))
+                foreach (var (key, url) in _umbracoContent)
                 {
-                    var absoluteUrl = absoluteUri.AbsoluteUri;
-                    if (!_visitedUrls.Contains(absoluteUrl) && !_internalPageUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                    if (Uri.TryCreate(_baseUri, url, out var absoluteUri))
                     {
-                        _internalPageUrls.Add(absoluteUrl);
-                        _internalUrlQueue.Enqueue(absoluteUrl);
+                        var absoluteUrl = absoluteUri.AbsoluteUri;
+                        if (!_visitedInternalUrls.Contains(absoluteUrl) && !_internalPageUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                        {
+                            _internalPageUrls.Add(absoluteUrl);
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = absoluteUrl,
+                                IsExternal = false,
+                                IsAsset = false,
+                                NodeKey = key
+                            });
 
-                        _logger.LogInformation("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
+                            _logger.LogInformation("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
+                        }
                     }
                 }
             }

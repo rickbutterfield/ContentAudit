@@ -61,7 +61,7 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
                     },
                     {
                         columnAlias: 'contentType',
-                        value: page.contentType?.mediaType,
+                        value: page.contentType,
                     },
                     {
                         columnAlias: 'statusCode',

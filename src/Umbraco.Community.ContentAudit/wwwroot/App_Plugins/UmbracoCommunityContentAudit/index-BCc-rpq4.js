@@ -696,7 +696,7 @@ class vt extends fe {
   }
   async getPagesWithMissingMetadata() {
     const { data: s } = await r(this, C).getPagesWithMissingMetadata();
-    s && r(this, U).setValue(s);
+    s && r(this, U).setValue(s.items);
   }
   async getTopIssues() {
     const { data: s } = await r(this, C).getTopIssues();
@@ -1177,7 +1177,7 @@ Ut = function(e) {
       },
       {
         columnAlias: "percentOfTotal",
-        value: `${t.percentOfTotal.toFixed(2)}%`
+        value: `${t.percentOfTotal.toFixed(0)}%`
       }
     ]
   }));
@@ -1228,7 +1228,7 @@ const ln = f, cn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     kind: "routable",
     alias: se,
     name: "Issues Workspace",
-    api: () => import("./issues-workspace.context-ChojdVoV.js"),
+    api: () => import("./issues-workspace.context-AO3u7spi.js"),
     meta: {
       entityType: "issues"
     }
@@ -1237,7 +1237,7 @@ const ln = f, cn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Issues.Details",
     name: "Issues Workspace Details View",
-    js: () => import("./issues-details-workspace-view.element-D-s6gWu2.js"),
+    js: () => import("./issues-details-workspace-view.element-_wVraGV0.js"),
     weight: 90,
     meta: {
       label: "#general_details",
@@ -1323,7 +1323,7 @@ const ln = f, cn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: bn,
     name: "Issues Detail Repository",
-    api: () => import("./issues-detail.repository-CvFYzWGH.js")
+    api: () => import("./issues-detail.repository-2ySJ_gfe.js")
   },
   {
     type: "store",
@@ -1394,28 +1394,25 @@ Re = function() {
   ne(this, V) && this.observe(ne(this, V).items, (e) => Le(this, lt, De).call(this, e), "umbCollectionItemsObserver");
 };
 De = function(e) {
-  this._tableItems = e.map((t) => {
-    var s;
-    return {
-      id: t.unique,
-      entityType: t.entityType,
-      icon: "icon-alert",
-      data: [
-        {
-          columnAlias: "url",
-          value: c`<a href=${t.url} target="_blank">${t.url}</a>`
-        },
-        {
-          columnAlias: "contentType",
-          value: (s = t.contentType) == null ? void 0 : s.mediaType
-        },
-        {
-          columnAlias: "statusCode",
-          value: c`<content-audit-status-code-label .statusCode=${t.statusCode}></content-audit-status-code-label>`
-        }
-      ]
-    };
-  });
+  this._tableItems = e.map((t) => ({
+    id: t.unique,
+    entityType: t.entityType,
+    icon: "icon-alert",
+    data: [
+      {
+        columnAlias: "url",
+        value: c`<a href=${t.url} target="_blank">${t.url}</a>`
+      },
+      {
+        columnAlias: "contentType",
+        value: t.contentType
+      },
+      {
+        columnAlias: "statusCode",
+        value: c`<content-audit-status-code-label .statusCode=${t.statusCode}></content-audit-status-code-label>`
+      }
+    ]
+  }));
 };
 v.styles = [
   I`
@@ -1477,7 +1474,7 @@ const $n = v, Un = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: Ne,
     name: "Status Codes Collection Repository",
-    api: () => import("./status-codes-collection.repository-B2Ums3MY.js")
+    api: () => import("./status-codes-collection.repository-B5sI7CPd.js")
   }
 ], kn = [
   {
@@ -1636,7 +1633,7 @@ const qn = S, Bn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: xe,
     name: "Orphaned Pages Collection Repository",
-    api: () => import("./orphaned-pages-collection.repository-Dbtv5W-A.js")
+    api: () => import("./orphaned-pages-collection.repository-C3_JpPb8.js")
   }
 ], Gn = [
   {
@@ -1811,7 +1808,7 @@ const ei = O, si = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: He,
     name: "Images Alt Text Collection Repository",
-    api: () => import("./images-alt-text-collection.repository-tRauFq3G.js")
+    api: () => import("./images-alt-text-collection.repository-Dw91VDCq.js")
   }
 ], oi = [
   {
@@ -1911,7 +1908,7 @@ Ze = function() {
 };
 ts = function(e) {
   this._tableItems = e.map((t) => {
-    var s, n;
+    var s;
     return {
       id: t.unique,
       data: [
@@ -1925,11 +1922,11 @@ ts = function(e) {
         },
         {
           columnAlias: "contentType",
-          value: (s = t.contentType) == null ? void 0 : s.mediaType
+          value: t.contentType
         },
         {
           columnAlias: "outlinks",
-          value: (n = t.externalPages) == null ? void 0 : n.length
+          value: (s = t.externalPages) == null ? void 0 : s.length
         }
       ]
     };
@@ -1995,7 +1992,7 @@ const hi = E, _i = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: Xe,
     name: "Outbound Links Collection Repository",
-    api: () => import("./outbound-links-collection.repository-CaizlXea.js")
+    api: () => import("./outbound-links-collection.repository-BjE0_nhC.js")
   }
 ], bi = [
   {
@@ -2077,7 +2074,7 @@ const hi = E, _i = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: ss,
     name: "Metadata Collection Repository",
-    api: () => import("./metadata-collection.repository-C1nLyoyj.js")
+    api: () => import("./metadata-collection.repository-Ba80oB_n.js")
   }
 ], Ei = [
   {
@@ -2103,7 +2100,7 @@ const hi = E, _i = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     kind: "default",
     alias: Wt,
     name: "Metadata Collection",
-    element: () => import("./metadata.element-NLHFYxe2.js"),
+    element: () => import("./metadata.element-DBVH9dJ3.js"),
     meta: {
       repositoryAlias: ss
     }
@@ -2206,7 +2203,7 @@ const hi = E, _i = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Scan",
     name: "Content Audit Scan Workspace View",
-    element: () => import("./overview.element-C71l_7ZO.js"),
+    element: () => import("./overview.element-C-ONb8wH.js"),
     meta: {
       label: "Overview",
       pathname: "overview",
@@ -2223,7 +2220,7 @@ const hi = E, _i = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Settings",
     name: "Content Audit Settings Workspace View",
-    element: () => import("./settings.element-Ck5PBjaR.js"),
+    element: () => import("./settings.element-CJIevOIq.js"),
     meta: {
       label: "Settings",
       pathname: "settings",
@@ -2285,4 +2282,4 @@ export {
   tn as w,
   f as x
 };
-//# sourceMappingURL=index-BtsMjuJm.js.map
+//# sourceMappingURL=index-BCc-rpq4.js.map
