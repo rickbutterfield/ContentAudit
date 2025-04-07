@@ -61,7 +61,7 @@ export class ContentAuditImagesAltTextTableCollectionViewElement extends UmbLitE
                     },
                     {
                         columnAlias: 'foundPage',
-                        value: html`<a href="/umbraco/section/content/workspace/document/edit/${image.unique}">${image.foundPage}</a>`
+                        value: html`<a href="/umbraco/section/content/workspace/document/edit/${image.nodeKey}">${image.foundPage}</a>`
                     },
                     {
                         columnAlias: 'altText',

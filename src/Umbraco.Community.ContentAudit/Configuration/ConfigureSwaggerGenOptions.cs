@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿#if NET8_0_OR_GREATER
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -22,3 +23,4 @@ namespace Umbraco.Community.ContentAudit.Configuration
         }
     }
 }
+#endif

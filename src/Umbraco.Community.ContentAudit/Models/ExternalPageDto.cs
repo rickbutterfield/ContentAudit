@@ -19,7 +19,7 @@ namespace Umbraco.Community.ContentAudit.Models
             FoundPage = schema.FoundPage;
             IsAsset = schema.IsAsset;
             StatusCode = schema.StatusCode;
-            ContentType = MediaTypeHeaderValue.Parse(schema.ContentType);
+            ContentType = schema.ContentType;
         }
 
         [JsonPropertyName("id")]
@@ -44,6 +44,6 @@ namespace Umbraco.Community.ContentAudit.Models
         public int StatusCode { get; set; }
 
         [JsonPropertyName("contentType")]
-        public MediaTypeHeaderValue? ContentType { get; set; }
+        public string? ContentType { get; set; }
     }
 }

@@ -12,6 +12,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 
         int StatusCode { get; set; }
 
-        MediaTypeHeaderValue? ContentType { get; set; }
+        string? ContentType { get; set; }
     }
 }

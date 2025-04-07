@@ -3,6 +3,7 @@
 export type ContentAuditSettings = {
     respectRobotsTxt: boolean;
     useSitemapXml: boolean;
+    sitemapUrl: string;
 };
 
 export type CrawlDto = {
@@ -11,6 +12,7 @@ export type CrawlDto = {
     asset: boolean;
     crawled: boolean;
     blocked: boolean;
+    nodeKey: string;
 };
 
 export type ExternalPageDto = {
@@ -23,7 +25,7 @@ export type ExternalPageDto = {
     isAsset: boolean;
     size?: number | null;
     statusCode: number;
-    contentType?: MediaTypeHeaderValue | null;
+    contentType?: string | null;
 };
 
 export type ExternalPageGroupDto = {
@@ -31,7 +33,7 @@ export type ExternalPageGroupDto = {
     entityType: string;
     url?: string | null;
     statusCode?: number | null;
-    contentType?: MediaTypeHeaderValue | null;
+    contentType?: string | null;
     externalPages?: Array<(ExternalPageDto)> | null;
 };
 
@@ -49,7 +51,7 @@ export type ImageDto = {
     isAsset: boolean;
     size?: number | null;
     statusCode: number;
-    contentType?: MediaTypeHeaderValue | null;
+    contentType?: string | null;
     altText?: string | null;
     foundPage?: string | null;
     nodeKey?: string | null;
@@ -74,7 +76,7 @@ export type InternalPageDto = {
     isAsset: boolean;
     size?: number | null;
     statusCode: number;
-    contentType?: MediaTypeHeaderValue | null;
+    contentType?: string | null;
     links: Array<(ResourceDto)>;
     resources: Array<(ResourceDto)>;
     images: Array<(ImageDto)>;
@@ -106,17 +108,6 @@ export enum IssueType {
     WARNING = 'Warning',
     ISSUE = 'Issue'
 }
-
-export type MediaTypeHeaderValue = {
-    charSet?: string | null;
-    readonly parameters: Array<(NameValueHeaderValue)>;
-    mediaType?: string | null;
-};
-
-export type NameValueHeaderValue = {
-    name: string;
-    value?: string | null;
-};
 
 export type OverviewDto = {
     runDate?: string | null;
@@ -153,7 +144,7 @@ export type ResourceDto = {
     isAsset: boolean;
     size?: number | null;
     statusCode: number;
-    contentType?: MediaTypeHeaderValue | null;
+    contentType?: string | null;
 };
 
 export type GetAllImagesData = {
@@ -184,6 +175,14 @@ export type GetExternalLinksData = {
 export type GetExternalLinksResponse = PagedExternalPageGroupDtoModel;
 
 export type GetHealthScoreResponse = HealthScoreDto;
+
+export type GetInteralLinksData = {
+    filter?: string;
+    skip?: number;
+    take?: number;
+};
+
+export type GetInteralLinksResponse = PagedExternalPageGroupDtoModel;
 
 export type GetIssueData = {
     issueGuid?: string;
@@ -275,6 +274,17 @@ export type $OpenApiTs = {
                  * OK
                  */
                 200: HealthScoreDto;
+            };
+        };
+    };
+    '/umbraco/content-audit/api/v1/internal-links': {
+        get: {
+            req: GetInteralLinksData;
+            res: {
+                /**
+                 * OK
+                 */
+                200: PagedExternalPageGroupDtoModel;
             };
         };
     };

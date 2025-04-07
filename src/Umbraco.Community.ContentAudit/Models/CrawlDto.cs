@@ -18,5 +18,8 @@ namespace Umbraco.Community.ContentAudit.Models
 
         [JsonPropertyName("blocked")]
         public bool Blocked { get; set; }
+
+        [JsonPropertyName("nodeKey")]
+        public Guid NodeKey { get; set; }
     }
 }

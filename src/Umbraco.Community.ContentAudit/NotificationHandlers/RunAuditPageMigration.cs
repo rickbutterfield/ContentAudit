@@ -16,7 +16,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly IKeyValueService _keyValueService;
         private readonly IRuntimeState _runtimeState;
-#if NET8_0
+#if !NET9_0
         private readonly IUserService _userService;
 #else
         private readonly IUserGroupService _userGroupService;
@@ -26,7 +26,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
             ICoreScopeProvider coreScopeProvider,
             IMigrationPlanExecutor migrationPlanExecutor,
             IKeyValueService keyValueService,
-#if NET8_0
+#if !NET9_0
             IUserService userService,
 #else
             IUserGroupService userGroupService,
@@ -37,7 +37,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
             _coreScopeProvider = coreScopeProvider;
             _keyValueService = keyValueService;
             _runtimeState = runtimeState;
-#if NET8_0
+#if !NET9_0
             _userService = userService;
 #else
             _userGroupService = userGroupService;
@@ -63,7 +63,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 _coreScopeProvider,
                 _keyValueService);
 
-#if NET8_0
+#if !NET9_0
             var adminGroup = _userService.GetUserGroupByAlias(Cms.Core.Constants.Security.AdminGroupAlias);
 #else
             var adminGroup = await _userGroupService.GetAsync(Cms.Core.Constants.Security.AdminGroupAlias);
@@ -73,7 +73,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 if (!adminGroup.AllowedSections.Contains(Constants.SectionAlias))
                 {
                     adminGroup.AddAllowedSection(Constants.SectionAlias);
-#if NET8_0
+#if !NET9_0
                     _userService.Save(adminGroup, new[] { Cms.Core.Constants.Security.SuperUserId });
 #else
                     await _userGroupService.UpdateAsync(adminGroup, Cms.Core.Constants.Security.SuperUserKey);

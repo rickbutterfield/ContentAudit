@@ -25,6 +25,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
             MetaDescription = pageContent.MetaDescription;
             MetaKeywords = pageContent.MetaKeywords;
+            MetaRobots = pageContent.MetaRobots;
             CanonicalUrl = pageContent.CanonicalUrl;
             IsOrphaned = pageContent.IsOrphaned;
 

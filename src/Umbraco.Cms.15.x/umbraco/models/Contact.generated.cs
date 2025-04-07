@@ -20,7 +20,7 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 {
 	/// <summary>Contact</summary>
 	[PublishedModel("contact")]
-	public partial class Contact : PublishedContentModel, INavigationBase
+	public partial class Contact : PublishedContentModel, IContactFormControls, IHeaderControls, IMainImageControls, ISEocontrols, IVisibilityControls
 	{
 		// helpers
 #pragma warning disable 0109 // new is redundant
@@ -50,66 +50,110 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		// properties
 
 		///<summary>
-		/// Contact Form Header
+		/// Error Message: Enter the message to show on error
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("contactFormHeader")]
-		public virtual string ContactFormHeader => this.Value<string>(_publishedValueFallback, "contactFormHeader");
+		[ImplementPropertyType("errorMessage")]
+		public virtual global::Umbraco.Cms.Core.Strings.IHtmlEncodedString ErrorMessage => global::Umbraco.Cms.Web.Common.PublishedModels.ContactFormControls.GetErrorMessage(this, _publishedValueFallback);
 
 		///<summary>
-		/// Contact Intro
+		/// Instruction Message: Enter the message to tell the user what to do
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("contactIntro")]
-		public virtual global::Umbraco.Cms.Core.Strings.IHtmlEncodedString ContactIntro => this.Value<global::Umbraco.Cms.Core.Strings.IHtmlEncodedString>(_publishedValueFallback, "contactIntro");
+		[ImplementPropertyType("instructionMessage")]
+		public virtual global::Umbraco.Cms.Core.Strings.IHtmlEncodedString InstructionMessage => global::Umbraco.Cms.Web.Common.PublishedModels.ContactFormControls.GetInstructionMessage(this, _publishedValueFallback);
 
 		///<summary>
-		/// Map Coordinates
+		/// Success Message: Enter the message to show on success
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("mapCoordinates")]
-		public virtual global::Bergmania.OpenStreetMap.Core.OpenStreetMapModel MapCoordinates => this.Value<global::Bergmania.OpenStreetMap.Core.OpenStreetMapModel>(_publishedValueFallback, "mapCoordinates");
+		[ImplementPropertyType("successMessage")]
+		public virtual global::Umbraco.Cms.Core.Strings.IHtmlEncodedString SuccessMessage => global::Umbraco.Cms.Web.Common.PublishedModels.ContactFormControls.GetSuccessMessage(this, _publishedValueFallback);
 
 		///<summary>
-		/// Map Header
+		/// Subtitle: Enter a subtitle for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("mapHeader")]
-		public virtual string MapHeader => this.Value<string>(_publishedValueFallback, "mapHeader");
+		[ImplementPropertyType("subtitle")]
+		public virtual string Subtitle => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderControls.GetSubtitle(this, _publishedValueFallback);
 
 		///<summary>
-		/// Page Title: The title of the page, this is also the first text in a google search result. The ideal length is between 40 and 60 characters
+		/// Title: Enter the title for the page. If this is empty the name of the page will be used.
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("pageTitle")]
-		public virtual string PageTitle => this.Value<string>(_publishedValueFallback, "pageTitle");
+		[ImplementPropertyType("title")]
+		public virtual string Title => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderControls.GetTitle(this, _publishedValueFallback);
 
 		///<summary>
-		/// Keywords: Keywords that describe the content of the page. This is considered optional since most modern search engines don't use this anymore
+		/// Main Image: Choose the main image for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("keywords")]
-		public virtual global::System.Collections.Generic.IEnumerable<string> Keywords => global::Umbraco.Cms.Web.Common.PublishedModels.NavigationBase.GetKeywords(this, _publishedValueFallback);
+		[ImplementPropertyType("mainImage")]
+		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops MainImage => global::Umbraco.Cms.Web.Common.PublishedModels.MainImageControls.GetMainImage(this, _publishedValueFallback);
 
 		///<summary>
-		/// Description: A brief description of the content on your page. This text is shown below the title in a google search result and also used for Social Sharing Cards. The ideal length is between 130 and 155 characters
+		/// Is Followable: Set this to true if you want the page to be followable by robots
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("isFollowable")]
+		public virtual bool IsFollowable => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetIsFollowable(this, _publishedValueFallback);
+
+		///<summary>
+		/// Is Indexable: Set this to true if you want this page to be indexable by robots
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("isIndexable")]
+		public virtual bool IsIndexable => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetIsIndexable(this, _publishedValueFallback);
+
+		///<summary>
+		/// Meta Description: Enter the meta description for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("seoMetaDescription")]
-		public virtual string SeoMetaDescription => global::Umbraco.Cms.Web.Common.PublishedModels.NavigationBase.GetSeoMetaDescription(this, _publishedValueFallback);
+		[ImplementPropertyType("metaDescription")]
+		public virtual string MetaDescription => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetMetaDescription(this, _publishedValueFallback);
 
 		///<summary>
-		/// Hide in Navigation: If you don't want this page to appear in the navigation, check this box
+		/// Meta Keywords: Enter the keywords for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[ImplementPropertyType("umbracoNavihide")]
-		public virtual bool UmbracoNavihide => global::Umbraco.Cms.Web.Common.PublishedModels.NavigationBase.GetUmbracoNavihide(this, _publishedValueFallback);
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("metaKeywords")]
+		public virtual global::System.Collections.Generic.IEnumerable<string> MetaKeywords => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetMetaKeywords(this, _publishedValueFallback);
+
+		///<summary>
+		/// Meta Name: Enter the meta name for this page
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("metaName")]
+		public virtual string MetaName => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetMetaName(this, _publishedValueFallback);
+
+		///<summary>
+		/// Hide From Top Navigation
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("hideFromTopNavigation")]
+		public virtual bool HideFromTopNavigation => global::Umbraco.Cms.Web.Common.PublishedModels.VisibilityControls.GetHideFromTopNavigation(this, _publishedValueFallback);
+
+		///<summary>
+		/// Hide From XML Sitemap: Tick this if you want to hide this page from the XML sitemap
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("hideFromXMLSitemap")]
+		public virtual bool HideFromXmlsitemap => global::Umbraco.Cms.Web.Common.PublishedModels.VisibilityControls.GetHideFromXmlsitemap(this, _publishedValueFallback);
+
+		///<summary>
+		/// Hide From Search: Tick this box if you want to hide this page from the navigation and from search results
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("umbracoNaviHide")]
+		public virtual bool UmbracoNaviHide => global::Umbraco.Cms.Web.Common.PublishedModels.VisibilityControls.GetUmbracoNaviHide(this, _publishedValueFallback);
 	}
 }

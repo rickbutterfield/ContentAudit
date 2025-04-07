@@ -14,5 +14,8 @@ namespace Umbraco.Community.ContentAudit.Common.Configuration
 
         [DefaultValue(true)]
         public bool UseSitemapXml { get; set; } = true;
+
+        [DefaultValue("")]
+        public string SitemapUrl { get; set; } = "";
     }
 }

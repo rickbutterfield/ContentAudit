@@ -1,4 +1,4 @@
-﻿#if NET8_0
+﻿#if !NET9_0
 using Umbraco.Cms.Core.Sections;
 using Umbraco.Cms.Web.Common.Attributes;
 

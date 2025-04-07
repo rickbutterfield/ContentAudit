@@ -20,7 +20,7 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 {
 	/// <summary>Home</summary>
 	[PublishedModel("home")]
-	public partial class Home : PublishedContentModel, INavigationBase
+	public partial class Home : PublishedContentModel, IContentControls, IFooterControls, IHeaderControls, IMainImageControls, ISEocontrols
 	{
 		// helpers
 #pragma warning disable 0109 // new is redundant
@@ -50,146 +50,81 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		// properties
 
 		///<summary>
-		/// Content
+		/// Content Rows: Add the rows of content for the page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("bodyText")]
-		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockGridModel BodyText => this.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockGridModel>(_publishedValueFallback, "bodyText");
+		[ImplementPropertyType("contentRows")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel ContentRows => global::Umbraco.Cms.Web.Common.PublishedModels.ContentControls.GetContentRows(this, _publishedValueFallback);
 
 		///<summary>
-		/// Color Theme
+		/// Social Icon Links: Add any social links using the SVG icons
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("colorTheme")]
-		public virtual string ColorTheme => this.Value<string>(_publishedValueFallback, "colorTheme");
+		[ImplementPropertyType("socialIconLinks")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel SocialIconLinks => global::Umbraco.Cms.Web.Common.PublishedModels.FooterControls.GetSocialIconLinks(this, _publishedValueFallback);
 
 		///<summary>
-		/// Font
+		/// Subtitle: Enter a subtitle for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("font")]
-		public virtual string Font => this.Value<string>(_publishedValueFallback, "font");
+		[ImplementPropertyType("subtitle")]
+		public virtual string Subtitle => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderControls.GetSubtitle(this, _publishedValueFallback);
 
 		///<summary>
-		/// Address
+		/// Title: Enter the title for the page. If this is empty the name of the page will be used.
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("footerAddress")]
-		public virtual string FooterAddress => this.Value<string>(_publishedValueFallback, "footerAddress");
+		[ImplementPropertyType("title")]
+		public virtual string Title => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderControls.GetTitle(this, _publishedValueFallback);
 
 		///<summary>
-		/// Call To Action Caption: Caption on the Call To Action Button
+		/// Main Image: Choose the main image for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("footerCTACaption")]
-		public virtual string FooterCtacaption => this.Value<string>(_publishedValueFallback, "footerCTACaption");
+		[ImplementPropertyType("mainImage")]
+		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops MainImage => global::Umbraco.Cms.Web.Common.PublishedModels.MainImageControls.GetMainImage(this, _publishedValueFallback);
 
 		///<summary>
-		/// Call To Action Link
+		/// Is Followable: Set this to true if you want the page to be followable by robots
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("isFollowable")]
+		public virtual bool IsFollowable => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetIsFollowable(this, _publishedValueFallback);
+
+		///<summary>
+		/// Is Indexable: Set this to true if you want this page to be indexable by robots
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
+		[ImplementPropertyType("isIndexable")]
+		public virtual bool IsIndexable => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetIsIndexable(this, _publishedValueFallback);
+
+		///<summary>
+		/// Meta Description: Enter the meta description for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("FooterCtalink")]
-		public virtual global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent FooterCtalink => this.Value<global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent>(_publishedValueFallback, "FooterCtalink");
+		[ImplementPropertyType("metaDescription")]
+		public virtual string MetaDescription => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetMetaDescription(this, _publishedValueFallback);
 
 		///<summary>
-		/// Description
+		/// Meta Keywords: Enter the keywords for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("footerDescription")]
-		public virtual string FooterDescription => this.Value<string>(_publishedValueFallback, "footerDescription");
+		[ImplementPropertyType("metaKeywords")]
+		public virtual global::System.Collections.Generic.IEnumerable<string> MetaKeywords => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetMetaKeywords(this, _publishedValueFallback);
 
 		///<summary>
-		/// Header
+		/// Meta Name: Enter the meta name for this page
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("footerHeader")]
-		public virtual string FooterHeader => this.Value<string>(_publishedValueFallback, "footerHeader");
-
-		///<summary>
-		/// Hero Background: Spice up the homepage by adding a beautiful photo that relates to your business
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("HeroBackgroundImage")]
-		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops HeroBackgroundImage => this.Value<global::Umbraco.Cms.Core.Models.MediaWithCrops>(_publishedValueFallback, "HeroBackgroundImage");
-
-		///<summary>
-		/// Call To Action Caption: The caption on the button
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("heroCTACaption")]
-		public virtual string HeroCtacaption => this.Value<string>(_publishedValueFallback, "heroCTACaption");
-
-		///<summary>
-		/// Call To Action Link
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("HeroCtalink")]
-		public virtual global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent HeroCtalink => this.Value<global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent>(_publishedValueFallback, "HeroCtalink");
-
-		///<summary>
-		/// Description
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("heroDescription")]
-		public virtual string HeroDescription => this.Value<string>(_publishedValueFallback, "heroDescription");
-
-		///<summary>
-		/// Header: This is the main headline for the hero area on the Homepage
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("heroHeader")]
-		public virtual string HeroHeader => this.Value<string>(_publishedValueFallback, "heroHeader");
-
-		///<summary>
-		/// Logo: Optional. If you add a logo it'll be used in the upper left corner instead of the site name. Make sure to use a transparent logo for best results
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("SiteLogo")]
-		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops SiteLogo => this.Value<global::Umbraco.Cms.Core.Models.MediaWithCrops>(_publishedValueFallback, "SiteLogo");
-
-		///<summary>
-		/// Sitename: Used on the homepage as well as the title and social cards
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("sitename")]
-		public virtual string Sitename => this.Value<string>(_publishedValueFallback, "sitename");
-
-		///<summary>
-		/// Keywords: Keywords that describe the content of the page. This is considered optional since most modern search engines don't use this anymore
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("keywords")]
-		public virtual global::System.Collections.Generic.IEnumerable<string> Keywords => global::Umbraco.Cms.Web.Common.PublishedModels.NavigationBase.GetKeywords(this, _publishedValueFallback);
-
-		///<summary>
-		/// Description: A brief description of the content on your page. This text is shown below the title in a google search result and also used for Social Sharing Cards. The ideal length is between 130 and 155 characters
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("seoMetaDescription")]
-		public virtual string SeoMetaDescription => global::Umbraco.Cms.Web.Common.PublishedModels.NavigationBase.GetSeoMetaDescription(this, _publishedValueFallback);
-
-		///<summary>
-		/// Hide in Navigation: If you don't want this page to appear in the navigation, check this box
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.1+4f3dd04")]
-		[ImplementPropertyType("umbracoNavihide")]
-		public virtual bool UmbracoNavihide => global::Umbraco.Cms.Web.Common.PublishedModels.NavigationBase.GetUmbracoNavihide(this, _publishedValueFallback);
+		[ImplementPropertyType("metaName")]
+		public virtual string MetaName => global::Umbraco.Cms.Web.Common.PublishedModels.SEocontrols.GetMetaName(this, _publishedValueFallback);
 	}
 }

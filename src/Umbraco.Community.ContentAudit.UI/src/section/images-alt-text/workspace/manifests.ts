@@ -11,7 +11,7 @@ export const manifests: Array<UmbExtensionManifest> = [
         name: 'Images Alt Text Root Workspace',
         meta: {
             entityType: AUDIT_IMAGES_ALT_TEXT_ROOT_ENTITY_TYPE,
-            headline: 'Images Alt Text'
+            headline: 'Image Alt Text'
         }
     },
     {

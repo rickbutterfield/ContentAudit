@@ -18,9 +18,9 @@ namespace Umbraco.Community.ContentAudit.Schemas
         {
             Url = image.Url;
             IsExternal = image.IsExternal;
-            Size = image.Size;
+            Size = image.Size ?? 0;
             StatusCode = image.StatusCode;
-            ContentType = image.ContentType.ToString();
+            ContentType = image.ContentType?.ToString() ?? "";
             AltText = image.AltText;
             FoundPage = image.FoundPage;
             NodeKey = image.NodeKey;

@@ -20,16 +20,20 @@ export class ContentAuditMetdataTableCollectionViewElement extends UmbLitElement
             alias: 'url',
         },
         {
-            name: 'Meta Title',
+            name: 'Title',
             alias: 'metaTitle'
         },
         {
-            name: 'Meta Description',
+            name: 'Description',
             alias: 'metaDescription'
         },
         {
-            name: 'Meta Keywords',
+            name: 'Keywords',
             alias: 'metaKeywords'
+        },
+        {
+            name: 'Robots',
+            alias: 'metaRobots'
         }
     ];
 
@@ -74,6 +78,10 @@ export class ContentAuditMetdataTableCollectionViewElement extends UmbLitElement
                     {
                         columnAlias: 'metaKeywords',
                         value: page.metaKeywords
+                    },
+                    {
+                        columnAlias: 'metaRobots',
+                        value: page.metaRobots
                     }
                 ]
             }

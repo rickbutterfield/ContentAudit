@@ -51,7 +51,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		const { data } = await this.#repository.getPagesWithMissingMetadata();
 
 		if (data) {
-			this.#pagesWithMissingMetadata.setValue(data);
+			this.#pagesWithMissingMetadata.setValue(data.items);
 		}
 	}
 

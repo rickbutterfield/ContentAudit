@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -7,11 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms" Version="15.1.1" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="15.1.1" />
-		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="15.1.1" />
-		<PackageReference Include="Umbraco.TheStarterKit" Version="15.0.0" />
-		<PackageReference Include="uSync" Version="15.1.0" />
+		<PackageReference Include="Clean" Version="5.0.0" />
+		<PackageReference Include="Umbraco.Cms" Version="15.3.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="15.3.0" />
+		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="15.3.0" />
+		<PackageReference Include="uSync" Version="15.1.6" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -30,6 +30,11 @@
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="umbraco\" />
+	  <Folder Include="wwwroot\" />
 	</ItemGroup>
 
 	<PropertyGroup>

@@ -12,7 +12,7 @@ namespace Umbraco.Community.ContentAudit.Models
         public int? StatusCode { get; set; }
 
         [JsonPropertyName("contentType")]
-        public MediaTypeHeaderValue? ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         [JsonPropertyName("externalPages")]
         public List<ExternalPageDto>? ExternalPages { get; set; }

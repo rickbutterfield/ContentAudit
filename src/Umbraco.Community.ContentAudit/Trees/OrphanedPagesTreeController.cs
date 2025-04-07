@@ -1,4 +1,4 @@
-﻿#if NET8_0
+﻿#if !NET9_0
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Core.Events;

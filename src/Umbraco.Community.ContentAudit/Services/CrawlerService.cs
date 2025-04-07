@@ -1,5 +1,4 @@
 ﻿using Examine;
-using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
@@ -73,7 +72,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
         }
         
-        public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl)
+        public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, CancellationToken cancellationToken)
         {
             _baseUrl = _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
             _baseUri = new Uri(_baseUrl);

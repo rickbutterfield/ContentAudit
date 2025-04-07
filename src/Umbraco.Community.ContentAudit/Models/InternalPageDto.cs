@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Schemas;
 
@@ -17,7 +16,7 @@ namespace Umbraco.Community.ContentAudit.Models
             Url = schema.Url;
             NodeKey = schema.NodeKey;
             StatusCode = schema.StatusCode;
-            ContentType = MediaTypeHeaderValue.Parse(schema.ContentType);
+            ContentType = schema.ContentType;
             MetaTitle = schema.MetaTitle;
             MetaDescription = schema.MetaDescription;
             MetaKeywords = schema.MetaKeywords;
@@ -105,7 +104,7 @@ namespace Umbraco.Community.ContentAudit.Models
         public int StatusCode { get; set; }
 
         [JsonPropertyName("contentType")]
-        public MediaTypeHeaderValue? ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         public List<ResourceDto> Links { get; set; } = new List<ResourceDto>();
         public List<ResourceDto> Resources { get; set; } = new List<ResourceDto>();

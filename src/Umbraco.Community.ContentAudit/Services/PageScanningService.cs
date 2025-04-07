@@ -30,7 +30,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             HttpResponseMessage initialResponse = await _httpClient.GetAsync(url);
             response.StatusCode = (int)initialResponse.StatusCode;
-            response.ContentType = initialResponse.Content.Headers.ContentType;
+            response.ContentType = initialResponse.Content.Headers.ContentType?.ToString();
 
             try
             {
@@ -185,7 +185,7 @@ namespace Umbraco.Community.ContentAudit.Services
             var headResponse = await _httpClient.SendAsync(headRequest, HttpCompletionOption.ResponseHeadersRead);
 
             resource.StatusCode = (int)headResponse.StatusCode;
-            resource.ContentType = headResponse.Content.Headers.ContentType;
+            resource.ContentType = headResponse.Content.Headers.ContentType.ToString();
 
             if (headResponse.IsSuccessStatusCode && headResponse.Content.Headers.ContentLength.HasValue)
             {
@@ -197,7 +197,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 var getRequest = new HttpRequestMessage(HttpMethod.Get, assetUri);
                 var getResponse = await _httpClient.SendAsync(getRequest, HttpCompletionOption.ResponseHeadersRead);
                 resource.StatusCode = (int)getResponse.StatusCode;
-                resource.ContentType = getResponse.Content.Headers.ContentType;
+                resource.ContentType = getResponse.Content.Headers.ContentType.ToString();
 
                 if (getResponse.IsSuccessStatusCode && getResponse.Content.Headers.ContentLength.HasValue)
                 {

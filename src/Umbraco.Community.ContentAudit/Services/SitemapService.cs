@@ -1,4 +1,6 @@
-﻿using System.Xml.Linq;
+﻿using Microsoft.Extensions.Options;
+using System.Xml.Linq;
+using Umbraco.Community.ContentAudit.Common.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Services
@@ -6,15 +8,24 @@ namespace Umbraco.Community.ContentAudit.Services
     public class SitemapService : ISitemapService
     {
         private readonly HttpClient _httpClient;
+        private readonly ContentAuditSettings _contentAuditSettings;
 
-        public SitemapService(HttpClient httpClient)
+        public SitemapService(
+            HttpClient httpClient,
+            IOptionsMonitor<ContentAuditSettings> optionsMonitor)
         {
             _httpClient = httpClient;
+            _contentAuditSettings = optionsMonitor.CurrentValue;
         }
 
         public async Task<List<string>> GetSitemapUrlsAsync(string baseUrl)
         {
             string sitemapUrl = $"{baseUrl.TrimEnd('/')}/sitemap.xml";
+            
+            if (!string.IsNullOrEmpty(_contentAuditSettings.SitemapUrl))
+            {
+                sitemapUrl = _contentAuditSettings.SitemapUrl;
+            }
 
             try
             {

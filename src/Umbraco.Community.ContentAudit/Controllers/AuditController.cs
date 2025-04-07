@@ -184,6 +184,31 @@ namespace Umbraco.Community.ContentAudit.Controllers
             return viewModel;
         }
 
+        [HttpGet("internal-links")]
+        [ProducesResponseType(typeof(PagedViewModel<ExternalPageGroupDto>), 200)]
+        public async Task<PagedViewModel<InternalPageDto>> GetInteralLinks(
+            CancellationToken cancellationToken,
+            int skip = 0,
+            int take = 20,
+            string filter = "")
+        {
+            var latestData = await _auditService.GetLatestAuditData(skip, take, filter);
+
+            var pagedModel = new PagedModel<InternalPageDto>
+            {
+                Total = latestData.Count(),
+                Items = latestData
+            };
+
+            var viewModel = new PagedViewModel<InternalPageDto>
+            {
+                Total = pagedModel.Total,
+                Items = pagedModel.Items
+            };
+
+            return viewModel;
+        }
+
         [HttpGet("health-score")]
         [ProducesResponseType(typeof(HealthScoreDto), 200)]
         public async Task<HealthScoreDto> GetHealthScore()

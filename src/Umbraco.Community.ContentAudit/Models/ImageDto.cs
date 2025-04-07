@@ -25,7 +25,7 @@ namespace Umbraco.Community.ContentAudit.Models
             IsExternal = schema.IsExternal;
             Size = schema.Size;
             StatusCode = schema.StatusCode;
-            ContentType = MediaTypeHeaderValue.Parse(schema.ContentType);
+            ContentType = schema.ContentType;
             NodeKey = schema.NodeKey;
         }
 
@@ -45,7 +45,7 @@ namespace Umbraco.Community.ContentAudit.Models
         public int StatusCode { get; set; }
 
         [JsonPropertyName("contentType")]
-        public MediaTypeHeaderValue? ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         [JsonPropertyName("altText")]
         public string? AltText { get; set; }

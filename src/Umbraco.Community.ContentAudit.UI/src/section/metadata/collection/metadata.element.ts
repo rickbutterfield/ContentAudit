@@ -1,19 +1,17 @@
 ﻿import { css, customElement, html } from '@umbraco-cms/backoffice/external/lit';
-import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
+import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbCollectionFilterModel, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { InternalPageDto } from '../../../api';
-import { UUISelectEvent, UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
+import { UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
 
 @customElement('content-audit-metadata-collection')
 export class ContentAuditMetadataCollectionElement extends UmbCollectionDefaultElement {
-	#collectionContext?: UmbDefaultCollectionContext<InternalPageDto, UmbCollectionFilterModel>;
-
-	#options: Array<Option> = [];
+	_collectionContext?: UmbDefaultCollectionContext<InternalPageDto, UmbCollectionFilterModel>;
 
 	constructor() {
 		super();
 
 		this.consumeContext(UMB_COLLECTION_CONTEXT, (collectionContext) => {
-			this.#collectionContext = collectionContext;
+			this._collectionContext = collectionContext;
 		});
 	}
 

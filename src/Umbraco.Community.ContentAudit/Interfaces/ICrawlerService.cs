@@ -4,6 +4,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface ICrawlerService
     {
-        IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl);
+        IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, CancellationToken cancellationToken);
     }
 }

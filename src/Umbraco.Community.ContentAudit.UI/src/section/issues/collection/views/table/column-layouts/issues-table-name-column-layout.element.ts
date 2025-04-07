@@ -1,5 +1,5 @@
 ﻿import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import { html, LitElement, nothing, customElement, property } from '@umbraco-cms/backoffice/external/lit';
+import { html, LitElement, nothing, customElement, property, css } from '@umbraco-cms/backoffice/external/lit';
 
 @customElement('content-audit-issues-table-name-column-layout')
 export class ContentAuditIssuesTableNameColumnLayout extends LitElement {
@@ -9,14 +9,24 @@ export class ContentAuditIssuesTableNameColumnLayout extends LitElement {
 	override render() {
 		if (!this.value) return nothing;
 		return html`
-			<a href=${'section/audit/workspace/issues/edit/' + this.value.unique}>
-				<strong>${this.value.category}: ${this.value.name}</strong>
-			</a>
-			<br/>${this.value.description}
+			<span>
+				<a href=${'section/audit/workspace/issues/edit/' + this.value.unique}>
+					<strong>${this.value.category}: ${this.value.name}</strong>
+				</a>
+				<br/>${this.value.description}
+			</span>
 		`;
 	}
 
-	static override styles = [UmbTextStyles];
+	static override styles = [
+		UmbTextStyles,
+		css`
+			span {
+				display: block;
+				padding: var(--uui-size-2) 0;
+			}
+		`
+	];
 }
 
 declare global {
