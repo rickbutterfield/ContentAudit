@@ -1,23 +1,25 @@
 # Umbraco.Community.ContentAudit
 
-![License](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)
-![GitHub issues](https://img.shields.io/github/issues/rickbutterfield/Umbraco.Community.ContentAudit)
+[![Platform](https://img.shields.io/badge/Umbraco-15+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
+[![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.ContentAudit.svg)](https://www.nuget.org/packages/Umbraco.Community.ContentAudit/)
+[![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/develop/LICENSE)
+
+**ContentAudit** is a tool designed for auditing content and SEO within Umbraco CMS.
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150" align="right">
-
-## Description
-**ContentAudit** is a tool designed for auditing content and SEO within Umbraco CMS.
 
 ## Installation
 The Umbraco v15 version of this package is available via NuGet.
 
 To install the package, you can use either .NET CLI:
-
+```
 dotnet add package Umbraco.Community.ContentAudit --version 1.0.0-alpha
+```
+
 or the NuGet Package Manager:
-
+```
 Install-Package Umbraco.Community.ContentAudit -Version 1.0.0-alpha
-
+```
 ## Usage
 The following options can be configured in `appsettings.json`:
 
