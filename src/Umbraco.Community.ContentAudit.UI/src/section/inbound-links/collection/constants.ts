@@ -1,0 +1,2 @@
+﻿export const CONTENT_AUDIT_INBOUND_LINKS_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.InboundLinks';
+export const CONTENT_AUDIT_INBOUND_LINKS_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.InboundLinks.Table';

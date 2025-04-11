@@ -26,11 +26,11 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
         {
             name: 'Content Type',
             alias: 'contentType'
-            },
-            {
-                name: 'Outlinks',
-                alias: 'outlinks'
-            }
+        },
+        {
+            name: 'Outlinks',
+            alias: 'outlinks'
+        }
     ];
 
     @state()
@@ -59,7 +59,7 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
                 data: [
                     {
                         columnAlias: 'url',
-                        value: externalPageGroup.url
+                        value: html`<a href="${externalPageGroup.url}" target="_blank">${externalPageGroup.url}</a>`
                     },
                     {
                         columnAlias: 'statusCode',

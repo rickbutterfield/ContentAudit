@@ -1,7 +1,9 @@
 ﻿import { manifests as menuItems } from './menu/manifests';
-//import { manifests as workspaceManifests } from './workspace/manifests';
+import { manifests as workspaceManifests } from './workspace/manifests';
+import { manifests as collectionManifests } from './collection/manifests';
 
 export const manifests: Array<UmbExtensionManifest> = [
-    //...workspaceManifests,
-    ...menuItems
+    ...workspaceManifests,
+    ...menuItems,
+    ...collectionManifests
 ]

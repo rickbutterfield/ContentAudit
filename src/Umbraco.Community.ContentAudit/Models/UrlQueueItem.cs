@@ -7,7 +7,5 @@
         public bool IsAsset { get; set; }
         public string SourceUrl { get; set; } = string.Empty;
         public Guid NodeKey { get; set; }
-        public string ContentType { get; set; } = string.Empty;
-        public int StatusCode { get; set; }
     }
 }

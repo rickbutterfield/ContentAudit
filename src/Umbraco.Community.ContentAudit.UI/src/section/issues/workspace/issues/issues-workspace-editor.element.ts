@@ -25,10 +25,15 @@ export class ContentAuditIssuesWorkspaceEditorElement extends UmbLitElement {
 
 
 	override render() {
-		return html`
-			<umb-workspace-editor back-path="${CONTENT_AUDIT_ISSUES_ROOT_WORKSPACE_PATH}">
-			</umb-workspace-editor>
-		`;
+		if (this._data) {
+			return html`
+				<umb-workspace-editor back-path="${CONTENT_AUDIT_ISSUES_ROOT_WORKSPACE_PATH}" .enforceNoFooter="${true}">
+					<div slot="header">
+						<h3 id="headline">${this._data.name}</h3>
+					</div>
+				</umb-workspace-editor>
+			`;
+		}
 	}
 }
 

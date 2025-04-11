@@ -18,9 +18,9 @@
 <title>
     @string.Format("{0} | {1}", Model.Name, Umbraco.GetDictionaryValue("Navigation.SiteName"))
 </title>
-<meta name="Description" content="@(metaDescription ?? @Model.Name)" />
-<meta name="Name" content="@metaName" />
-<meta name="Keywords" content="@string.Join(",", metaKeywords)" />
+<meta name="description" content="@(!string.IsNullOrEmpty(metaDescription) ? metaDescription : Model.Name)" />
+<meta name="name" content="@(!string.IsNullOrEmpty(metaName) ? metaName : Model.Name)" />
+<meta name="keywords" content="@string.Join(",", metaKeywords)" />
 <meta name="robots" content="@(isFollowable ? "FOLLOW," : "NOFOLLOW,")@(isIndexable ? "INDEX" : "NOINDEX")" />
 <link rel="canonical" href="@canonicalLink" />
 

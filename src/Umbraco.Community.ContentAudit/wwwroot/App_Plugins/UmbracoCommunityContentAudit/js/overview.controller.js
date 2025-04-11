@@ -1,5 +1,5 @@
-﻿angular.module('umbraco').controller('Umbraco.Community.ContentAudit.OverviewController', ['$scope', '$sce', '$routeParams', 'Umbraco.Community.ContentAudit.Resource',
-    function ($scope, $sce, $routeParams, contentAuditResource) {
+﻿angular.module('umbraco').controller('Umbraco.Community.ContentAudit.OverviewController', ['$scope', '$sce', '$location', '$routeParams', 'Umbraco.Community.ContentAudit.Resource', 'overlayService',
+    function ($scope, $sce, $location, $routeParams, contentAuditResource, overlayService) {
 
         var vm = this;
 
@@ -17,10 +17,13 @@
         vm.crawlData = [];
         vm.urlsFound = 0;
         vm.pagesCrawled = 0;
+        vm.externalCrawled = 0;
         vm.assetsCrawled = 0;
         vm.blockedUrls = 0;
 
         vm.topIssues = [];
+        vm.healthScore = 0;
+        vm.scoreClass = "";
 
         vm.startAudit = startAudit;
 
@@ -71,13 +74,30 @@
         function init() {
             vm.buttonState = undefined;
 
-            getLatestAuditData();
+            getLatestAuditOverview();
             getTopIssues();
+            getHealthScore();
         }
 
-        function getLatestAuditData() {
-            contentAuditResource.getLatestAuditData().then(function (data) {
+        function getLatestAuditOverview() {
+            contentAuditResource.getLatestAuditOverview().then(function (data) {
                 vm.latestAuditOverview = data;
+            });
+        }
+
+        function getHealthScore() {
+            contentAuditResource.getHealthScore().then(function (data) {
+                vm.healthScore = data;
+
+                vm.scoreClass = "score--danger";
+
+                if (vm.healthScore.healthScore >= 90) {
+                    vm.scoreClass = "score--success";
+                }
+
+                else if (vm.healthScore.healthScore >= 50) {
+                    vm.scoreClass = "score--warning";
+                }
             });
         }
 
@@ -95,6 +115,10 @@
 
                 if (data.crawled && !data.asset) {
                     vm.pagesCrawled++;
+                }
+
+                if (data.crawled && data.external) {
+                    vm.externalCrawled++;
                 }
 
                 if (data.crawled && data.asset) {
@@ -146,5 +170,28 @@
                 </uui-tag>
             `);
         }
+
+        vm.issueDetails = function (unique) {
+            $location.search('create', null);
+            $location.path("/audit/issues/details/" + unique);
+        }
+
+        $scope.openModal = function () {
+            var dialog = {
+                parentScope: $scope,
+                title: "Ready to run an audit?",
+                content: "Running an audit scan can be an intensive process, depending on the number of pages on your website. It is not recommended to run a scan at peak times on a live website, as it may cause performance issues. It is recommended to run the scan on a staging or development environment first, or at a quieter time on the live website.",
+                submitButtonLabel: "I understand",
+                submit: function (model) {
+                    vm.startAudit();
+                    overlayService.close();
+                },
+                close: function () {
+                    overlayService.close();
+                }
+            };
+
+            overlayService.open(dialog);
+        };
     }
 ]);

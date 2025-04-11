@@ -1,10 +1,9 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using Umbraco.AuthorizedServices.Services;
 using Umbraco.Cms.Api.Common.ViewModels.Pagination;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Community.ContentAudit.Interfaces;
-using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Controllers
 {
@@ -12,10 +11,10 @@ namespace Umbraco.Community.ContentAudit.Controllers
     [ApiExplorerSettings(GroupName = "Audit")]
     public class AuditController : ContentAuditControllerBase
     {
-        private readonly IAuditService _auditService;
+        private readonly IDataService _auditService;
 
         public AuditController(
-            IAuditService auditService)
+            IDataService auditService)
         {
             _auditService = auditService;
         }
@@ -28,10 +27,22 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("duplicate-content")]
-        [ProducesResponseType(typeof(Dictionary<string, List<InternalPageDto>>), 200)]
-        public async Task<Dictionary<string, List<InternalPageDto>>> GetDuplicateContentUrls()
+        [ProducesResponseType(typeof(PagedViewModel<InternalPageGroupDto>), 200)]
+        public async Task<PagedViewModel<InternalPageGroupDto>> GetDuplicateContentUrls(
+            CancellationToken cancellationToken,
+            int skip = 0,
+            int take = 20,
+            string filter = "")
         {
-            return await _auditService.GetDuplicateContentUrls();
+            var latestData = await _auditService.GetDuplicateContentUrls(filter);
+
+            var viewModel = new PagedViewModel<InternalPageGroupDto>
+            {
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
+            };
+
+            return viewModel;
         }
 
         [HttpGet("missing-metadata")]
@@ -42,18 +53,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetPagesWithMissingMetadata(skip, take, filter);
-
-            var pagedModel = new PagedModel<InternalPageDto>
-            {
-                Total = latestData.Count(),
-                Items = latestData
-            };
+            var latestData = await _auditService.GetPagesWithMissingMetadata(filter);
 
             var viewModel = new PagedViewModel<InternalPageDto>
             {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
             };
 
             return viewModel;
@@ -67,18 +72,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
             int take = 20)
         {
             var allIssues = await _auditService.GetAllIssues();
-            var orderedIssues = allIssues.OrderByDescending(x => x.PriorityScore).ToList();
-
-            var pagedModel = new PagedModel<IssueDto>
-            {
-                Total = orderedIssues.Count(),
-                Items = orderedIssues.Skip(skip).Take(take)
-            };
+            var orderedIssues = allIssues.OrderByDescending(x => x.PercentOfTotal).ToList();
 
             var viewModel = new PagedViewModel<IssueDto>
             {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Total = orderedIssues.Count(),
+                Items = orderedIssues.Skip(skip).Take(take)
             };
 
             return viewModel;
@@ -100,18 +99,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
             string filter = "",
             int statusCode = 0)
         {
-            var latestData = await _auditService.GetLatestAuditData(skip, take, filter, statusCode);
-
-            var pagedModel = new PagedModel<InternalPageDto>
-            {
-                Total = latestData.Count(),
-                Items = latestData
-            };
+            var latestData = await _auditService.GetLatestAuditData(filter, statusCode);
 
             var viewModel = new PagedViewModel<InternalPageDto>
             {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
             };
 
             return viewModel;
@@ -121,18 +114,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
         [ProducesResponseType(typeof(PagedViewModel<InternalPageDto>), 200)]
         public async Task<PagedViewModel<InternalPageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
         {
-            var data = await _auditService.GetOrphanedPages(skip, take, filter);
-
-            var pagedModel = new PagedModel<InternalPageDto>
-            {
-                Total = data.Count(),
-                Items = data
-            };
+            var latestData = await _auditService.GetOrphanedPages(filter);
 
             var viewModel = new PagedViewModel<InternalPageDto>
             {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
             };
 
             return viewModel;
@@ -142,18 +129,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
         [ProducesResponseType(typeof(PagedViewModel<ImageDto>), 200)]
         public async Task<PagedViewModel<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "")
         {
-            var data = await _auditService.GetAllImages(skip, take, filter);
-
-            var pagedModel = new PagedModel<ImageDto>
-            {
-                Total = data.Count(),
-                Items = data
-            };
+            var latestData = await _auditService.GetAllImages(filter);
 
             var viewModel = new PagedViewModel<ImageDto>
             {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
             };
 
             return viewModel;
@@ -167,43 +148,31 @@ namespace Umbraco.Community.ContentAudit.Controllers
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetExternalLinks(skip, take, filter);
-
-            var pagedModel = new PagedModel<ExternalPageGroupDto>
-            {
-                Total = latestData.Count(),
-                Items = latestData
-            };
+            var latestData = await _auditService.GetExternalLinks(filter);
 
             var viewModel = new PagedViewModel<ExternalPageGroupDto>
             {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Total = latestData.Count(),
+                Items = latestData.Skip(skip).Take(take)
             };
 
             return viewModel;
         }
 
         [HttpGet("internal-links")]
-        [ProducesResponseType(typeof(PagedViewModel<ExternalPageGroupDto>), 200)]
-        public async Task<PagedViewModel<InternalPageDto>> GetInteralLinks(
+        [ProducesResponseType(typeof(PagedViewModel<InternalPageGroupDto>), 200)]
+        public async Task<PagedViewModel<InternalPageGroupDto>> GetInteralLinks(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetLatestAuditData(skip, take, filter);
+            var latestData = await _auditService.GetInternalLinks(filter);
 
-            var pagedModel = new PagedModel<InternalPageDto>
+            var viewModel = new PagedViewModel<InternalPageGroupDto>
             {
                 Total = latestData.Count(),
-                Items = latestData
-            };
-
-            var viewModel = new PagedViewModel<InternalPageDto>
-            {
-                Total = pagedModel.Total,
-                Items = pagedModel.Items
+                Items = latestData.Skip(skip).Take(take)
             };
 
             return viewModel;

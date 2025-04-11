@@ -1,13 +1,11 @@
 ﻿using NPoco;
-using System.Net.Http.Headers;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
-using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Schemas
 {
     [TableName(TableName)]
     [PrimaryKey("Id", AutoIncrement = true)]
-    [ExplicitColumns]
     public class ImageSchema
     {
         public const string TableName = "umbContentAuditImages";
@@ -24,37 +22,18 @@ namespace Umbraco.Community.ContentAudit.Schemas
             AltText = image.AltText;
             FoundPage = image.FoundPage;
             NodeKey = image.NodeKey;
+            IsBackground = image.IsBackground;
         }
 
-        [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
-        [Column("Id")]
-        public int Id { get; set; }
-
-        [Column("RunId")]
+         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
         public int RunId { get; set; }
-
-        [Column("Url")]
         public string? Url { get; set; }
-
-        [Column("IsExternal")]
         public bool IsExternal { get; set; }
-
-        [Column("Size")]
+        public bool IsBackground { get; set; }
         public double? Size { get; set; }
-
-        [Column("StatusCode")]
         public int StatusCode { get; set; }
-
-        [Column("ContentType")]
         public string? ContentType { get; set; }
-
-        [Column("AltText")]
         public string? AltText { get; set; }
-
-        [Column("FoundPage")]
         public string? FoundPage { get; set; }
-
-        [Column("NodeKey")]
-        public Guid? NodeKey { get; set; }
-    }
+        public Guid? NodeKey { get; set; }    }
 }

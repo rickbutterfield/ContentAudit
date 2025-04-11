@@ -1,10 +1,8 @@
-﻿using System.Net.Http.Headers;
-
-namespace Umbraco.Community.ContentAudit.Interfaces
+﻿namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface IPageResourceDto
     {
-        string? Url { get; set; }
+        string Url { get; set; }
 
         bool IsAsset { get; set; }
 

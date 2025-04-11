@@ -7,6 +7,7 @@ using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Services;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Common.Configuration;
+using Microsoft.Playwright;
 
 #if NET9_0_OR_GREATER
 using Umbraco.Community.ContentAudit.Configuration;
@@ -21,14 +22,26 @@ namespace Umbraco.Community.ContentAudit
     {
         public void Compose(IUmbracoBuilder builder)
         {
+            string value = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            Environment.SetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH", Path.Join(value, "ms-playwright"));
+
+            var exitCode = Program.Main(new[] { "install", "chromium" });
+            if (exitCode != 0)
+            {
+                throw new Exception($"Playwright exited with code {exitCode}");
+            }
+
             builder.AddNotificationHandler<UmbracoApplicationStartingNotification, RunAuditPageMigration>();
 
             builder.Services.AddScoped<IRobotsService, RobotsService>();
             builder.Services.AddScoped<ISitemapService, SitemapService>();
+            builder.Services.AddScoped<IDataService, DataService>();
+            builder.Services.AddScoped<ICrawlService, CrawlService>();
             builder.Services.AddScoped<IAuditService, AuditService>();
-            builder.Services.AddScoped<IPageScanningService, PageScanningService>();
-            builder.Services.AddScoped<ICrawlerService, CrawlerService>();
+            builder.Services.AddScoped<IEmissionsService, EmissionsService>();
 
+            // Register Playwright as a singleton
+            builder.Services.AddSingleton<IPlaywright>(_ => Playwright.CreateAsync().GetAwaiter().GetResult());
 
             builder.WithCollectionBuilder<AuditIssueCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<IAuditIssue>());

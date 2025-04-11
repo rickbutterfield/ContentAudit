@@ -5,6 +5,8 @@ export * from './exports.ts';
 
 import { manifests as sectionManifests } from './section/manifests';
 import { manifests as workspaceManifests } from './workspace/manifests';
+import { manifests as modalManifests } from './modals/manifest';
+import { manifests as localizationManifests } from './localization/manifests';
 import { OpenAPI } from './api/index.ts';
 import { ManifestGlobalContext } from '@umbraco-cms/backoffice/extension-registry';
 import { CONTENT_AUDIT_CONTEXT_ALIAS } from './exports.ts';
@@ -21,7 +23,9 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
     extensionRegistry.registerMany([
         globalContext,
         ...sectionManifests,
-        ...workspaceManifests
+        ...workspaceManifests,
+        ...modalManifests,
+        ...localizationManifests
     ]);
 
     host.consumeContext(UMB_AUTH_CONTEXT, async (auth) => {

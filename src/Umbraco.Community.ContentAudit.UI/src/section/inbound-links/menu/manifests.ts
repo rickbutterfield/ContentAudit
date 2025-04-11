@@ -11,7 +11,7 @@ const menuItem: ManifestMenuItem = {
         label: 'Inbound Links',
         icon: 'icon-window-popin',
         entityType: AUDIT_INBOUND_LINKS_ROOT_ENTITY_TYPE,
-        menus: [CONTENT_AUDIT_MENU_0_ALIAS],        
+        menus: [CONTENT_AUDIT_MENU_0_ALIAS],
     }
 };
 

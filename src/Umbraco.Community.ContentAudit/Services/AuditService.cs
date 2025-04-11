@@ -1,443 +1,647 @@
-﻿using Umbraco.Cms.Infrastructure.Scoping;
-using Umbraco.Community.ContentAudit.Composing;
+﻿using Examine;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+using System.Threading.Channels;
+using System.Threading.Tasks.Dataflow;
+using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.Routing;
+using Umbraco.Cms.Infrastructure.Examine;
+using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Community.ContentAudit.Common.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 using Umbraco.Community.ContentAudit.Schemas;
+using Umbraco.Extensions;
+using static Umbraco.Cms.Core.Constants;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
     public class AuditService : IAuditService
     {
+        private string? _baseUrl;
+        private Uri? _baseUri;
+
+        private readonly ConcurrentQueue<UrlQueueItem> _urlQueue = new ConcurrentQueue<UrlQueueItem>();
+
+        private readonly HashSet<string> _visitedInternalUrls = new HashSet<string>();
+        private readonly HashSet<string> _visitedExternalUrls = new HashSet<string>();
+        private readonly HashSet<string> _disallowedUrls = new HashSet<string>();
+        private readonly HashSet<string> _robotsDisallowedPaths = new HashSet<string>();
+        private readonly HashSet<string> _internalPageUrls = new HashSet<string>();
+        private readonly HashSet<string> _internalAssetUrls = new HashSet<string>();
+        private readonly HashSet<string> _linkedPages = new HashSet<string>();
+        private HashSet<string> _orphanedPages = new HashSet<string>();
+
+        private readonly HashSet<InternalPageSchema> _internalDtos = new HashSet<InternalPageSchema>();
+        private readonly HashSet<ExternalPageSchema> _externalDtos = new HashSet<ExternalPageSchema>();
+        private readonly HashSet<ImageSchema> _imageDtos = new HashSet<ImageSchema>();
+
+        private readonly HashSet<KeyValuePair<Guid, string>> _umbracoContent = new HashSet<KeyValuePair<Guid, string>>();
+
+        private readonly HashSet<SeoSchema> _seoDtos = new HashSet<SeoSchema>();
+        private readonly HashSet<ContentAnalysisSchema> _contentAnalysisDtos = new HashSet<ContentAnalysisSchema>();
+        private readonly HashSet<PerformanceSchema> _performanceDtos = new HashSet<PerformanceSchema>();
+        private readonly HashSet<AccessibilitySchema> _accessibilityDtos = new HashSet<AccessibilitySchema>();
+        private readonly HashSet<TechnicalSeoSchema> _technicalSeoDtos = new HashSet<TechnicalSeoSchema>();
+        private readonly HashSet<SocialMediaSchema> _socialMediaDtos = new HashSet<SocialMediaSchema>();
+        private readonly HashSet<ContentQualitySchema> _contentQualityDtos = new HashSet<ContentQualitySchema>();
+
         private readonly IScopeProvider _scopeProvider;
-        private readonly AuditIssueCollection _auditIssueCollection;
+        private readonly IExamineManager _examineManager;
+        private readonly IPublishedUrlProvider _urlProvider;
+        private readonly ISitemapService _sitemapService;
+        private readonly IRobotsService _robotsService;
+        private readonly ICrawlService _pageScanningService;
+        private readonly ILogger<AuditService> _logger;
+
+        private readonly Channel<CrawlDto> _crawlResultsChannel;
+        private readonly SemaphoreSlim _crawlSemaphore;
+        private volatile bool _isDiscoveryComplete;
+
+        public ContentAuditSettings _contentAuditSettings { get; private set; }
+        public RequestHandlerSettings _requestHandlerSettings { get; private set; }
 
         public AuditService(
+            IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
+            IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
             IScopeProvider scopeProvider,
-            AuditIssueCollection auditIssueCollection)
+            IExamineManager examineManager,
+            IPublishedUrlProvider urlProvider,
+            ISitemapService sitemapService,
+            IRobotsService robotsService,
+            ICrawlService pageScanningService,
+            ILogger<AuditService> logger,
+            HttpClient httpClient)
         {
             _scopeProvider = scopeProvider;
-            _auditIssueCollection = auditIssueCollection;
+            _examineManager = examineManager;
+            _urlProvider = urlProvider;
+            _sitemapService = sitemapService;
+            _robotsService = robotsService;
+            _pageScanningService = pageScanningService;
+            _logger = logger;
+
+            _contentAuditSettings = contentAuditSettings.CurrentValue;
+            _requestHandlerSettings = requestHandlerSettings.CurrentValue;
+
+            _crawlResultsChannel = Channel.CreateUnbounded<CrawlDto>();
+            _crawlSemaphore = new SemaphoreSlim(_contentAuditSettings.MaxConcurrentCrawls);
         }
 
-        public async Task<OverviewDto> GetLatestAuditOverview()
+        public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var auditOverview = new OverviewDto();
-            var latestRunId = await GetLatestAuditId();
+            _baseUrl = _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
+            _baseUri = new Uri(_baseUrl);
+            _isDiscoveryComplete = false;
 
-            using var scope = _scopeProvider.CreateScope();
+            await GetSitemap();
+            await GetRobots();
 
-            var latestAudit = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE Id = @0", latestRunId);
+            LoadUmbracoContentUrls();
+            QueueUmbracoContent();
 
-            if (latestAudit != null && latestAudit?.Any() == true)
-                auditOverview = new OverviewDto(latestAudit.First());
-
-            scope.Complete();
-
-            return auditOverview;
-        }
-
-        public async Task<List<InternalPageDto>> GetLatestAuditData(int skip = 0, int take = 20, string filter = "", int statusCode = 0)
-        {
-            var result = new List<InternalPageDto>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{InternalPageSchema.TableName}] 
-                WHERE RunId = @0";
-
-            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
-            {
-                if (!string.IsNullOrEmpty(filter))
+            var processUrlBlock = new ActionBlock<UrlQueueItem>(
+                async queueItem => await ProcessUrlAsync(queueItem, _baseUri, cancellationToken),
+                new ExecutionDataflowBlockOptions
                 {
-                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
-                }
+                    MaxDegreeOfParallelism = _contentAuditSettings.MaxConcurrentCrawls,
+                    CancellationToken = cancellationToken,
+                    BoundedCapacity = 100
+                });
 
-                if (statusCode != 0)
-                {
-                    data = data.Where(x => x.StatusCode == statusCode).ToList();
-                }
-
-                data = data.Skip(skip).Take(take).ToList();
-
-                result.AddRange(data.Select(x => new InternalPageDto(x)));
-            }
-
-            scope.Complete();
-
-            return result;
-        }
-
-        public async Task<List<InternalPageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
-        {
-            var results = new List<InternalPageDto>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{InternalPageSchema.TableName}] 
-                WHERE RunId = @0
-                AND IsOrphaned = 1";
-
-            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
+            var urlProcessingTask = Task.Run(async () =>
             {
-                if (!string.IsNullOrEmpty(filter))
+                try
                 {
-                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
-                }
+                    _logger.LogInformation("Starting URL processing with {0} initial URLs in queue", _urlQueue.Count);
 
-                data = data.Skip(skip).Take(take).ToList();
-
-                results.AddRange(data.Select(x => new InternalPageDto(x)));
-            }
-
-            scope.Complete();
-
-            return results;
-        }
-
-        public async Task<List<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "")
-        {
-            var results = new List<ImageDto>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{ImageSchema.TableName}]
-                WHERE RunId = @0";
-
-            var data = await scope.Database.FetchAsync<ImageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
-            {
-                if (!string.IsNullOrEmpty(filter))
-                {
-                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
-                }
-
-                data = data.OrderByDescending(x => string.IsNullOrEmpty(x.AltText)).Skip(skip).Take(take).ToList();
-
-                results.AddRange(data.Select(x => new ImageDto(x)));
-            }
-
-            scope.Complete();
-
-            return results;
-        }
-
-        public async Task<Dictionary<string, List<InternalPageDto>>> GetDuplicateContentUrls()
-        {
-            var result = new Dictionary<string, List<InternalPageDto>>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            // Define the SQL query to fetch only the latest Id
-            string sqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0 AND CanonicalUrl IS NOT NULL";
-            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
-            {
-                // Group pages by CanonicalUrl
-                var groupedData = data
-                    .GroupBy(page => page.CanonicalUrl)
-                    .Where(group => group.Count() > 1)
-                    .ToDictionary(
-                        group => group.Key,
-                        group => group.Select(x => new InternalPageDto(x)).ToList()
-                    );
-
-                result = groupedData;
-            }
-
-            scope.Complete();
-
-            return result;
-        }
-
-        public async Task<List<InternalPageDto>> GetPagesWithMissingMetadata(int skip = 0, int take = 20, string filter = "")
-        {
-            var result = new List<InternalPageDto>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{InternalPageSchema.TableName}] 
-                WHERE RunId = @0 
-                AND NodeKey IS NOT NULL
-                AND NodeKey IS NOT '00000000-0000-0000-0000-000000000000'
-                AND (
-                    MetaTitle IS NULL OR MetaTitle = ''
-                    OR MetaDescription IS NULL OR MetaDescription = ''
-                    OR MetaKeywords IS NULL OR MetaKeywords = ''
-                )";
-
-            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
-            {
-                if (!string.IsNullOrEmpty(filter))
-                {
-                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
-                }
-
-                data = data.Skip(skip).Take(take).ToList();
-
-                result.AddRange(data.Select(x => new InternalPageDto(x)));
-            }
-
-            scope.Complete();
-
-            return result;
-        }
-
-        public async Task<List<IssueDto>> GetAllIssues()
-        {
-            var result = new List<IssueDto>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-            string pageSqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0";
-            var pageData = await scope.Database.FetchAsync<InternalPageSchema>(pageSqlQuery, latestRunId);
-
-            if (pageData != null && pageData.Any())
-            {
-                var transformedPageData = pageData.Select(x => new InternalPageDto(x));
-
-                foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
-                {
-                    var issueCheck = issue.CheckPages(transformedPageData);
-                    var pagesWithIssues = issueCheck.Count();
-                    double percent = ((double)pagesWithIssues / (double)transformedPageData.Count()) * 100.0;
-
-                    var auditIssue = new IssueDto(issue)
+                    while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
                     {
-                        NumberOfUrls = pagesWithIssues,
-                        PercentOfTotal = percent,
-                        Pages = issueCheck
-                    };
-
-                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
-                    result.Add(auditIssue);
-                }
-
-                string imageSqlQuery = $"SELECT * FROM [{ImageSchema.TableName}] WHERE RunId = @0";
-                var imageData = await scope.Database.FetchAsync<ImageSchema>(imageSqlQuery, latestRunId);
-
-                if (imageData != null && imageData.Any())
-                {
-                    var transformedImageData = imageData.Select(x => new ImageDto(x));
-
-                    foreach (IAuditImageIssue issue in _auditIssueCollection.Where(x => x is IAuditImageIssue))
-                    {
-                        var issueCheck = issue.CheckImages(transformedImageData, transformedPageData);
-                        var imagesWithIssues = issueCheck.DistinctBy(x => x.FoundPage).Count();
-
-                        double percent = ((double)imagesWithIssues / (double)transformedPageData.Count()) * 100.0;
-
-                        var auditIssue = new IssueDto(issue)
-                        {
-                            NumberOfUrls = imagesWithIssues,
-                            PercentOfTotal = percent,
-                            Images = issueCheck
-                        };
-
-                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
-                        result.Add(auditIssue);
+                        _logger.LogInformation("Processing initial URL from queue: {0}", queueItem.Url);
+                        await processUrlBlock.SendAsync(queueItem, cancellationToken);
                     }
-                }
-            }
-            return result;
-        }
 
-        public async Task<IssueDto?> GetIssue(Guid issueGuid)
-        {
-            var result = new List<IssueDto>();
-            var latestRunId = await GetLatestAuditId();
+                    int emptyChecks = 0;
+                    const int maxEmptyChecks = 3;
 
-            using var scope = _scopeProvider.CreateScope();
-
-            string pageSqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0";
-            var pageData = await scope.Database.FetchAsync<InternalPageSchema>(pageSqlQuery, latestRunId);
-
-            if (pageData != null && pageData.Any())
-            {
-                var transformedPageData = pageData.Select(x => new InternalPageDto(x));
-
-                var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == issueGuid);
-                if (issue is IAuditPageIssue pageIssue)
-                {
-                    var issueCheck = pageIssue.CheckPages(transformedPageData);
-                    var pagesWithIssue = issueCheck.Count();
-                    double percent = ((double)pagesWithIssue / (double)transformedPageData.Count()) * 100.0;
-
-                    var auditIssue = new IssueDto(pageIssue)
+                    while (!_isDiscoveryComplete || !_urlQueue.IsEmpty)
                     {
-                        NumberOfUrls = pagesWithIssue,
-                        PercentOfTotal = percent,
-                        Pages = issueCheck
-                    };
-
-                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
-                    return auditIssue;
-                }
-
-                else if (issue is IAuditImageIssue imageIssue)
-                {
-                    string imageSqlQuery = $"SELECT * FROM [{ImageSchema.TableName}] WHERE RunId = @0";
-                    var imageData = await scope.Database.FetchAsync<ImageSchema>(imageSqlQuery, latestRunId);
-
-                    if (imageData != null && imageData.Any())
-                    {
-                        var transformedImageData = imageData.Select(x => new ImageDto(x));
-
-                        var issueCheck = imageIssue.CheckImages(transformedImageData, transformedPageData);
-                        var imagesWithIssues = issueCheck.Count();
-                        double percent = ((double)imagesWithIssues / (double)transformedImageData.Count()) * 100.0;
-
-                        var auditIssue = new IssueDto(issue)
+                        while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
                         {
-                            NumberOfUrls = imagesWithIssues,
-                            PercentOfTotal = percent,
-                            Images = issueCheck
-                        };
+                            _logger.LogInformation("Processing newly discovered URL: {0}", queueItem.Url);
+                            await processUrlBlock.SendAsync(queueItem, cancellationToken);
+                            emptyChecks = 0;
+                        }
 
-                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
-                        return auditIssue;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        public async Task<HealthScoreDto> GetHealthScore()
-        {
-            var result = new HealthScoreDto();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-            string sqlQuery = $"SELECT * FROM [{InternalPageSchema.TableName}] WHERE RunId = @0";
-            var data = await scope.Database.FetchAsync<InternalPageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
-            {
-                var transformedData = data.Select(x => new InternalPageDto(x));
-
-                foreach (var page in transformedData)
-                {
-                    bool pageHasError = false;
-                    result.TotalPages++;
-
-                    foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
-                    {
-                        var issueCheck = issue.CheckPages(new List<InternalPageDto>() { page });
-                        if (issueCheck.Count() == 1)
+                        if (_urlQueue.IsEmpty && processUrlBlock.InputCount == 0)
                         {
-                            pageHasError = true;
-                            break;
+                            emptyChecks++;
+                            _logger.LogInformation("Empty state check {0}/{1}", emptyChecks, maxEmptyChecks);
+
+                            if (emptyChecks >= maxEmptyChecks)
+                            {
+                                _logger.LogInformation("No new URLs discovered after {0} checks, completing crawl", maxEmptyChecks);
+                                _isDiscoveryComplete = true;
+                                break;
+                            }
+
+                            await Task.Delay(5000, cancellationToken);
+                        }
+                        else
+                        {
+                            emptyChecks = 0;
+                            await Task.Delay(100, cancellationToken);
                         }
                     }
 
-                    if (pageHasError)
+                    _logger.LogInformation("URL processing complete, signaling completion");
+                    processUrlBlock.Complete();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error in URL processing task");
+                    processUrlBlock.Complete();
+                    throw;
+                }
+            }, cancellationToken);
+
+            var completionTask = Task.Run(async () =>
+            {
+                try
+                {
+                    await urlProcessingTask;
+                    await processUrlBlock.Completion;
+
+                    _logger.LogInformation("All processing complete, saving crawl results");
+                    await SaveCrawlResults();
+
+                    _crawlResultsChannel.Writer.Complete();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during completion");
+                    throw;
+                }
+            }, cancellationToken);
+
+            await foreach (var result in _crawlResultsChannel.Reader.ReadAllAsync(cancellationToken))
+                yield return result;
+
+            await completionTask;
+        }
+
+        private async Task ProcessUrlAsync(UrlQueueItem queueItem, Uri baseUri, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _crawlSemaphore.WaitAsync(cancellationToken);
+                _logger.LogInformation("Started processing URL: {0}", queueItem.Url);
+
+                CrawlDto? crawlResult = null;
+
+                if (!queueItem.IsExternal)
+                {
+                    if (!queueItem.IsAsset)
                     {
-                        result.PagesWithErrors++;
+                        crawlResult = await CrawlInternalUrl(queueItem.Url, baseUri);
+                    }
+                    else
+                    {
+                        crawlResult = new CrawlDto
+                        {
+                            Url = queueItem.Url,
+                            External = queueItem.IsExternal,
+                            Crawled = true,
+                            Asset = queueItem.IsAsset,
+                            Blocked = false
+                        };
+                    }
+                }
+                else
+                {
+                    lock (_visitedExternalUrls)
+                    {
+                        if (!_visitedExternalUrls.Contains(queueItem.Url))
+                        {
+                            _visitedExternalUrls.Add(queueItem.Url);
+
+                            crawlResult = new CrawlDto
+                            {
+                                Url = queueItem.Url,
+                                External = queueItem.IsExternal,
+                                Crawled = true,
+                                Asset = queueItem.IsAsset,
+                                Blocked = false
+                            };
+                        }
+                    }
+
+                    lock (_externalDtos)
+                    {
+                        _externalDtos.Add(new ExternalPageSchema
+                        {
+                            Url = queueItem.Url,
+                            FoundPage = queueItem.SourceUrl,
+                            NodeKey = queueItem.NodeKey,
+                            IsAsset = queueItem.IsAsset
+                        });
                     }
                 }
 
-                result.HealthScore = ((double)(result.TotalPages - result.PagesWithErrors) / result.TotalPages) * 100.0;
-            }
-
-            return result;
-        }
-
-        private double CalculatePriorityScore(IssueDto issue)
-        {
-            double typeCoefficient = 10.0;
-            double priorityCoefficient = 20.0;
-            double percentageCoefficient = 1.0;
-
-            double typeWeight = (int)issue.Type * typeCoefficient;
-            double priorityWeight = (int)issue.Priority * priorityCoefficient;
-            double percentageWeight = issue.PercentOfTotal * percentageCoefficient;
-
-            if (issue.PercentOfTotal != 0)
-                return typeWeight + priorityWeight + percentageWeight;
-
-            return 0;
-        }
-
-        private async Task<int?> GetLatestAuditId()
-        {
-            using var scope = _scopeProvider.CreateScope();
-
-            // Define the SQL query to fetch only the latest Id
-            string sql = $"SELECT [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC LIMIT 1";
-
-            // Execute the scalar query to retrieve the latest Id
-            int? latestId = await scope.Database.ExecuteScalarAsync<int?>(sql);
-
-            scope.Complete();
-
-            return latestId;
-        }
-
-        public async Task<List<ExternalPageGroupDto>> GetExternalLinks(int skip = 0, int take = 20, string filter = "")
-        {
-            var result = new List<ExternalPageGroupDto>();
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{ExternalPageSchema.TableName}] 
-                WHERE RunId = @0";
-
-            var data = await scope.Database.FetchAsync<ExternalPageSchema>(sqlQuery, latestRunId);
-
-            if (data != null && data.Any())
-            {
-                if (!string.IsNullOrEmpty(filter))
+                if (crawlResult != null)
                 {
-                    data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                    _logger.LogInformation("Writing crawl result for URL: {0}", queueItem.Url);
+                    await _crawlResultsChannel.Writer.WriteAsync(crawlResult, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing URL: {0}", queueItem.Url);
+            }
+            finally
+            {
+                _crawlSemaphore.Release();
+                _logger.LogInformation("Finished processing URL: {0}", queueItem.Url);
+            }
+        }
+
+        private async Task<CrawlDto?> CrawlInternalUrl(string url, Uri baseUri)
+        {
+            _logger.LogInformation("Starting internal crawl: {0}", url);
+            if (!_visitedInternalUrls.Contains(url) && !IsDisallowed(url))
+            {
+                _visitedInternalUrls.Add(url);
+                _logger.LogInformation("Added {0} to visited URLs", url);
+
+                var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
+                var pageAnalysis = await _pageScanningService.GetPageAnalysis(url, baseUri, matchingUmbracoNode.Key);
+                if (pageAnalysis == null)
+                {
+                    _logger.LogWarning("Failed to get page data for URL: {0}", url);
+                    return null;
                 }
 
-                var convertedData = data.Select(x => new ExternalPageDto(x));
-
-                var groupedData = convertedData.GroupBy(x => x.Url);
-
-                var finalGrouping = groupedData.Select(x => new ExternalPageGroupDto()
+                if (pageAnalysis.SeoData != null)
                 {
-                    Url = x.Key,
-                    ExternalPages = x.ToList(),
-                    StatusCode = x.FirstOrDefault()?.StatusCode,
-                    ContentType = x.FirstOrDefault()?.ContentType,
-                });
+                    _seoDtos.Add(pageAnalysis.SeoData);
+                }
 
-                result = finalGrouping.Skip(skip).Take(take).ToList();
+                if (pageAnalysis.ContentAnalysis != null)
+                {
+                    _contentAnalysisDtos.Add(pageAnalysis.ContentAnalysis);
+                }
+
+                if (pageAnalysis.PerformanceData != null)
+                {
+                    _performanceDtos.Add(pageAnalysis.PerformanceData);
+                }
+
+                if (pageAnalysis.AccessibilityData != null)
+                {
+                    _accessibilityDtos.Add(pageAnalysis.AccessibilityData);
+                }
+
+                if (pageAnalysis.TechnicalSeoData != null)
+                {
+                    _technicalSeoDtos.Add(pageAnalysis.TechnicalSeoData);
+                }
+
+                if (pageAnalysis.SocialMediaData != null)
+                {
+                    _socialMediaDtos.Add(pageAnalysis.SocialMediaData);
+                }
+
+                if (pageAnalysis.ContentQualityData != null)
+                {
+                    _contentQualityDtos.Add(pageAnalysis.ContentQualityData);
+                }
+
+                _logger.LogInformation("Found {0} links and {1} resources on page {2}",
+                    pageAnalysis.PageData.Links.Count(), pageAnalysis.PageData.Resources.Count(), url);
+
+                foreach (var link in pageAnalysis.PageData.Links.Where(x => !_linkedPages.Contains(x.Url)))
+                {
+                    if (Uri.TryCreate(_baseUri, link.Url, out var absoluteUri))
+                    {
+                        var absoluteUrl = absoluteUri.AbsoluteUri;
+                        _logger.LogInformation("Processing discovered link: {0} from page {1}", absoluteUrl, url);
+
+                        if (!_linkedPages.Contains(absoluteUrl))
+                        {
+                            _linkedPages.Add(absoluteUrl);
+                            _logger.LogInformation("Added {0} to linked pages", absoluteUrl);
+
+                            if (!link.IsExternal)
+                            {
+                                if (!_visitedInternalUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                                {
+                                    _logger.LogInformation("Enqueueing new internal URL: {0}", absoluteUrl);
+                                    EnqueueUrl(new UrlQueueItem
+                                    {
+                                        Url = absoluteUrl,
+                                        IsExternal = false,
+                                        IsAsset = false,
+                                        SourceUrl = url,
+                                        NodeKey = matchingUmbracoNode.Key
+                                    });
+                                }
+                                else
+                                {
+                                    _logger.LogInformation("Skipping already visited or disallowed URL: {0}", absoluteUrl);
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Enqueueing new external URL: {0}", link.Url);
+                                EnqueueUrl(new UrlQueueItem
+                                {
+                                    Url = link.Url,
+                                    IsExternal = true,
+                                    IsAsset = false,
+                                    SourceUrl = url,
+                                    NodeKey = matchingUmbracoNode.Key
+                                });
+                            }
+                        }
+                    }
+                }
+
+                foreach (var resource in pageAnalysis.PageData.Resources)
+                {
+                    if (Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
+                    {
+                        var absoluteUrl = absoluteUri.AbsoluteUri;
+
+                        if (!resource.IsExternal && !_visitedInternalUrls.Contains(absoluteUrl) && !_internalAssetUrls.Contains(absoluteUrl))
+                        {
+                            _internalAssetUrls.Add(absoluteUrl);
+
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = absoluteUrl,
+                                IsExternal = false,
+                                IsAsset = true,
+                                SourceUrl = url,
+                                NodeKey = matchingUmbracoNode.Key
+                            });
+                        }
+                        else if (resource.IsExternal)
+                        {
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = absoluteUrl,
+                                IsExternal = true,
+                                IsAsset = true,
+                                SourceUrl = url,
+                                NodeKey = matchingUmbracoNode.Key
+                            });
+                        }
+                    }
+                }
+
+                _internalDtos.Add(new InternalPageSchema(pageAnalysis.PageData, 0));
+
+                foreach (var image in pageAnalysis.PageData.Images)
+                    _imageDtos.Add(new ImageSchema(image));
+
+                return new CrawlDto
+                {
+                    Url = url,
+                    Crawled = true,
+                    Asset = _internalAssetUrls.Contains(url),
+                    External = false,
+                    Blocked = false,
+                    NodeKey = matchingUmbracoNode.Key
+                };
+            }
+
+            _logger.LogInformation("URL has already been crawled: {0}", url);
+            return null;
+        }
+
+        private void EnqueueUrl(UrlQueueItem item)
+        {
+            if (item.IsAsset)
+            {
+                var uri = new Uri(item.Url, UriKind.RelativeOrAbsolute);
+                if (uri.IsAbsoluteUri)
+                {
+                    var uriBuilder = new UriBuilder(uri)
+                    {
+                        Query = string.Empty
+                    };
+                    item.Url = uriBuilder.Uri.ToString();
+                }
+                else
+                {
+                    int queryIndex = item.Url.IndexOf('?');
+                    if (queryIndex >= 0)
+                    {
+                        item.Url = item.Url.Substring(0, queryIndex);
+                    }
+                }
+            }
+
+            var fragmentIndex = item.Url.IndexOf('#');
+            if (fragmentIndex >= 0)
+            {
+                item.Url = item.Url.Substring(0, fragmentIndex);
+            }
+
+            _urlQueue.Enqueue(item);
+            _logger.LogInformation("Enqueued new URL for crawling: {0} (IsExternal: {1}, IsAsset: {2}, Source: {3})",
+                item.Url, item.IsExternal, item.IsAsset, item.SourceUrl ?? "Initial");
+        }
+
+        private async Task SaveCrawlResults()
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var externalUrls = _externalDtos.DistinctBy(x => x.Url);
+            var totalUrls = _visitedInternalUrls.Count + _disallowedUrls.Count + _internalAssetUrls.Count + externalUrls.Count();
+            var pagesCrawled = _visitedInternalUrls.Except(_internalAssetUrls).Count();
+
+            var overview = new OverviewSchema
+            {
+                RunDate = DateTime.Now,
+                Total = totalUrls,
+                TotalInternal = pagesCrawled,
+                TotalExternal = externalUrls.Count(),
+                TotalAssets = _internalAssetUrls.Count,
+                TotalBlocked = _robotsDisallowedPaths.Count
+            };
+
+            var runData = await scope.Database.InsertAsync(overview);
+
+            if (int.TryParse(runData.ToString(), out int runId))
+            {
+                _orphanedPages = _visitedInternalUrls.Except(_linkedPages).Except(_internalAssetUrls).ToHashSet();
+
+                foreach (var seoData in _seoDtos)
+                {
+                    seoData.RunId = runId;
+                    await scope.Database.InsertAsync(seoData);
+                }
+
+                foreach (var contentAnalysis in _contentAnalysisDtos)
+                {
+                    contentAnalysis.RunId = runId;
+                    await scope.Database.InsertAsync(contentAnalysis);
+                }
+
+                foreach (var performanceData in _performanceDtos)
+                {
+                    performanceData.RunId = runId;
+                    await scope.Database.InsertAsync(performanceData);
+                }
+
+                foreach (var accessibilityData in _accessibilityDtos)
+                {
+                    accessibilityData.RunId = runId;
+                    await scope.Database.InsertAsync(accessibilityData);
+                }
+
+                foreach (var technicalSeoData in _technicalSeoDtos)
+                {
+                    technicalSeoData.RunId = runId;
+                    await scope.Database.InsertAsync(technicalSeoData);
+                }
+
+                foreach (var socialMediaData in _socialMediaDtos)
+                {
+                    socialMediaData.RunId = runId;
+                    await scope.Database.InsertAsync(socialMediaData);
+                }
+
+                foreach (var contentQualityData in _contentQualityDtos)
+                {
+                    contentQualityData.RunId = runId;
+                    await scope.Database.InsertAsync(contentQualityData);
+                }
+
+                foreach (var page in _internalDtos)
+                {
+                    page.RunId = runId;
+                    page.IsAsset = _internalAssetUrls.Contains(page.Url);
+                    //page.IsOrphaned = _orphanedPages.Contains(page.Url);
+                    await scope.Database.InsertAsync(page);
+                }
+
+                foreach (var externalPage in _externalDtos)
+                {
+                    externalPage.RunId = runId;
+                    await scope.Database.InsertAsync(externalPage);
+                }
+
+                foreach (var image in _imageDtos)
+                {
+                    image.RunId = runId;
+                    await scope.Database.InsertAsync(image);
+                }
             }
 
             scope.Complete();
-
-            return result;
         }
+
+        private async Task GetSitemap()
+        {
+            _logger.LogInformation("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
+            if (_contentAuditSettings.UseSitemapXml)
+            {
+                var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(_baseUrl);
+                sitemapUrls.ForEach(x =>
+                {
+                    _internalPageUrls.Add(x);
+                    EnqueueUrl(new UrlQueueItem
+                    {
+                        Url = x,
+                        IsExternal = false,
+                        IsAsset = false
+                    });
+                    _logger.LogInformation("Adding {0} to the URL queue from sitemap.xml", x);
+                });
+            }
+            else
+            {
+                _internalPageUrls.Add(_baseUrl);
+                EnqueueUrl(new UrlQueueItem
+                {
+                    Url = _baseUrl,
+                    IsExternal = false,
+                    IsAsset = false
+                });
+                _logger.LogInformation("Adding {0} to the URL queue", _baseUrl);
+            }
+        }
+
+        private async Task GetRobots()
+        {
+            _logger.LogInformation("Should we attempt to use robots.txt? {0}", _contentAuditSettings.RespectRobotsTxt);
+            if (_contentAuditSettings.RespectRobotsTxt)
+            {
+                var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(_baseUrl);
+                if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
+                    robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
+            }
+        }
+
+        private void QueueUmbracoContent()
+        {
+            _logger.LogInformation("Should we attempt to use Umbraco's content index? {0}", _contentAuditSettings.UseUmbracoContentIndex);
+            if (_contentAuditSettings.UseUmbracoContentIndex)
+            {
+                foreach (var (key, url) in _umbracoContent)
+                {
+                    if (Uri.TryCreate(_baseUri, url, out var absoluteUri))
+                    {
+                        var absoluteUrl = absoluteUri.AbsoluteUri;
+                        if (!_visitedInternalUrls.Contains(absoluteUrl) && !_internalPageUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
+                        {
+                            _internalPageUrls.Add(absoluteUrl);
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = absoluteUrl,
+                                IsExternal = false,
+                                IsAsset = false,
+                                NodeKey = key
+                            });
+
+                            _logger.LogInformation("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void LoadUmbracoContentUrls()
+        {
+            if (_examineManager.TryGetIndex(UmbracoIndexes.InternalIndexName, out var contentIndex))
+            {
+                var searcher = contentIndex.Searcher;
+
+                var query = searcher.CreateQuery("content").NativeQuery("+__IndexType:content");
+                var results = query.Execute();
+
+                foreach (var result in results)
+                {
+                    if (result.Values.TryGetValue(UmbracoExamineFieldNames.NodeKeyFieldName, out var keyString) &&
+                    Guid.TryParse(keyString, out var key) &&
+                    result.Values.TryGetValue(UmbracoExamineFieldNames.ItemIdFieldName, out var idString) &&
+                    int.TryParse(idString, out var nodeId))
+                    {
+                        var url = _urlProvider.GetUrl(nodeId, UrlMode.Absolute);
+
+                        if (!string.IsNullOrEmpty(url))
+                            _umbracoContent.Add(new KeyValuePair<Guid, string>(key, url));
+                    }
+                }
+            }
+        }
+
+        private bool IsDisallowed(string url) =>
+            _robotsDisallowedPaths.Any(disallowed => url.StartsWith(disallowed, StringComparison.OrdinalIgnoreCase));
     }
 }

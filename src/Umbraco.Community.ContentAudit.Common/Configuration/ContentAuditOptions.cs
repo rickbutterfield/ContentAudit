@@ -4,7 +4,7 @@ namespace Umbraco.Community.ContentAudit.Common.Configuration
 {
     public class ContentAuditOptions
     {
-        public ContentAuditSettings ContentAudit { get; set; }
+        public ContentAuditSettings? ContentAudit { get; set; }
     }
 
     public class ContentAuditSettings
@@ -18,7 +18,10 @@ namespace Umbraco.Community.ContentAudit.Common.Configuration
         [DefaultValue(true)]
         public bool UseSitemapXml { get; set; } = true;
 
-        [DefaultValue("")]
-        public string SitemapUrl { get; set; } = "";
+        [DefaultValue("/sitemap.xml")]
+        public string SitemapUrl { get; set; } = "/sitemap.xml";
+
+        [DefaultValue(4)]
+        public int MaxConcurrentCrawls { get; set; } = 4;
     }
 }

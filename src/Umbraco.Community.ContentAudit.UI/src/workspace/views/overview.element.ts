@@ -2,12 +2,15 @@
 import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
 import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
+import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
+import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
 
 @customElement('content-audit-scan-view')
 export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     private crawlData: CrawlDto[] = [];
 
     #context?: ContentAuditContext;
+    #modalManagerContext?: typeof UMB_MODAL_MANAGER_CONTEXT.TYPE;
 
     @state()
     scanRunning?: boolean = false;
@@ -47,12 +50,30 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
             this.#init();
         });
+
+        this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, (instance) => {
+            this.#modalManagerContext = instance;
+            // modalManagerContext is now ready to be used.
+        });
     }
 
     #init() {
         this.#context?.getLatestAuditOverview();
         this.#context?.getTopIssues();
         this.#context?.getHealthScore();
+    }
+
+    private async _openModal() {
+        const modal = this.#modalManagerContext?.open(this, CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN, {
+            data: {
+                headline: "Ready to run an audit?",
+            }
+        });
+
+        const result = await modal?.onSubmit();
+        if (result?.run) {
+            this.startAudit();
+        }
     }
 
     startAudit() {
@@ -88,7 +109,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 return html`
                     <uui-table>
                         <uui-table-column></uui-table-column>
-                        <uui-table-column style="text-align: right;"></uui-table-column>
+                        <uui-table-column></uui-table-column>
 
                         <uui-table-row>
                             <uui-table-cell>Total URLs:</uui-table-cell>
@@ -126,7 +147,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
                 <uui-table>
                     <uui-table-column></uui-table-column>
-                    <uui-table-column style="text-align: right;"></uui-table-column>
+                    <uui-table-column></uui-table-column>
 
                     <uui-table-row>
                         <uui-table-cell>URLs crawled:</uui-table-cell>
@@ -156,14 +177,14 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     #renderLatestAudit() {
         if (this._latestAuditOverview !== undefined) {
             return html`
-                <uui-box headline="Latest audit" class="span-2" style="--uui-box-default-padding: 0;">
+                <uui-box headline="Latest audit" class="span-2" style="${this._latestAuditOverview?.runDate != null || this.scanRunning ? '--uui-box-default-padding: 0;' : ''}">
                     <div slot="header">
                         ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate!, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
                     </div>
                     <div slot="header-actions">
                         <uui-button
                             look="primary"
-                            @click=${this.startAudit}
+                            @click=${this._openModal}
                             .state=${this.scanRunning ? "waiting" : ""}
                         >Run new scan</uui-button>
                     </div>
@@ -182,7 +203,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 scoreClass = "score--success";
             }
 
-            if (this._healthScore.healthScore >= 50) {
+            else if (this._healthScore.healthScore >= 50) {
                 scoreClass = "score--warning";
             }
 
@@ -209,7 +230,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         }
     }
 
-    #renderScanData() {
+    _renderScanData() {
         if (this.crawlData.length !== 0) {
             const total = this.crawlData.length;
             const internal = this.crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
@@ -228,10 +249,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                     ${repeat(
                         this.crawlData,
                         (data) => data.url,
-                        (data) => 
-                            html`
-                                ${JSON.stringify(data)}<br/>
-                            `
+                        (data) => html`${JSON.stringify(data)}<br/>`
                     )}
 
                 </uui-box>
@@ -332,6 +350,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 right: 0;
                 margin: auto;
                 z-index: 1;
+                font-size: 24px;
                 font-weight: 700;
             }
 

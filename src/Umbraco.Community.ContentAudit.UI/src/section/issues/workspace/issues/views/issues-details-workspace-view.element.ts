@@ -1,96 +1,153 @@
 ﻿import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
+import { UMB_WORKSPACE_MODAL, UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT } from "../issues-workspace.context";
 import { IssueDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
+import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN } from '@umbraco-cms/backoffice/document';
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 import { UmbTableConfig, UmbTableColumn, UmbTableItem } from "../../../../../interfaces";
+import { UmbModalRouteBuilder, UmbModalRouteRegistrationController } from "@umbraco-cms/backoffice/router";
 
 @customElement('content-audit-issues-details-workspace-view')
 export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
 	@state()
 	_data?: IssueDto;
 
-	#workspaceContext?: typeof CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT.TYPE;
-
-	constructor() {
-		super();
-
-		this.consumeContext(CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT, (instance) => {
-			this.#workspaceContext = instance;
-
-			this.observe(this.#workspaceContext.data, (data) => {
-				this._data = data;
-			});
-		});
-	}
-
+	@state()
 	private _tableConfig: UmbTableConfig = {
 		allowSelection: false,
-		hideIcon: true,
+		hideIcon: true
 	};
 
+	@state()
 	private get _tableColumns(): Array<UmbTableColumn> {
-		let columns: UmbTableColumn[] = [{
-			name: this._data?.images != null ? 'URL' : 'Page',
-			alias: 'url'
-		}];
+		let columns: UmbTableColumn[] = [];
 
-		if (this._data?.images != null) {
-			if (this._data?.images?.length !== 0) {
-				columns.push({
-					name: 'Found Page',
-					alias: 'foundPage'
-				});
+		if (this._data != null) {
+			columns.push({
+				name: this._data?.images != null ? 'URL' : 'Page',
+				alias: 'url'
+			});
+
+			if (this._data?.exposedProperties != null) {
+				if (this._data?.exposedProperties?.length !== 0) {
+					this._data.exposedProperties.forEach(x => {
+						columns.push({ name: x.name!, alias: x.alias!, elementName: x.elementName!, labelTemplate: x.labelTemplate! });
+					})
+				}
+			}
+
+			if (this._data?.images != null) {
+				if (this._data?.images?.length !== 0) {
+					columns.push({
+						name: 'Found Page',
+						alias: 'foundPage'
+					});
+				}
 			}
 		}
 
 		return columns;
 	};
 
-	private get _tableItems(): UmbTableItem[] {
-		let tableItems: UmbTableItem[] | undefined;
+	@state()
+	private _tableItems: Array<UmbTableItem> = [];
 
-		if (this._data?.pages?.length !== 0) {
-			tableItems = this._data?.pages?.map((page) => {
-				let tableItem: UmbTableItem = {
-					id: page.unique,
-					data: [
-						{
-							columnAlias: 'url',
-							value: page.url
-						}
-					]
-				}
+	#workspaceContext?: typeof CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT.TYPE;
+	#routeBuilder?: UmbModalRouteBuilder;
 
-				return tableItem;
+	constructor() {
+		super();
+
+		this.consumeContext(CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT, (instance) => {
+			this.#workspaceContext = instance;
+		});
+
+        this.#registerModalRoute();
+	}
+
+	#registerModalRoute() {
+		new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
+			.addAdditionalPath(':entityType')
+			.onSetup((params) => {
+				return { data: { entityType: params.entityType, preset: {} } };
+			})
+			.observeRouteBuilder((routeBuilder) => {
+				this.#routeBuilder = routeBuilder;
+
+				this.#observeCollectionItems();
 			});
-		}
+	}
 
-		if (this._data?.images != null) {
-			if (this._data?.images.length !== 0) {
-				tableItems = this._data?.images?.map((page) => {
+	#observeCollectionItems() {
+		if (!this.#workspaceContext) return;
+		this.observe(this.#workspaceContext.data, (data) => {
+			this._data = data;
+			this.#createTableItems(data);
+		}, 'umbCollectionItemsObserver');
+	}
+
+	#createTableItems(data: IssueDto | undefined) {
+		let tableItems: UmbTableItem[] | undefined = [];
+
+		const routeBuilder = this.#routeBuilder;
+		if (!routeBuilder) throw new Error('Route builder not ready');
+
+		if (data != null) {
+			if (data.pages?.length !== 0) {
+				tableItems = data?.pages?.map((page) => {
+					const modalEditPath =
+						routeBuilder({ entityType: 'document' }) +
+						UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.nodeKey! });
+
 					let tableItem: UmbTableItem = {
 						id: page.unique,
 						data: [
 							{
 								columnAlias: 'url',
-								value: page.url
-							},
-							{
-								columnAlias: 'foundPage',
-								value: page.foundPage
+								value: html`<a href="${modalEditPath}">${page.url}</a>`
 							}
 						]
+					};
+
+					if (this._data?.exposedProperties != null) {
+						if (this._data?.exposedProperties?.length !== 0) {
+							this._data.exposedProperties.forEach(x => {
+								const key = x.alias as keyof typeof page;
+								tableItem.data.push({ columnAlias: x.alias!, value: x.labelTemplate ?? page[key] });
+							});
+						}
 					}
 
 					return tableItem;
 				});
 			}
+
+			if (data?.images != null) {
+				if (data?.images.length !== 0) {
+					tableItems = data?.images?.map((page) => {
+						let tableItem: UmbTableItem = {
+							id: page.unique,
+							data: [
+								{
+									columnAlias: 'url',
+									value: page.url
+								},
+								{
+									columnAlias: 'foundPage',
+									value: page.foundPage
+								}
+							]
+						}
+
+						return tableItem;
+					});
+				}
+			}
 		}
 
-		return tableItems as UmbTableItem[];
+        this._tableItems = tableItems || [];
 	}
 
 	#renderPages() {
@@ -108,7 +165,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 	#renderProperties() {
 		return html`
 			<uui-box style="align-self: flex-start;">
-				<umb-property-layout label="Name" orientation="vertical">
+				<umb-property-layout label="Name" orientation="vertical" style="padding-top: 0;">
 					<div slot="editor">${this._data?.name}</div>
 				</umb-property-layout>
 				<umb-property-layout label="Category" orientation="vertical">
@@ -123,7 +180,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 						<content-audit-issue-type-label .type=${this._data?.type}></content-audit-issue-type-label>
 					</div>
 				</umb-property-layout>
-				<umb-property-layout label="Issue Priority" orientation="vertical">
+				<umb-property-layout label="Issue Priority" orientation="vertical" style="padding-bottom: 0;">
 					<div slot="editor">
 						<content-audit-priority-type-label .type=${this._data?.priority}></content-audit-priority-type-label>
 					</div>

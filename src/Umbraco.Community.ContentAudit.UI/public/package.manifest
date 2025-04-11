@@ -6,7 +6,15 @@
     "~/App_Plugins/UmbracoCommunityContentAudit/js/content-audit.resource.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/section.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/overview.controller.js",
-    "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.controller.js"
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/settings.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.overview.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.details.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/status-codes.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/outbound-links.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/inbound-links.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/duplicate-pages.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/image-alt-text.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/metadata.controller.js"
   ],
   "css": [
     "~/App_Plugins/UmbracoCommunityContentAudit/css/content-audit.css"

@@ -43,6 +43,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
             _userGroupService = userGroupService;
 #endif
         }
+
         public async void Handle(UmbracoApplicationStartingNotification notification)
         {
             if (_runtimeState.Level < RuntimeLevel.Run)
@@ -55,7 +56,14 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 .To<AddOverviewTable>("contentaudit-overview")
                 .To<AddOrphanedTable>("contentaudit-orphaned")
                 .To<AddImageTable>("contentaudit-image")
-                .To<AddExternalPageTable>("contentaudit-external");
+                .To<AddExternalPageTable>("contentaudit-external")
+                .To<AddSeoTable>("contentaudit-seo")
+                .To<AddContentAnalysisTable>("contentaudit-analysis")
+                .To<AddPerformanceTable>("contentaudit-performance")
+                .To<AddAccessibilityTable>("contentaudit-accessibility")
+                .To<AddContentQualityTable>("contentaudit-quality")
+                .To<AddSocialMediaTable>("contentaudit-socialmedia")
+                .To<AddTechnicalSeoTable>("contentaudit-technicalseo");
 
             var upgrader = new Upgrader(migrationPlan);
             upgrader.Execute(

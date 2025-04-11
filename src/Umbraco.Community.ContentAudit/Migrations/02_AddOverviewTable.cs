@@ -13,7 +13,6 @@ namespace Umbraco.Community.ContentAudit.Migrations
         {
             Logger.LogDebug("Running migration {MigrationStep}", "AddOverviewTable");
 
-            // Lots of methods available in the MigrationBase class - discover with this.
             if (TableExists(OverviewSchema.TableName) == false)
             {
                 Create.Table<OverviewSchema>().Do();

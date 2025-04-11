@@ -1,5 +1,5 @@
 ﻿/** @type {import('vite').UserConfig} */
-import { defineConfig } from 'vite';
+import { defineConfig, PluginOption } from 'vite';
 
 export default defineConfig({
     build: {
@@ -8,11 +8,12 @@ export default defineConfig({
             formats: ['es'],
         },
         outDir: '../Umbraco.Community.ContentAudit/wwwroot/App_Plugins/UmbracoCommunityContentAudit',
+        publicDir: 'public',
         emptyOutDir: true,
         sourcemap: true,
         rollupOptions: {
             external: [/^@umbraco/],
-            onwarn: () => { },
+            onwarn: () => { }
         },
-    },
+    }
 });

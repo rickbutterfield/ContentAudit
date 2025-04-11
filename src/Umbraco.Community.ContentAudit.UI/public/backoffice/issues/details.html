@@ -1,0 +1,71 @@
+﻿<div ng-controller="Umbraco.Community.ContentAudit.Issues.DetailsController as vm">
+
+    <umb-load-indicator ng-if="vm.loading"></umb-load-indicator>
+
+    <umb-editor-view>
+
+        <umb-editor-header name="vm.data.name"
+                           name-locked="true"
+                           description="vm.data.description"
+                           description-locked="true"
+                           on-back="vm.back()"
+                           hide-icon="true"
+                           hide-alias="true"
+                           show-back-button="true">
+        </umb-editor-header>
+
+        <umb-editor-container>
+
+            <div class="umb-package-details">
+
+                <div class="umb-package-details__main-content">
+
+                    <uui-box style="--uui-box-default-padding: 0;">
+                        <uui-table>
+                            <uui-table-head>
+                                <uui-table-head-cell>URL</uui-table-head-cell>
+                                <uui-table-head-cell ng-if="vm.data.images != null">Found Page</uui-table-head-cell>
+                                <uui-table-head-cell ng-repeat="property in vm.data.exposedProperties">{{property.name}}</uui-table-head-cell>
+                            </uui-table-head>
+
+                            <uui-table-row ng-repeat="page in vm.data.pages">
+                                <uui-table-cell><a href="#/content/content/edit/{{page.nodeKey}}" ng-click="vm.inlineEditor($event, page.nodeKey)">{{page.url}}</a></uui-table-cell>
+                                <uui-table-cell ng-if="vm.data.images != null">{{page.foundPage}}</uui-table-cell>
+                                <uui-table-cell ng-repeat="property in vm.data.exposedProperties">
+                                    {{page[property.alias]}}
+                                </uui-table-cell>
+                            </uui-table-row>
+                        </uui-table>
+                    </uui-box>
+
+                </div>
+
+                <div class="umb-package-details__sidebar">
+
+                    <uui-box>
+
+                        <umb-control-group label="Name">
+                            {{vm.data.name}}
+                        </umb-control-group>
+
+                        <umb-control-group label="Category">
+                            {{vm.data.category}}
+                        </umb-control-group>
+
+                        <umb-control-group label="Description">
+                            {{vm.data.description}}
+                        </umb-control-group>
+
+                        <umb-control-group label="Issue Type">
+                            <div ng-bind-html="vm.renderTypeLabel(vm.data.type)"></div>
+                        </umb-control-group>
+
+                        <umb-control-group label="Issue Priority">
+                            <div ng-bind-html="vm.renderPriorityLabel(vm.data.priority)"></div>
+                        </umb-control-group>
+                    </uui-box>
+                </div>
+            </div>
+        </umb-editor-container>
+    </umb-editor-view>
+</div>

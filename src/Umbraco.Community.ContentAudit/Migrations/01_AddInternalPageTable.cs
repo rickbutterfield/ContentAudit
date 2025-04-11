@@ -13,7 +13,6 @@ namespace Umbraco.Community.ContentAudit.Migrations
         {
             Logger.LogDebug("Running migration {MigrationStep}", "AddInternalPageTable");
 
-            // Lots of methods available in the MigrationBase class - discover with this.
             if (TableExists(InternalPageSchema.TableName) == false)
             {
                 Create.Table<InternalPageSchema>().Do();

@@ -1,0 +1,46 @@
+﻿<div ng-controller="Umbraco.Community.ContentAudit.Issues.OverviewController as vm">
+
+    <umb-editor-view footer="false">
+
+        <umb-editor-header name="vm.name" name-locked="true" hide-alias="true" hide-description="true" hide-icon="true">
+        </umb-editor-header>
+
+        <umb-editor-container>
+            <uui-box ng-if="!vm.loading && vm.issueData.length != 0" style="--uui-box-default-padding: 0;">
+
+                <uui-table>
+                    <uui-table-head>
+                        <uui-table-head-cell>Issue</uui-table-head-cell>
+                        <uui-table-head-cell>Type</uui-table-head-cell>
+                        <uui-table-head-cell>Priority</uui-table-head-cell>
+                        <uui-table-head-cell>Number of URLs affected</uui-table-head-cell>
+                        <uui-table-head-cell>Percentage of all pages</uui-table-head-cell>
+                    </uui-table-head>
+
+                    <uui-table-row selectable ng-repeat="data in vm.issueData" ng-click="vm.issueDetails(data.unique)" style="cursor: pointer;">
+                        <uui-table-cell>
+                            <strong><a href="#/audit/issues/details/{{data.unique}}">{{data.category}}: {{data.name}}</a></strong><br />
+                            {{data.description}}
+                        </uui-table-cell>
+
+                        <uui-table-cell ng-bind-html="vm.renderTypeLabel(data.type)"></uui-table-cell>
+                        <uui-table-cell ng-bind-html="vm.renderPriorityLabel(data.priority)"></uui-table-cell>
+                        <uui-table-cell>{{data.numberOfUrls}}</uui-table-cell>
+                        <uui-table-cell>{{data.percentOfTotal.toFixed(0)}}%</uui-table-cell>
+                    </uui-table-row>
+                </uui-table>
+
+            </uui-box>
+
+            <div ng-if="!vm.loading" class="flex justify-center">
+                <umb-pagination page-number="vm.pageNumber" total-pages="vm.totalPages"
+                                on-change="vm.changePageNumber(pageNumber)">
+                </umb-pagination>
+            </div>
+
+            <umb-empty-state ng-if="vm.issueData.length == 0" position="center">
+                <p>No data to show yet.</p>
+            </umb-empty-state>
+        </umb-editor-container>
+    </umb-editor-view>
+</div>

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Umbraco.Community.ContentAudit.Interfaces;
-using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Controllers
 {
@@ -11,10 +11,10 @@ namespace Umbraco.Community.ContentAudit.Controllers
     [ApiExplorerSettings(GroupName = "Crawl")]
     public class CrawlController : ContentAuditControllerBase
     {
-        private readonly ICrawlerService _crawlerService;
+        private readonly IAuditService _crawlerService;
 
         public CrawlController(
-            ICrawlerService crawlerService)
+            IAuditService crawlerService)
         {
             _crawlerService = crawlerService;
         }

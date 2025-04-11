@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
-		<TargetFrameworks>net9.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<StaticWebAssetBasePath>/</StaticWebAssetBasePath>
@@ -29,23 +29,25 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
-	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+	<ItemGroup>
+		<PackageReference Include="AngleSharp" Version="1.2.0" />
+		<PackageReference Include="Microsoft.Playwright" Version="1.51.0" />
+	</ItemGroup>
+	
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[13.0.0, 14.0.0)" />
-		<PackageReference Include="Umbraco.AuthorizedServices" Version="10.0.1" />
-	</ItemGroup>-->
+	</ItemGroup>
 
-	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">-->
-	<ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
 		<PackageReference Include="Umbraco.Cms.Core" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[15.0.0, 16.0.0)" />
-		<PackageReference Include="Umbraco.AuthorizedServices" Version="15.1.0" />
 	</ItemGroup>
 
 	<!--<ItemGroup>
@@ -61,6 +63,7 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+		<None Include="..\Umbraco.Community.ContentAudit.UI\src\modals\run-warning\UmbBlockCatalogueModalElement.ts" Link="UmbBlockCatalogueModalElement.ts" />
 	</ItemGroup>
 
 	<ItemGroup>

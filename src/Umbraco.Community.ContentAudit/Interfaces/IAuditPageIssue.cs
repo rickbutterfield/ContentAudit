@@ -1,4 +1,4 @@
-﻿using Umbraco.Community.ContentAudit.Models;
+﻿using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Interfaces
 {

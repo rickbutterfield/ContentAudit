@@ -13,7 +13,6 @@ namespace Umbraco.Community.ContentAudit.Migrations
         {
             Logger.LogDebug("Running migration {MigrationStep}", "AddOrphanedTable");
 
-            // Lots of methods available in the MigrationBase class - discover with this.
             if (TableExists(OrphanedPageSchema.TableName) == false)
             {
                 Create.Table<OrphanedPageSchema>().Do();

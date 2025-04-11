@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetAllImagesData, GetAllImagesResponse, GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsResponse, GetExternalLinksData, GetExternalLinksResponse, GetHealthScoreResponse, GetInteralLinksData, GetInteralLinksResponse, GetIssueData, GetIssueResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
+import type { GetAllImagesData, GetAllImagesResponse, GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponse, GetExternalLinksData, GetExternalLinksResponse, GetHealthScoreResponse, GetInteralLinksData, GetInteralLinksResponse, GetIssueData, GetIssueResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
 
 export class AuditService {
     /**
@@ -45,13 +45,22 @@ export class AuditService {
     }
     
     /**
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.take
+     * @param data.filter
      * @returns unknown OK
      * @throws ApiError
      */
-    public static getDuplicateContentUrls(): CancelablePromise<GetDuplicateContentUrlsResponse> {
+    public static getDuplicateContentUrls(data: GetDuplicateContentUrlsData = {}): CancelablePromise<GetDuplicateContentUrlsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/umbraco/content-audit/api/v1/duplicate-content'
+            url: '/umbraco/content-audit/api/v1/duplicate-content',
+            query: {
+                skip: data.skip,
+                take: data.take,
+                filter: data.filter
+            }
         });
     }
     

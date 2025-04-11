@@ -9,7 +9,7 @@ const menuItem: ManifestMenuItem = {
     weight: 2000,
     meta: {
         label: 'Outbound Links',
-        icon: 'icon-fullscreen',
+        icon: 'icon-window-popout',
         entityType: AUDIT_OUTBOUND_LINKS_ROOT_ENTITY_TYPE,
         menus: [CONTENT_AUDIT_MENU_0_ALIAS],
     }

@@ -1,6 +1,7 @@
 ﻿using Umbraco.Community.ContentAudit.Common.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.AuditIssues
 {
@@ -18,9 +19,11 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IssuePriority Priority => IssuePriority.High;
 
+        public IEnumerable<AuditIssueProperty> ExposedProperties => default;
+        
         public IEnumerable<ImageDto> CheckImages(IEnumerable<ImageDto> images, IEnumerable<InternalPageDto> pages)
         {
-            return images.Where(x => string.IsNullOrEmpty(x.AltText));
+            return images.Where(x => !x.IsBackground && string.IsNullOrEmpty(x.AltText));
         }
     }
 }

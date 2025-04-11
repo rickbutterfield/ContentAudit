@@ -20,11 +20,12 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async Task<List<string>> GetSitemapUrlsAsync(string baseUrl)
         {
-            string sitemapUrl = $"{baseUrl.TrimEnd('/')}/sitemap.xml";
+            string sitemapUrl = string.Empty;
             
             if (!string.IsNullOrEmpty(_contentAuditSettings.SitemapUrl))
             {
-                sitemapUrl = _contentAuditSettings.SitemapUrl;
+                // Add baseUrl to the sitemap URL if it's not an absolute URL
+                sitemapUrl = new Uri(new Uri(baseUrl), _contentAuditSettings.SitemapUrl).ToString();
             }
 
             try

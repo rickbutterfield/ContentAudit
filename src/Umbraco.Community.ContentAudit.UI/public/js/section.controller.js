@@ -12,9 +12,7 @@
         onInit();
 
         function onInit() {
-
             loadNavigation();
-
             setPageName();
         }
 
@@ -39,7 +37,7 @@
         }
 
         function setPageName() {
-            vm.page.name = 'Audit';
+            vm.page.name = 'Content Audit';
         }
     }
 

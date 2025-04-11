@@ -11,7 +11,7 @@ using Umbraco.Cms.Web.Common.ModelBinders;
 
 namespace Umbraco.Community.ContentAudit.Trees
 {
-    [Tree("audit", "audit", TreeGroup = "Content", TreeTitle = "Content")]
+    [Tree(Constants.SectionAlias, "orphaned-pages", TreeGroup = Constants.Trees.Content.Group, SortOrder = 3)]
     [PluginController("UmbracoCommunityContentAudit")]
     public class OrphanedPagesTreeController : TreeController
     {
@@ -41,7 +41,7 @@ namespace Umbraco.Community.ContentAudit.Trees
 
             if (root is not null)
             {
-                root.RoutePath = $"{Constants.SectionAlias}/audit/orphaned-pages";
+                root.RoutePath = $"{Constants.SectionAlias}/orphaned-pages/overview";
                 root.Name = "Orphaned Pages";
                 root.Icon = "icon-tactics";
                 root.HasChildren = false;

@@ -1,0 +1,2 @@
+﻿export const CONTENT_AUDIT_DUPLICATE_CONTENT_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.DuplicateContent';
+export const CONTENT_AUDIT_DUPLICATE_CONTENT_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.DuplicateContent.Table';

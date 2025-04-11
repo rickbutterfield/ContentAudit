@@ -1,11 +1,24 @@
 ﻿.content-audit-dashboard {
     display: grid;
     gap: var(--uui-size-space-5);
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
 }
 
-uui-box.grow {
+.span-1 {
+    grid-column: span 1;
+}
+
+.span-2 {
     grid-column: span 2;
+}
+
+.span-3 {
+    grid-column: span 3;
+}
+
+.umb-table-row.selectable:hover,
+uui-table-row[selectable]:hover {
+    background-color: #f3f3f5;
 }
 
 uui-table-cell uui-tag,
@@ -17,3 +30,62 @@ uui-table-cell uui-tag,
     .umb-table-cell uui-tag uui-icon {
         margin-right: 4px;
     }
+
+.score {
+    text-align: center;
+    position: relative;
+}
+
+.score__inner {
+    width: 200px;
+    height: 200px;
+}
+
+.score__bg {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 1.75;
+}
+
+.score__fill {
+    fill: none;
+    stroke: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    animation: progress 1000ms ease-out forwards;
+    stroke: #000;
+}
+
+.score--danger .score__fill {
+    stroke: var(--uui-color-danger, #d42054);
+}
+
+.score--warning .score__fill {
+    stroke: var(--uui-color-warning, #fbd142);
+}
+
+.score--success .score__fill {
+    stroke: var(--uui-color-positive);
+}
+
+.score__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    z-index: 1;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}

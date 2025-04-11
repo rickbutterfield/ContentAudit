@@ -1,0 +1,100 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Seo1902.Web.Helpers
+@using Seo1902.Core
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Cms.Web.Common.Views
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Extensions
+@using System.Web
+@using Microsoft.Extensions.Options 
+@inject Seo1902.Core.Contracts.Service.IDocumentTypeService documentTypeService
+@inject Seo1902.Core.Contracts.Service.IPageService pageService
+@inject Seo1902.Core.Contracts.Service.IDashboardService dashboardService
+@inject IOptions<Seo1902.Core.Model.Seo1902Settings> seo1902Settings
+
+@{
+    var host = Context.Request.Host.Value;
+    var scheme = Context.Request.Scheme;
+    var hostName = string.Format("{0}://{1}", scheme, host);
+
+    PageDisplayHelper pageHelper = new PageDisplayHelper(pageService, dashboardService, seo1902Settings);
+    var pageModel = pageHelper.Get1902SEOPageRender(Model);
+    var defaultSettings = pageModel.GlobalSettings;
+    var globalSchema = pageModel.BusinessSchema;
+    var currentPage = pageModel.Page;
+
+    IPublishedContent twitterImage = null;
+    if (!string.IsNullOrEmpty(currentPage.TwitterImage))
+    {
+        twitterImage = Umbraco.Media(currentPage.TwitterImage);
+    }
+
+    var ogImageUrl = "";
+    var twitterImageUrl = "";
+    IPublishedContent ogImage = null;
+    if (!string.IsNullOrEmpty(currentPage.OgImage))
+    {
+        ogImage = Umbraco.Media(currentPage.OgImage);
+    }
+
+    IPublishedContent defaultImage = null;
+    if (!string.IsNullOrEmpty(defaultSettings.DefaultImage))
+    {
+        defaultImage = Umbraco.Media(defaultSettings.DefaultImage);
+    }
+
+    if (!string.IsNullOrEmpty(hostName))
+    {
+        if (ogImage != null || defaultImage != null)
+        {
+            ogImageUrl = string.Format("{0}{1}", hostName, ogImage != null ? ogImage.Url() : defaultImage != null ? defaultImage.Url() : "");
+        }
+
+        if (twitterImage != null || defaultImage != null)
+        {
+            twitterImageUrl = string.Format("{0}{1}", hostName, twitterImage != null ? twitterImage.Url() : defaultImage != null ? defaultImage.Url() : "");
+        }
+    }
+	var pageCultures = Model.Cultures;
+}
+
+@if (pageModel.IsEnabled)
+{
+    <title>@Html.Raw(currentPage.Title ?? "")</title>
+    <meta name="description" content="@Html.Raw(currentPage.Description ?? "")" />
+    <meta name="keywords" content="@Html.Raw(currentPage.Keywords ?? "")">
+    <meta name="robots" content="@Html.Raw(string.Format("{0},{1}", currentPage.NoIndex ? "NOINDEX": "INDEX", currentPage.NoFollow ? "NOFOLLOW" : "FOLLOW"))" />
+    <link rel="canonical" href="@Html.Raw(!string.IsNullOrEmpty(currentPage.CannonicalUrl) ? currentPage.CannonicalUrl : currentPage.Url)" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="@Html.Raw(!string.IsNullOrEmpty(currentPage.TwitterTitle) ? currentPage.TwitterTitle : !string.IsNullOrEmpty(defaultSettings.TwitterTitle)  ? defaultSettings.TwitterTitle : currentPage.Name)" />
+    <meta name="twitter:description" content="@Html.Raw( !string.IsNullOrEmpty(currentPage.TwitterDescription)? currentPage.TwitterDescription : (defaultSettings.TwitterDescription ?? ""))" />
+    <meta name="twitter:image:src" content="@Html.Raw(twitterImageUrl)" />
+    <meta property="og:title" content="@Html.Raw(!string.IsNullOrEmpty(currentPage.OgTitle) ? currentPage.OgTitle : !string.IsNullOrEmpty(defaultSettings.OgTitle)  ? defaultSettings.OgTitle : currentPage.Name)" />
+    <meta property="og:url" content="@Html.Raw(!string.IsNullOrEmpty(currentPage.CannonicalUrl) ? currentPage.CannonicalUrl : currentPage.Url)" />
+    <meta property="og:image" content="@Html.Raw(ogImageUrl)" />
+    <meta property="og:description" content="@Html.Raw(!string.IsNullOrEmpty(currentPage.OgDescription)? currentPage.OgDescription : (defaultSettings.OgDescription ?? ""))" />
+	<meta property="og:type" content="@Html.Raw(!string.IsNullOrEmpty(currentPage.OgType)? currentPage.OgType : (defaultSettings.OgType ?? ""))" />
+
+    if (pageModel != null)
+    {
+        @Html.Raw(pageModel.Schemas ?? "")
+        @Html.Raw(pageModel.BusinessSchema ?? "");
+    }
+
+    if (currentPage != null)
+    {
+        @Html.Raw(currentPage.SchemaLdScript ?? "")
+    }
+
+	if (pageCultures.Count > 1)
+	{
+		foreach (var pageCulture in pageCultures)
+		{
+			var url = Model.Url(pageCulture.Key, UrlMode.Absolute);
+			if (url != "#")
+			{
+				<link rel="alternate" hreflang="@pageCulture.Key" href="@url" />
+			}
+		}
+	}
+}

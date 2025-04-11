@@ -11,7 +11,7 @@ using Umbraco.Cms.Web.Common.ModelBinders;
 
 namespace Umbraco.Community.ContentAudit.Trees
 {
-    [Tree("audit", "audit", TreeGroup = "Audit", TreeTitle = "Audit")]
+    [Tree(Constants.SectionAlias, "outbound-links", TreeGroup = Constants.Trees.Audit.Group, SortOrder = 2)]
     [PluginController("UmbracoCommunityContentAudit")]
     public class OutboundLinksTreeController : TreeController
     {
@@ -41,7 +41,7 @@ namespace Umbraco.Community.ContentAudit.Trees
 
             if (root is not null)
             {
-                root.RoutePath = $"{Constants.SectionAlias}/audit/outbound-links";
+                root.RoutePath = $"{Constants.SectionAlias}/outbound-links/overview";
                 root.Name = "Outbound Links";
                 root.Icon = "icon-fullscreen";
                 root.HasChildren = false;

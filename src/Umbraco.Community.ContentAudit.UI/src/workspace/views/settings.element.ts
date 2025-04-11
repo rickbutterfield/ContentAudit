@@ -28,15 +28,21 @@ export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement)
         if (this.settings !== undefined) {
             return html`
                 <uui-box headline="Settings">
-                    <div>
-                        <div>Respect robots.txt</div>
-                        <div>${this.settings.respectRobotsTxt ? `Yes` : `No`}</div>
-                    </div>
+                    <umb-property-layout label="Use Umbraco content index" description="If true, Content Audit will use content from the index instead of the crawler" style="padding-top: 0;">
+                        <div slot="editor">${this.settings.useUmbracoContentIndex ? html`<uui-icon name="icon-check"></uui-icon>` : html`<uui-icon name="icon-wrong"></uui-icon>`}</div>
+                    </umb-property-layout>
 
-                    <div>
-                        <div>Use sitemap.xml</div>
-                        <div>${this.settings.useSitemapXml ? `Yes` : `No`}</div>
-                    </div>
+                    <umb-property-layout label="Respect robots.txt" description="If any content is set to 'disallow', it will be ignored by the crawler">
+                        <div slot="editor">${this.settings.respectRobotsTxt ? html`<uui-icon name="icon-check"></uui-icon>` : html`<uui-icon name="icon-wrong"></uui-icon>`}</div>
+                    </umb-property-layout>
+
+                    <umb-property-layout label="Use sitemap.xml" description="If true, Content Audit will use pages listed in 'sitemap.xml' instead of the crawler">
+                        <div slot="editor">${this.settings.useSitemapXml ? html`<uui-icon name="icon-check"></uui-icon>` : html`<uui-icon name="icon-wrong"></uui-icon>`}</div>
+                    </umb-property-layout>
+
+                    <umb-property-layout label="Sitemap URL" description="Custom path to sitemap. Defaults to '/sitemap.xml'">
+                        <div slot="editor">${this.settings.sitemapUrl}</div>
+                    </umb-property-layout>
                 </uui-box>
             `
         }
@@ -47,6 +53,20 @@ export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement)
             :host {
                 display: block;
                 padding: var(--uui-size-space-5);
+            }
+
+            .audit-setting {
+                display: flex;
+                padding: var(--uui-size-space-2) 0;
+                border-bottom: 1px solid var(--uui-color-divider);
+
+                p {
+                    margin: 0;
+                }
+            }
+
+            .audit-setting__label {
+                flex-grow: 1;
             }
         `
     ]
