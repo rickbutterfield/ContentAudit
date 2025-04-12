@@ -47,7 +47,7 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
-        public async Task<PageAnalysisData> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey)
+        public async Task<PageAnalysisDto> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey)
         {
             try
             {
@@ -55,6 +55,38 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 var page = await _browser.NewPageAsync();
                 var startTime = DateTime.UtcNow;
+
+                var pageAnalysis = new PageAnalysisDto() { Unique = nodeKey, EntityType = "document" };
+
+                await page.RouteAsync("**/*", async route =>
+                {
+                    var request = route.Request;
+                    var routeUrl = request.Url;
+
+                    try
+                    {
+                        var headers = await request.AllHeadersAsync();
+                        string contentType = headers.TryGetValue("content-type", out var type) ? type : "unknown";
+                        
+                        _logger.LogInformation("Request URL: {0}, Resource Type: {1}, Content Type: {2}", routeUrl, request.ResourceType, contentType);
+
+                        if (request.ResourceType == "script" || request.ResourceType == "stylesheet")
+                        {
+                            pageAnalysis.Resources.Add(new ResourceDto()
+                            {
+                                Url = routeUrl,
+                                IsExternal = IsExternalUrl(routeUrl),
+                                FoundPage = url,
+                                NodeKey = nodeKey
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Error processing response for {route.Request.Url}: {ex.Message}");
+                    }
+                    await route.ContinueAsync();
+                });
 
                 // Navigate to the page and wait for network idle
                 var response = await page.GotoAsync(url, new PageGotoOptions
@@ -67,7 +99,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (response == null || !response.Ok)
                 {
                     _logger.LogWarning("Failed to fetch page {0}: {1}", url, response?.Status);
-                    return new PageAnalysisData();
+                    return new PageAnalysisDto();
                 }
 
                 // Wait for the page to be fully loaded
@@ -76,60 +108,47 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 var analysisData = Task.Run(async () =>
                 {
-                    var pageAnalysis = new PageAnalysisData();
+                    pageAnalysis.Links = (await page.QuerySelectorAllAsync("a[href]"))
+                            .Select(async a => await a.GetAttributeAsync("href"))
+                            .Select(t => t.Result)
+                            .ToList();
 
-                    pageAnalysis.PageData = new PageDataDto
+                    pageAnalysis.Images = (await page.QuerySelectorAllAsync("img[src]"))
+                        .Select(async a =>
+                        {
+                            var src = await a.GetAttributeAsync("src");
+                            var resource = new ResourceDto()
+                            {
+                                Url = src,
+                                FoundPage = url,
+                                NodeKey = nodeKey,
+                                IsExternal = IsExternalUrl(src),
+                            };
+
+                            return new ImageDto(resource)
+                            {
+                                AltText = await a.GetAttributeAsync("alt")
+                            };
+                        })
+                        .Select(t => t.Result)
+                        .ToList();
+
+                    pageAnalysis.PageData = new PageDto
                     {
                         Url = url,
                         NodeKey = nodeKey,
                         StatusCode = response.Status,
-                        Links = (await page.QuerySelectorAllAsync("a[href]"))
-                            .Select(async a => new ResourceDto
-                            {
-                                Url = await a.GetAttributeAsync("href"),
-                                IsExternal = IsExternalUrl(await a.GetAttributeAsync("href"))
-                            })
-                            .Select(t => t.Result)
-                            .ToList(),
-                        //Resources = (await page.QuerySelectorAllAsync("link[href], script[src]"))
-                        //.Select(async r => new ResourceDto
-                        //{
-                        //    Url = await r.GetAttributeAsync("src") ?? await r.GetAttributeAsync("href"),
-                        //    IsExternal = IsExternalUrl(await r.GetAttributeAsync("src") ?? await r.GetAttributeAsync("href")),
-                        //    ContentType = response.Headers["content-type"],
-                        //    StatusCode = response.Status
-                        //})
-                        //.Select(t => t.Result)
-                        //.ToList(),
-                        //Images = (await page.QuerySelectorAllAsync("img"))
-                        //.Select(async img =>
-                        //{
-                        //    var src = await img.GetAttributeAsync("src");
-                        //    var resource = new ResourceDto()
-                        //    {
-                        //        ContentType = response.Headers["content-type"],
-                        //        StatusCode = response.Status,
-                        //        IsAsset = true,
-                        //        IsExternal = IsExternalUrl(src),
-                        //        PageBytes = 0,
-                        //        Url = src
-                        //    };
-
-                        //    return new ImageDto(resource);
-                        //})
-                        //.Select(t => t.Result)
-                        //.ToList()
                     };
 
-                    pageAnalysis.SeoData = new SeoSchema
+                    pageAnalysis.SeoData = new SeoDto
                     {
                         Url = url,
                         Title = await page.TitleAsync(),
                         MetaDescription = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"description\"]')?.content"),
                         CanonicalUrl = await page.EvaluateAsync<string>("() => document.querySelector('link[rel=\"canonical\"]')?.href"),
                         H1 = await page.EvaluateAsync<string>("() => document.querySelector('h1')?.textContent.trim()"),
-                        H2s = string.Join(',', await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('h2')).map(h => h.textContent.trim())")),
-                        H3s = string.Join(',', await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('h3')).map(h => h.textContent.trim())")),
+                        H2s = await page.EvaluateAsync<List<string>>("() => Array.from(document.querySelectorAll('h2')).map(h => h.textContent.trim())"),
+                        H3s = await page.EvaluateAsync<List<string>>("() => Array.from(document.querySelectorAll('h3')).map(h => h.textContent.trim())"),
                         HasNoIndex = await page.EvaluateAsync<bool>("() => document.querySelector('meta[name=\"robots\"]')?.content?.includes('noindex') ?? false"),
                         HasNoFollow = await page.EvaluateAsync<bool>("() => document.querySelector('meta[name=\"robots\"]')?.content?.includes('nofollow') ?? false"),
                         OpenGraphTitle = await page.EvaluateAsync<string>("() => document.querySelector('meta[property=\"og:title\"]')?.content"),
@@ -141,7 +160,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         TwitterImage = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"twitter:image\"]')?.content")
                     };
 
-                    pageAnalysis.ContentAnalysis = new ContentAnalysisSchema
+                    pageAnalysis.ContentAnalysis = new ContentAnalysisDto
                     {
                         Url = url,
                         WordCount = CountWords(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''")),
@@ -151,12 +170,12 @@ namespace Umbraco.Community.ContentAudit.Services
                         ExternalLinks = await page.EvaluateAsync<int>($"() => Array.from(document.querySelectorAll('a[href]')).filter(a => !a.href.startsWith('{_baseUri.AbsoluteUri}')).length"),
                         InternalLinks = await page.EvaluateAsync<int>($"() => Array.from(document.querySelectorAll('a[href]')).filter(a => a.href.startsWith('{_baseUri.AbsoluteUri}')).length"),
                         ReadabilityScore = CalculateReadabilityScore(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''")),
-                        KeywordDensity = JsonSerializer.Serialize(CalculateKeywordDensity(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''"))),
+                        KeywordDensity = CalculateKeywordDensity(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''")),
                         MissingAltTextImages = string.Join(',', await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('img:not([alt])')).map(img => img.src)")),
                         MissingTitleImages = string.Join(',', await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('img:not([title])')).map(img => img.src)"))
                     };
 
-                    pageAnalysis.PerformanceData = new PerformanceSchema
+                    pageAnalysis.PerformanceData = new PerformanceDto
                     {
                         Url = url,
                         PageLoadTime = (long)(endTime - startTime).TotalMilliseconds,
@@ -165,21 +184,21 @@ namespace Umbraco.Community.ContentAudit.Services
                         TimeToInteractive = await GetTimeToInteractive(page),
                         TotalRequests = await page.EvaluateAsync<int>("() => performance.getEntriesByType('resource').length"),
                         TotalBytes = await page.EvaluateAsync<int>("() => performance.getEntriesByType('resource').reduce((acc, entry) => acc + entry.transferSize, 0)"),
-                        ResourceTimings = JsonSerializer.Serialize(await GetResourceTimings(page))
+                        ResourceTimings = await GetResourceTimings(page)    
                     };
 
-                    pageAnalysis.AccessibilityData = new AccessibilitySchema
+                    pageAnalysis.AccessibilityData = new AccessibilityDto
                     {
                         Url = url,
-                        AccessibilityIssues = JsonSerializer.Serialize(await CheckAccessibilityIssues(page)),
+                        AccessibilityIssues = await CheckAccessibilityIssues(page),
                         AriaLabelCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('[aria-label]').length"),
                         AriaDescribedByCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('[aria-describedby]').length"),
                         HasSkipToContent = await page.EvaluateAsync<bool>("() => document.querySelector('a[href=\"#main\"], a[href=\"#content\"]') !== null"),
                         HasProperHeadingStructure = await CheckHeadingStructure(page),
-                        ColorContrastIssues = JsonSerializer.Serialize(await CheckColorContrastIssues(page))
+                        ColorContrastIssues = await CheckColorContrastIssues(page)
                     };
 
-                    pageAnalysis.TechnicalSeoData = new TechnicalSeoSchema
+                    pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
                     {
                         Url = url,
                         ContentType = response.Headers["content-type"],
@@ -188,43 +207,44 @@ namespace Umbraco.Community.ContentAudit.Services
                         HasBrowserCaching = response.Headers.ContainsKey("cache-control") && response.Headers["cache-control"].Contains("max-age"),
                         HasHttps = url.StartsWith("https://"),
                         HasValidHtml = await ValidateHtml(page),
-                        HtmlValidationErrors = JsonSerializer.Serialize(await GetHtmlValidationErrors(page)),
+                        HtmlValidationErrors = await GetHtmlValidationErrors(page),
                         HasSchemaMarkup = await page.EvaluateAsync<bool>("() => document.querySelector('script[type=\"application/ld+json\"]') !== null"),
                         SchemaType = await GetSchemaType(page)
                     };
 
-                    pageAnalysis.SocialMediaData = new SocialMediaSchema
+                    pageAnalysis.SocialMediaData = new SocialMediaDto
                     {
                         Url = url,
-                        SocialShareButtons = JsonSerializer.Serialize(await GetSocialShareButtons(page)),
+                        SocialShareButtons = await GetSocialShareButtons(page),
                         HasFacebookPixel = await page.EvaluateAsync<bool>("() => document.querySelector('script[src*=\"facebook.net\"]') !== null"),
                         HasTwitterPixel = await page.EvaluateAsync<bool>("() => document.querySelector('script[src*=\"twitter.com\"]') !== null"),
                         HasLinkedInPixel = await page.EvaluateAsync<bool>("() => document.querySelector('script[src*=\"linkedin.com\"]') !== null"),
-                        SocialMediaLinks = JsonSerializer.Serialize(await GetSocialMediaLinks(page))
+                        SocialMediaLinks = await GetSocialMediaLinks(page)
                     };
 
-                    pageAnalysis.ContentQualityData = new ContentQualitySchema
+                    pageAnalysis.ContentQualityData = new ContentQualityDto
                     {
                         Url = url,
                         HasDuplicateContent = await CheckForDuplicateContent(page),
-                        DuplicateContentUrls = JsonSerializer.Serialize(await GetDuplicateContentUrls(page)),
+                        DuplicateContentUrls = await GetDuplicateContentUrls(page),
                         HasThinContent = await CheckForThinContent(page),
                         ContentScore = await CalculateContentScore(page),
-                        ContentGaps = JsonSerializer.Serialize(await IdentifyContentGaps(page)),
-                        ContentStrengths = JsonSerializer.Serialize(await IdentifyContentStrengths(page))
+                        ContentGaps = await IdentifyContentGaps(page),
+                        ContentStrengths = await IdentifyContentStrengths(page)
                     };
 
                     return pageAnalysis;
                 });
 
-                var data = await analysisData;
+                await analysisData;
+
                 await page.CloseAsync();
-                return data;
+                return pageAnalysis;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error analyzing page {0}", url);
-                return new PageAnalysisData();
+                return new PageAnalysisDto();
             }
         }
 
@@ -296,10 +316,10 @@ namespace Umbraco.Community.ContentAudit.Services
             return await page.EvaluateAsync<long>("() => performance.getEntriesByType('longtask').reduce((acc, entry) => Math.max(acc, entry.startTime + entry.duration), 0)");
         }
 
-        private async Task<List<ResourceTiming>> GetResourceTimings(IPage page)
+        private async Task<List<ResourceTimingDto>> GetResourceTimings(IPage page)
         {
             var timings = await page.EvaluateAsync<object[]>("() => performance.getEntriesByType('resource').map(entry => ({ url: entry.name, resourceType: entry.initiatorType, duration: entry.duration, startTime: entry.startTime, size: entry.transferSize }))");
-            return timings.Select(t => JsonSerializer.Deserialize<ResourceTiming>(JsonSerializer.Serialize(t))).ToList();
+            return timings.Select(t => JsonSerializer.Deserialize<ResourceTimingDto>(JsonSerializer.Serialize(t))).ToList();
         }
 
         private async Task<List<string>> CheckAccessibilityIssues(IPage page)

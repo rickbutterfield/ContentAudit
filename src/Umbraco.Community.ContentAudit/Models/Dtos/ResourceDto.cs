@@ -7,13 +7,10 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
     public class ResourceDto : IPageResourceDto
     {
         [JsonPropertyName("url")]
-        public required string Url { get; set; }
+        public string Url { get; set; }
 
         [JsonPropertyName("isExternal")]
         public bool IsExternal { get; set; }
-
-        [JsonPropertyName("isAsset")]
-        public bool IsAsset { get; set; }
 
         [JsonPropertyName("size")]
         public double? Size { get; set; }
@@ -23,5 +20,11 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         [JsonPropertyName("contentType")]
         public string? ContentType { get; set; }
+
+        [JsonPropertyName("foundPage")]
+        public string? FoundPage { get; set; }
+
+        [JsonPropertyName("nodeKey")]
+        public Guid? NodeKey { get; set; }
     }
 }

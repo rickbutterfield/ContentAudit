@@ -1,5 +1,7 @@
 using NPoco;
+using System.Text.Json;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Schemas
 {
@@ -8,6 +10,27 @@ namespace Umbraco.Community.ContentAudit.Schemas
     public class ContentAnalysisSchema
     {
         public const string TableName = "umbContentAuditAnalysis";
+
+        public ContentAnalysisSchema() { }
+
+        public ContentAnalysisSchema(ContentAnalysisDto dto)
+        {
+            Id = dto.Id;
+            RunId = dto.RunId;
+            Url = dto.Url;
+            WordCount = dto.WordCount;
+            ParagraphCount = dto.ParagraphCount;
+            Images = dto.Images;
+            Resources = dto.Resources;
+            Links = dto.Links;
+            ExternalLinks = dto.ExternalLinks;
+            InternalLinks = dto.InternalLinks;
+            ReadabilityScore = dto.ReadabilityScore;
+            KeywordDensity = JsonSerializer.Serialize(dto.KeywordDensity);
+            MissingAltTextImages = dto.MissingAltTextImages;
+            MissingTitleImages = dto.MissingTitleImages;
+            CreatedDate = dto.CreatedDate;
+        }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }

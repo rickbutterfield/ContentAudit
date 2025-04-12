@@ -1,5 +1,6 @@
 using NPoco;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Schemas
 {
@@ -8,6 +9,29 @@ namespace Umbraco.Community.ContentAudit.Schemas
     public class SeoSchema
     {
         public const string TableName = "umbContentAuditSeo";
+
+        public SeoSchema() { }
+
+        public SeoSchema(SeoDto dto)
+        {
+            RunId = dto.RunId;
+            Url = dto.Url;
+            Title = dto.Title;
+            MetaDescription = dto.MetaDescription;
+            CanonicalUrl = dto.CanonicalUrl;
+            H1 = dto.H1;
+            H2s = string.Join(",", dto.H2s);
+            H3s = string.Join(",", dto.H3s);
+            HasNoIndex = dto.HasNoIndex;
+            HasNoFollow = dto.HasNoFollow;
+            OpenGraphTitle = dto.OpenGraphTitle;
+            OpenGraphDescription = dto.OpenGraphDescription;
+            OpenGraphImage = dto.OpenGraphImage;
+            TwitterCard = dto.TwitterCard;
+            TwitterTitle = dto.TwitterTitle;
+            TwitterDescription = dto.TwitterDescription;
+            TwitterImage = dto.TwitterImage;
+        }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
         public int RunId { get; set; }

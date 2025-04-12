@@ -36,7 +36,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly HashSet<string> _linkedPages = new HashSet<string>();
         private HashSet<string> _orphanedPages = new HashSet<string>();
 
-        private readonly HashSet<InternalPageSchema> _internalDtos = new HashSet<InternalPageSchema>();
+        private readonly HashSet<PageSchema> _internalDtos = new HashSet<PageSchema>();
         private readonly HashSet<ExternalPageSchema> _externalDtos = new HashSet<ExternalPageSchema>();
         private readonly HashSet<ImageSchema> _imageDtos = new HashSet<ImageSchema>();
 
@@ -287,45 +287,45 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 if (pageAnalysis.SeoData != null)
                 {
-                    _seoDtos.Add(pageAnalysis.SeoData);
+                    _seoDtos.Add(new SeoSchema(pageAnalysis.SeoData));
                 }
 
                 if (pageAnalysis.ContentAnalysis != null)
                 {
-                    _contentAnalysisDtos.Add(pageAnalysis.ContentAnalysis);
+                    _contentAnalysisDtos.Add(new ContentAnalysisSchema(pageAnalysis.ContentAnalysis));
                 }
 
                 if (pageAnalysis.PerformanceData != null)
                 {
-                    _performanceDtos.Add(pageAnalysis.PerformanceData);
+                    _performanceDtos.Add(new PerformanceSchema(pageAnalysis.PerformanceData));
                 }
 
                 if (pageAnalysis.AccessibilityData != null)
                 {
-                    _accessibilityDtos.Add(pageAnalysis.AccessibilityData);
+                    _accessibilityDtos.Add(new AccessibilitySchema(pageAnalysis.AccessibilityData));
                 }
 
                 if (pageAnalysis.TechnicalSeoData != null)
                 {
-                    _technicalSeoDtos.Add(pageAnalysis.TechnicalSeoData);
+                    _technicalSeoDtos.Add(new TechnicalSeoSchema(pageAnalysis.TechnicalSeoData));
                 }
 
                 if (pageAnalysis.SocialMediaData != null)
                 {
-                    _socialMediaDtos.Add(pageAnalysis.SocialMediaData);
+                    _socialMediaDtos.Add(new SocialMediaSchema(pageAnalysis.SocialMediaData));
                 }
 
                 if (pageAnalysis.ContentQualityData != null)
                 {
-                    _contentQualityDtos.Add(pageAnalysis.ContentQualityData);
+                    _contentQualityDtos.Add(new ContentQualitySchema(pageAnalysis.ContentQualityData));
                 }
 
                 _logger.LogInformation("Found {0} links and {1} resources on page {2}",
-                    pageAnalysis.PageData.Links.Count(), pageAnalysis.PageData.Resources.Count(), url);
+                    pageAnalysis.Links.Count(), pageAnalysis.Resources.Count(), url);
 
-                foreach (var link in pageAnalysis.PageData.Links.Where(x => !_linkedPages.Contains(x.Url)))
+                foreach (var link in pageAnalysis.Links.Where(x => !_linkedPages.Contains(x)))
                 {
-                    if (Uri.TryCreate(_baseUri, link.Url, out var absoluteUri))
+                    if (Uri.TryCreate(_baseUri, link, out var absoluteUri))
                     {
                         var absoluteUrl = absoluteUri.AbsoluteUri;
                         _logger.LogInformation("Processing discovered link: {0} from page {1}", absoluteUrl, url);
@@ -334,8 +334,9 @@ namespace Umbraco.Community.ContentAudit.Services
                         {
                             _linkedPages.Add(absoluteUrl);
                             _logger.LogInformation("Added {0} to linked pages", absoluteUrl);
+                            bool isExternal = !absoluteUrl.StartsWith(baseUri.AbsoluteUri);
 
-                            if (!link.IsExternal)
+                            if (!isExternal)
                             {
                                 if (!_visitedInternalUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
                                 {
@@ -356,10 +357,10 @@ namespace Umbraco.Community.ContentAudit.Services
                             }
                             else
                             {
-                                _logger.LogInformation("Enqueueing new external URL: {0}", link.Url);
+                                _logger.LogInformation("Enqueueing new external URL: {0}", link);
                                 EnqueueUrl(new UrlQueueItem
                                 {
-                                    Url = link.Url,
+                                    Url = link,
                                     IsExternal = true,
                                     IsAsset = false,
                                     SourceUrl = url,
@@ -370,7 +371,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
                 }
 
-                foreach (var resource in pageAnalysis.PageData.Resources)
+                foreach (var resource in pageAnalysis.Resources)
                 {
                     if (Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
                     {
@@ -403,9 +404,9 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
                 }
 
-                _internalDtos.Add(new InternalPageSchema(pageAnalysis.PageData, 0));
+                _internalDtos.Add(new PageSchema(pageAnalysis.PageData, 0));
 
-                foreach (var image in pageAnalysis.PageData.Images)
+                foreach (var image in pageAnalysis.Images)
                     _imageDtos.Add(new ImageSchema(image));
 
                 return new CrawlDto

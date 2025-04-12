@@ -1,11 +1,12 @@
-﻿using Umbraco.Community.ContentAudit.Models.Dtos;
+﻿using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface IDataService
     {
         Task<OverviewDto> GetLatestAuditOverview();
-        Task<List<InternalPageDto>> GetLatestAuditData(string filter = "", int statusCode = 0);
+        Task<List<PageAnalysisDto>> GetLatestAuditData(string filter = "", int statusCode = 0);
         Task<List<InternalPageDto>> GetOrphanedPages(string filter = "");
         Task<List<ExternalPageGroupDto>> GetExternalLinks(string filter = "");
         Task<List<InternalPageGroupDto>> GetInternalLinks(string filter = "");

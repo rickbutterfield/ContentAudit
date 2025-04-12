@@ -92,22 +92,22 @@ export class ContentAuditMetdataTableCollectionViewElement extends UmbLitElement
                         columnAlias: 'url',
                         value: html`<a href=${modalEditPath}>${page.url}</a>`
                     },
-                    {
-                        columnAlias: 'metaTitle',
-                        value: page.metaTitle
-                    },
-                    {
-                        columnAlias: 'metaDescription',
-                        value: page.metaDescription
-                    },
-                    {
-                        columnAlias: 'metaKeywords',
-                        value: page.metaKeywords
-                    },
-                    {
-                        columnAlias: 'metaRobots',
-                        value: page.metaRobots
-                    }
+                    //{
+                    //    columnAlias: 'metaTitle',
+                    //    value: page.metaTitle
+                    //},
+                    //{
+                    //    columnAlias: 'metaDescription',
+                    //    value: page.metaDescription
+                    //},
+                    //{
+                    //    columnAlias: 'metaKeywords',
+                    //    value: page.metaKeywords
+                    //},
+                    //{
+                    //    columnAlias: 'metaRobots',
+                    //    value: page.metaRobots
+                    //}
                 ]
             }
         });

@@ -1,5 +1,7 @@
 using NPoco;
+using System.Text.Json;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Schemas
 {
@@ -8,6 +10,25 @@ namespace Umbraco.Community.ContentAudit.Schemas
     public class TechnicalSeoSchema
     {
         public const string TableName = "umbContentAuditTechnicalSeo";
+
+        public TechnicalSeoSchema() { }
+
+        public TechnicalSeoSchema(TechnicalSeoDto dto)
+        {
+            Id = dto.Id;
+            RunId = dto.RunId;
+            Url = dto.Url;
+            ContentType = dto.ContentType;
+            Charset = dto.Charset;
+            HasGzipCompression = dto.HasGzipCompression;
+            HasBrowserCaching = dto.HasBrowserCaching;
+            HasHttps = dto.HasHttps;
+            HasValidHtml = dto.HasValidHtml;
+            HtmlValidationErrors = JsonSerializer.Serialize(dto.HtmlValidationErrors);
+            HasSchemaMarkup = dto.HasSchemaMarkup;
+            SchemaType = dto.SchemaType;
+            CreatedDate = dto.CreatedDate;
+        }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }

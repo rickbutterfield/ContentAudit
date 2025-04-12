@@ -30,26 +30,26 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         {
             var emissionsService = new EmissionsService();
 
-            var results = pages.Where(x => !x.IsAsset && x.StatusCode == 200 && x.Size > 0).ToList();
+            //var results = pages.Where(x => !x.IsAsset && x.StatusCode == 200 && x.Size > 0).ToList();
             var filteredResults = new List<InternalPageDto>();
 
-            foreach (var item in results)
-            {
-                if (item.Size.HasValue)
-                {
-                    var score = emissionsService.PerVisit(item.Size.Value, false, false, true);
-                    if (score.Total.HasValue)
-                    {
-                        item.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
-                    }
-                    item.CarbonRating = score.Rating;
+            //foreach (var item in results)
+            //{
+            //    if (item.Size.HasValue)
+            //    {
+            //        var score = emissionsService.PerVisit(item.Size.Value, false, false, true);
+            //        if (score.Total.HasValue)
+            //        {
+            //            item.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+            //        }
+            //        item.CarbonRating = score.Rating;
 
-                    if (item.EmissionsPerPageView > Constants.Emissions.SWDV4.Ratings.THIRTIETH_PERCENTILE)
-                    {
-                        filteredResults.Add(item);
-                    }
-                }
-            }
+            //        if (item.EmissionsPerPageView > Constants.Emissions.SWDV4.Ratings.THIRTIETH_PERCENTILE)
+            //        {
+            //            filteredResults.Add(item);
+            //        }
+            //    }
+            //}
 
             return filteredResults;
         }

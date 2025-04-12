@@ -1,5 +1,7 @@
 using NPoco;
+using System.Text.Json;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Schemas
 {
@@ -8,6 +10,21 @@ namespace Umbraco.Community.ContentAudit.Schemas
     public class SocialMediaSchema
     {
         public const string TableName = "umbContentAuditSocialMedia";
+
+        public SocialMediaSchema() { }
+
+        public SocialMediaSchema(SocialMediaDto dto)
+        {
+            Id = dto.Id;
+            RunId = dto.RunId;
+            Url = dto.Url;
+            SocialShareButtons = JsonSerializer.Serialize(dto.SocialShareButtons);
+            HasFacebookPixel = dto.HasFacebookPixel;
+            HasTwitterPixel = dto.HasTwitterPixel;
+            HasLinkedInPixel = dto.HasLinkedInPixel;
+            SocialMediaLinks = JsonSerializer.Serialize(dto.SocialMediaLinks);
+            CreatedDate = dto.CreatedDate;
+        }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }

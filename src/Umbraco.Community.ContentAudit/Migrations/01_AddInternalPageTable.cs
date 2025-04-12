@@ -13,13 +13,13 @@ namespace Umbraco.Community.ContentAudit.Migrations
         {
             Logger.LogDebug("Running migration {MigrationStep}", "AddInternalPageTable");
 
-            if (TableExists(InternalPageSchema.TableName) == false)
+            if (TableExists(PageSchema.TableName) == false)
             {
-                Create.Table<InternalPageSchema>().Do();
+                Create.Table<PageSchema>().Do();
             }
             else
             {
-                Logger.LogDebug("The database table {DbTable} already exists, skipping", InternalPageSchema.TableName);
+                Logger.LogDebug("The database table {DbTable} already exists, skipping", PageSchema.TableName);
             }
         }
     }

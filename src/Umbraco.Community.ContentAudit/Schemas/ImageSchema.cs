@@ -25,7 +25,9 @@ namespace Umbraco.Community.ContentAudit.Schemas
             IsBackground = image.IsBackground;
         }
 
-         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
+        [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
+        public int Id { get; set; }
+
         public int RunId { get; set; }
         public string? Url { get; set; }
         public bool IsExternal { get; set; }

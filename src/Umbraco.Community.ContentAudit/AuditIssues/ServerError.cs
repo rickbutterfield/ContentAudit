@@ -23,7 +23,8 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<InternalPageDto> CheckPages(IEnumerable<InternalPageDto> pages)
         {
-            return pages.Where(x => !x.IsAsset && x.StatusCode == 500);
+            //return pages.Where(x => !x.IsAsset && x.StatusCode == 500);
+            return null;
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Api.Common.ViewModels.Pagination;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Community.ContentAudit.Interfaces;
+using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Controllers
@@ -91,8 +92,8 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("latest-data")]
-        [ProducesResponseType(typeof(PagedViewModel<InternalPageDto>), 200)]
-        public async Task<PagedViewModel<InternalPageDto>> GetLatestAuditData(
+        [ProducesResponseType(typeof(PagedViewModel<PageAnalysisDto>), 200)]
+        public async Task<PagedViewModel<PageAnalysisDto>> GetLatestAuditData(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
@@ -101,7 +102,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
         {
             var latestData = await _auditService.GetLatestAuditData(filter, statusCode);
 
-            var viewModel = new PagedViewModel<InternalPageDto>
+            var viewModel = new PagedViewModel<PageAnalysisDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)

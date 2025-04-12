@@ -23,7 +23,8 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         
         public IEnumerable<InternalPageDto> CheckPages(IEnumerable<InternalPageDto> pages)
         {
-            return pages.Where(x => !x.IsAsset && x.StatusCode == 200 && x.MetaRobots != null && x.MetaRobots.ToLower().Contains("nofollow"));
+            //return pages.Where(x => !x.IsAsset && x.StatusCode == 200 && x.MetaRobots != null && x.MetaRobots.ToLower().Contains("nofollow"));
+            return null;
         }
     }
 }

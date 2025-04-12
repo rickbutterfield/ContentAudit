@@ -1,12 +1,10 @@
-﻿using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
-using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Models.Dtos
 {
-    public class ExternalPageDto : BaseContentAuditDto, IPageResourceDto
+    public class ExternalPageDto : BaseContentAuditDto
     {
         public ExternalPageDto() { }
 
@@ -18,13 +16,13 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             Url = schema.Url;
             NodeKey = schema.NodeKey;
             FoundPage = schema.FoundPage;
-            IsAsset = schema.IsAsset;
             StatusCode = schema.StatusCode;
             ContentType = schema.ContentType;
         }
 
         [JsonPropertyName("id")]
-         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
+        [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
+        public int Id { get; set; }
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }
@@ -34,12 +32,6 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         [JsonPropertyName("foundPage")]
         public string? FoundPage { get; set; }
-
-        [JsonPropertyName("isAsset")]
-        public bool IsAsset { get; set; }
-
-        [JsonPropertyName("size")]
-        public double? Size { get; set; }
 
         [JsonPropertyName("statusCode")]
         public int StatusCode { get; set; }
