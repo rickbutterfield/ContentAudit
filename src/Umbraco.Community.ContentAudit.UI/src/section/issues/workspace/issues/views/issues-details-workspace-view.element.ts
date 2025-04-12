@@ -99,14 +99,14 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 				tableItems = data?.pages?.map((page) => {
 					const modalEditPath =
 						routeBuilder({ entityType: 'document' }) +
-						UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.nodeKey! });
+						UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.unique! });
 
 					let tableItem: UmbTableItem = {
 						id: page.unique,
 						data: [
 							{
 								columnAlias: 'url',
-								value: html`<a href="${modalEditPath}">${page.url}</a>`
+								value: html`<a href="${modalEditPath}">${page.pageData?.url}</a>`
 							}
 						]
 					};

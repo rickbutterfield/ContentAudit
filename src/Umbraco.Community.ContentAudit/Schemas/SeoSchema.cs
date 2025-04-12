@@ -80,7 +80,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? TwitterImage { get; set; }
-        
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 }

@@ -37,7 +37,6 @@ export type ContentAnalysisDto = {
     } | null;
     missingAltTextImages?: string | null;
     missingTitleImages?: string | null;
-    createdDate: string;
 };
 
 export type ContentAuditSettings = {
@@ -70,6 +69,11 @@ export type CrawlDto = {
     nodeKey: string;
 };
 
+export type EmissionsDto = {
+    emissionsPerPageView: number;
+    carbonRating?: string | null;
+};
+
 export type ExternalPageDto = {
     unique: string;
     entityType: string;
@@ -99,15 +103,19 @@ export type HealthScoreDto = {
 export type ImageDto = {
     unique: string;
     entityType: string;
-    url: string;
+    id: number;
+    runId: number;
+    url?: string | null;
+    isExternal: boolean;
     size?: number | null;
     statusCode: number;
     contentType?: string | null;
+    altText?: string | null;
+    title?: string | null;
     foundPage?: string | null;
     nodeKey?: string | null;
-    isExternal: boolean;
+    createdDate: string;
     isBackground: boolean;
-    altText?: string | null;
 };
 
 export type InternalPageDto = {
@@ -142,7 +150,7 @@ export type IssueDto = {
     priority: IssuePriority;
     numberOfUrls?: number | null;
     percentOfTotal: number;
-    pages?: Array<(InternalPageDto)> | null;
+    pages?: Array<(PageAnalysisDto)> | null;
     images?: Array<(ImageDto)> | null;
     exposedProperties?: Array<(AuditIssueProperty)> | null;
     priorityScore: number;
@@ -160,6 +168,20 @@ export enum IssueType {
     ISSUE = 'Issue'
 }
 
+export type LinkDto = {
+    unique: string;
+    entityType: string;
+    id: number;
+    runId: number;
+    url?: string | null;
+    linkUrl?: string | null;
+    isExternal: boolean;
+    foundPage?: string | null;
+    statusCode: number;
+    contentType?: string | null;
+    createdDate: string;
+};
+
 export type OverviewDto = {
     runDate?: string | null;
     total?: number | null;
@@ -172,7 +194,7 @@ export type OverviewDto = {
 export type PageAnalysisDto = {
     unique: string;
     entityType: string;
-    links?: Array<(string)> | null;
+    links?: Array<(LinkDto)> | null;
     resources?: Array<(ResourceDto)> | null;
     images?: Array<(ImageDto)> | null;
     pageData?: PageDto | null;
@@ -183,6 +205,7 @@ export type PageAnalysisDto = {
     technicalSeoData?: TechnicalSeoDto | null;
     socialMediaData?: SocialMediaDto | null;
     contentQualityData?: ContentQualityDto | null;
+    emissionsData?: EmissionsDto | null;
 };
 
 export type PageDto = {
@@ -238,13 +261,19 @@ export type PerformanceDto = {
 };
 
 export type ResourceDto = {
-    url: string;
+    unique: string;
+    entityType: string;
+    id: number;
+    runId: number;
+    url?: string | null;
+    resourceUrl?: string | null;
     isExternal: boolean;
     size?: number | null;
     statusCode: number;
     contentType?: string | null;
     foundPage?: string | null;
     nodeKey?: string | null;
+    createdDate: string;
 };
 
 export type ResourceTimingDto = {

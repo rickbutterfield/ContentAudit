@@ -27,7 +27,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             HtmlValidationErrors = JsonSerializer.Serialize(dto.HtmlValidationErrors);
             HasSchemaMarkup = dto.HasSchemaMarkup;
             SchemaType = dto.SchemaType;
-            CreatedDate = dto.CreatedDate;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -60,6 +59,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? SchemaType { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 } 

@@ -9,9 +9,13 @@ namespace Umbraco.Community.ContentAudit.Schemas
     {
         public const string TableName = "umbContentAuditOrphanedPages";
 
-         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
+        [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
+        public int Id { get; set; }
+
         public int RunId { get; set; }
         public string? Url { get; set; }
         public Guid? NodeKey { get; set; }
+
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 }

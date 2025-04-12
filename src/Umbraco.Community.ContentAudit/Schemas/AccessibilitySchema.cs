@@ -24,7 +24,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             HasSkipToContent = dto.HasSkipToContent;
             HasProperHeadingStructure = dto.HasProperHeadingStructure;
             ColorContrastIssues = JsonSerializer.Serialize(dto.ColorContrastIssues);
-            CreatedDate = dto.CreatedDate;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -43,6 +42,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
         
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? ColorContrastIssues { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 } 

@@ -21,10 +21,9 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
         
-        public IEnumerable<InternalPageDto> CheckPages(IEnumerable<InternalPageDto> pages)
+        public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
-            return null;
-            //return pages.Where(x => !x.IsAsset && x.StatusCode == 200 && (x.H1 == null || x.H1?.Any() == false));
+            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && string.IsNullOrEmpty(x.SeoData.H1));
         }
     }
 }

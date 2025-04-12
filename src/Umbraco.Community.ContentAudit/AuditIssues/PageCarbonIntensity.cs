@@ -22,34 +22,36 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<AuditIssueProperty> ExposedProperties => new List<AuditIssueProperty>()
         {
-            new() { Name = "Emissions per page view", Alias = "emissionsPerPageView", LabelTemplate = "{umbValue: value}g" },
-            new() { Name = "Carbon rating", Alias = "carbonRating", ElementName = "content-audit-carbon-intensity-label" }
+            new() { Name = "Emissions per page view", Alias = "emissionsData.emissionsPerPageView", LabelTemplate = "{umbValue: value}g" },
+            new() { Name = "Carbon rating", Alias = "emissionsData.carbonRating", ElementName = "content-audit-carbon-intensity-label" }
         };
 
-        public IEnumerable<InternalPageDto> CheckPages(IEnumerable<InternalPageDto> pages)
+        public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
             var emissionsService = new EmissionsService();
 
-            //var results = pages.Where(x => !x.IsAsset && x.StatusCode == 200 && x.Size > 0).ToList();
-            var filteredResults = new List<InternalPageDto>();
+            var results = pages.Where(x => x.PageData.StatusCode == 200 && x.PerformanceData != null && x.PerformanceData?.TotalBytes > 0).ToList();
+            var filteredResults = new List<PageAnalysisDto>();
 
-            //foreach (var item in results)
-            //{
-            //    if (item.Size.HasValue)
-            //    {
-            //        var score = emissionsService.PerVisit(item.Size.Value, false, false, true);
-            //        if (score.Total.HasValue)
-            //        {
-            //            item.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
-            //        }
-            //        item.CarbonRating = score.Rating;
+            foreach (var item in results)
+            {
+                if (item.PerformanceData.TotalBytes.HasValue)
+                {
+                    item.EmissionsData = new();
 
-            //        if (item.EmissionsPerPageView > Constants.Emissions.SWDV4.Ratings.THIRTIETH_PERCENTILE)
-            //        {
-            //            filteredResults.Add(item);
-            //        }
-            //    }
-            //}
+                    var score = emissionsService.PerVisit(item.PerformanceData.TotalBytes.Value, false, false, true);
+                    if (score.Total.HasValue)
+                    {
+                        item.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                    }
+                    item.EmissionsData.CarbonRating = score.Rating;
+
+                    if (item.EmissionsData.EmissionsPerPageView > Constants.Emissions.SWDV4.Ratings.THIRTIETH_PERCENTILE)
+                    {
+                        filteredResults.Add(item);
+                    }
+                }
+            }
 
             return filteredResults;
         }

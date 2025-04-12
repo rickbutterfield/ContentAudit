@@ -1,0 +1,2 @@
+﻿export const CONTENT_AUDIT_ALL_PAGES_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.AllPages';
+export const CONTENT_AUDIT_ALL_PAGES_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.AllPages.Table';

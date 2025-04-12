@@ -23,7 +23,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             HasTwitterPixel = dto.HasTwitterPixel;
             HasLinkedInPixel = dto.HasLinkedInPixel;
             SocialMediaLinks = JsonSerializer.Serialize(dto.SocialMediaLinks);
-            CreatedDate = dto.CreatedDate;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -44,6 +43,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? SocialMediaLinks { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 } 

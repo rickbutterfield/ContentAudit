@@ -21,7 +21,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
         
-        public IEnumerable<ImageDto> CheckImages(IEnumerable<ImageDto> images, IEnumerable<InternalPageDto> pages)
+        public IEnumerable<ImageDto> CheckImages(IEnumerable<ImageDto> images, IEnumerable<PageAnalysisDto> pages)
         {
             return images.Where(x => !x.IsBackground && string.IsNullOrEmpty(x.AltText));
         }

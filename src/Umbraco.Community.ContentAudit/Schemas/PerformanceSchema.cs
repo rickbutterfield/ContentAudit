@@ -25,7 +25,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             TotalRequests = dto.TotalRequests;
             TotalBytes = dto.TotalBytes;
             ResourceTimings = JsonSerializer.Serialize(dto.ResourceTimings);
-            CreatedDate = dto.CreatedDate;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -55,6 +54,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
         
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? ResourceTimings { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 } 

@@ -23,7 +23,6 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             KeywordDensity = JsonSerializer.Deserialize<Dictionary<string, int>>(schema.KeywordDensity);
             MissingAltTextImages = schema.MissingAltTextImages;
             MissingTitleImages = schema.MissingTitleImages;
-            CreatedDate = schema.CreatedDate;
         }
 
         public int Id { get; set; }
@@ -40,6 +39,5 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public Dictionary<string, int>? KeywordDensity { get; set; }
         public string? MissingAltTextImages { get; set; }
         public string? MissingTitleImages { get; set; }
-        public DateTime CreatedDate { get; set; }
     }
 }

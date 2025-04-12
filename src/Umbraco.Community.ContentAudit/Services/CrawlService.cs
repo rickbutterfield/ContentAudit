@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
-using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
@@ -65,10 +64,10 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     try
                     {
-                        var headers = await request.AllHeadersAsync();
-                        string contentType = headers.TryGetValue("content-type", out var type) ? type : "unknown";
-                        
-                        _logger.LogInformation("Request URL: {0}, Resource Type: {1}, Content Type: {2}", routeUrl, request.ResourceType, contentType);
+                        //var headers = await request.AllHeadersAsync();
+                        //string contentType = headers.TryGetValue("content-type", out var type) ? type : "unknown";
+
+                        //_logger.LogInformation("Request URL: {0}, Resource Type: {1}, Content Type: {2}", routeUrl, request.ResourceType, contentType);
 
                         if (request.ResourceType == "script" || request.ResourceType == "stylesheet")
                         {
@@ -78,6 +77,22 @@ namespace Umbraco.Community.ContentAudit.Services
                                 IsExternal = IsExternalUrl(routeUrl),
                                 FoundPage = url,
                                 NodeKey = nodeKey
+                            });
+                        }
+
+                        if (request.ResourceType == "image")
+                        {
+                            var resource = new ResourceDto()
+                            {
+                                Url = routeUrl,
+                                IsExternal = IsExternalUrl(routeUrl),
+                                FoundPage = url,
+                                NodeKey = nodeKey
+                            };
+
+                            pageAnalysis.Images.Add(new ImageDto(resource)
+                            {
+                                IsBackground = true
                             });
                         }
                     }
@@ -109,11 +124,21 @@ namespace Umbraco.Community.ContentAudit.Services
                 var analysisData = Task.Run(async () =>
                 {
                     pageAnalysis.Links = (await page.QuerySelectorAllAsync("a[href]"))
-                            .Select(async a => await a.GetAttributeAsync("href"))
+                            .Select(async a =>
+                            {
+                                var href = await a.GetAttributeAsync("href");
+
+                                return new LinkDto()
+                                {
+                                    Url = href,
+                                    FoundPage = url,
+                                    IsExternal = IsExternalUrl(href),
+                                };
+                            })
                             .Select(t => t.Result)
                             .ToList();
 
-                    pageAnalysis.Images = (await page.QuerySelectorAllAsync("img[src]"))
+                    var pageImages = (await page.QuerySelectorAllAsync("img[src]"))
                         .Select(async a =>
                         {
                             var src = await a.GetAttributeAsync("src");
@@ -133,6 +158,19 @@ namespace Umbraco.Community.ContentAudit.Services
                         .Select(t => t.Result)
                         .ToList();
 
+                    if (pageAnalysis.Images != null)
+                    {
+                        foreach (var image in pageImages)
+                        {
+                            var existingImage = pageAnalysis.Images.FirstOrDefault(i => i.Url == image.Url);
+                            if (existingImage != null)
+                            {
+                                existingImage.IsBackground = false;
+                                existingImage.AltText = image.AltText;
+                            }
+                        }
+                    }
+
                     pageAnalysis.PageData = new PageDto
                     {
                         Url = url,
@@ -140,39 +178,49 @@ namespace Umbraco.Community.ContentAudit.Services
                         StatusCode = response.Status,
                     };
 
-                    pageAnalysis.SeoData = new SeoDto
+                    try
                     {
-                        Url = url,
-                        Title = await page.TitleAsync(),
-                        MetaDescription = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"description\"]')?.content"),
-                        CanonicalUrl = await page.EvaluateAsync<string>("() => document.querySelector('link[rel=\"canonical\"]')?.href"),
-                        H1 = await page.EvaluateAsync<string>("() => document.querySelector('h1')?.textContent.trim()"),
-                        H2s = await page.EvaluateAsync<List<string>>("() => Array.from(document.querySelectorAll('h2')).map(h => h.textContent.trim())"),
-                        H3s = await page.EvaluateAsync<List<string>>("() => Array.from(document.querySelectorAll('h3')).map(h => h.textContent.trim())"),
-                        HasNoIndex = await page.EvaluateAsync<bool>("() => document.querySelector('meta[name=\"robots\"]')?.content?.includes('noindex') ?? false"),
-                        HasNoFollow = await page.EvaluateAsync<bool>("() => document.querySelector('meta[name=\"robots\"]')?.content?.includes('nofollow') ?? false"),
-                        OpenGraphTitle = await page.EvaluateAsync<string>("() => document.querySelector('meta[property=\"og:title\"]')?.content"),
-                        OpenGraphDescription = await page.EvaluateAsync<string>("() => document.querySelector('meta[property=\"og:description\"]')?.content"),
-                        OpenGraphImage = await page.EvaluateAsync<string>("() => document.querySelector('meta[property=\"og:image\"]')?.content"),
-                        TwitterCard = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"twitter:card\"]')?.content"),
-                        TwitterTitle = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"twitter:title\"]')?.content"),
-                        TwitterDescription = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"twitter:description\"]')?.content"),
-                        TwitterImage = await page.EvaluateAsync<string>("() => document.querySelector('meta[name=\"twitter:image\"]')?.content")
-                    };
+                        pageAnalysis.SeoData = new SeoDto
+                        {
+                            Url = url,
+                            Title = await page.TitleAsync(),
+                            MetaDescription = await (await page.QuerySelectorAsync("meta[name=\"description\"]"))?.GetAttributeAsync("content") ?? "",
+                            CanonicalUrl = await (await page.QuerySelectorAsync("link[rel=\"canonical\"]"))?.GetAttributeAsync("href") ?? "",
+                            H1 = await (await page.QuerySelectorAsync("h1"))?.TextContentAsync() ?? "",
+                            H2s = (await page.QuerySelectorAllAsync("h2")).Select(async h => await h.TextContentAsync() ?? "").Select(t => t.Result).ToList(),
+                            H3s = (await page.QuerySelectorAllAsync("h3")).Select(async h => await h.TextContentAsync() ?? "").Select(t => t.Result).ToList(),
+                            HasNoIndex = (await (await page.QuerySelectorAsync("meta[name=\"robots\"]"))?.GetAttributeAsync("content") ?? "").Contains("noindex"),
+                            HasNoFollow = (await (await page.QuerySelectorAsync("meta[name=\"robots\"]"))?.GetAttributeAsync("content") ?? "").Contains("nofollow"),
+                            OpenGraphTitle = await (await page.QuerySelectorAsync("meta[property=\"og:title\"]"))?.GetAttributeAsync("content") ?? "",
+                            OpenGraphDescription = await (await page.QuerySelectorAsync("meta[property=\"og:description\"]"))?.GetAttributeAsync("content") ?? "",
+                            OpenGraphImage = await (await page.QuerySelectorAsync("meta[property=\"og:image\"]"))?.GetAttributeAsync("content") ?? "",
+                            TwitterCard = await (await page.QuerySelectorAsync("meta[name=\"twitter:card\"]"))?.GetAttributeAsync("content") ?? "",
+                            TwitterTitle = await (await page.QuerySelectorAsync("meta[name=\"twitter:title\"]"))?.GetAttributeAsync("content") ?? "",
+                            TwitterDescription = await (await page.QuerySelectorAsync("meta[name=\"twitter:description\"]"))?.GetAttributeAsync("content") ?? "",
+                            TwitterImage = await (await page.QuerySelectorAsync("meta[name=\"twitter:image\"]"))?.GetAttributeAsync("content") ?? ""
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = ex;
+                    }
+
+                    var bodyElement = await page.QuerySelectorAsync("body");
+                    var bodyText = bodyElement != null ? await bodyElement.TextContentAsync() : "";
 
                     pageAnalysis.ContentAnalysis = new ContentAnalysisDto
                     {
                         Url = url,
-                        WordCount = CountWords(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''")),
-                        ParagraphCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('p').length"),
-                        Images = await page.EvaluateAsync<int>("() => document.querySelectorAll('img')"),
-                        Links = await page.EvaluateAsync<int>("() => document.querySelectorAll('a[href]').length"),
-                        ExternalLinks = await page.EvaluateAsync<int>($"() => Array.from(document.querySelectorAll('a[href]')).filter(a => !a.href.startsWith('{_baseUri.AbsoluteUri}')).length"),
-                        InternalLinks = await page.EvaluateAsync<int>($"() => Array.from(document.querySelectorAll('a[href]')).filter(a => a.href.startsWith('{_baseUri.AbsoluteUri}')).length"),
-                        ReadabilityScore = CalculateReadabilityScore(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''")),
-                        KeywordDensity = CalculateKeywordDensity(await page.EvaluateAsync<string>("() => document.body?.textContent ?? ''")),
-                        MissingAltTextImages = string.Join(',', await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('img:not([alt])')).map(img => img.src)")),
-                        MissingTitleImages = string.Join(',', await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('img:not([title])')).map(img => img.src)"))
+                        WordCount = CountWords(bodyText),
+                        ParagraphCount = (await page.QuerySelectorAllAsync("p")).Count,
+                        Images = (await page.QuerySelectorAllAsync("img")).Count,
+                        Links = (await page.QuerySelectorAllAsync("a[href]")).Count,
+                        ExternalLinks = (await page.QuerySelectorAllAsync("a[href]")).Count(link => !link.GetAttributeAsync("href").Result?.StartsWith(_baseUri.AbsoluteUri) ?? false),
+                        InternalLinks = (await page.QuerySelectorAllAsync("a[href]")).Count(link => link.GetAttributeAsync("href").Result?.StartsWith(_baseUri.AbsoluteUri) ?? false),
+                        ReadabilityScore = CalculateReadabilityScore(bodyText),
+                        KeywordDensity = CalculateKeywordDensity(bodyText),
+                        MissingAltTextImages = string.Join(',', (await page.QuerySelectorAllAsync("img:not([alt])")).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)),
+                        MissingTitleImages = string.Join(',', (await page.QuerySelectorAllAsync("img:not([title])")).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result))
                     };
 
                     pageAnalysis.PerformanceData = new PerformanceDto
@@ -184,7 +232,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         TimeToInteractive = await GetTimeToInteractive(page),
                         TotalRequests = await page.EvaluateAsync<int>("() => performance.getEntriesByType('resource').length"),
                         TotalBytes = await page.EvaluateAsync<int>("() => performance.getEntriesByType('resource').reduce((acc, entry) => acc + entry.transferSize, 0)"),
-                        ResourceTimings = await GetResourceTimings(page)    
+                        ResourceTimings = await GetResourceTimings(page)
                     };
 
                     pageAnalysis.AccessibilityData = new AccessibilityDto
@@ -327,7 +375,7 @@ namespace Umbraco.Community.ContentAudit.Services
             var issues = new List<string>();
 
             // Check for missing alt text on images
-            var imagesWithoutAlt = (await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('img:not([alt])')).map(img => img.src)")).ToList();
+            var imagesWithoutAlt = (await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('img:not([alt])'))?.map(img => img.src)")).ToList();
             issues.AddRange(imagesWithoutAlt.Select(src => $"Image without alt text: {src}"));
 
             // Check for missing form labels
@@ -391,7 +439,8 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private async Task<string?> GetSchemaType(IPage page)
         {
-            var schemaScript = await page.EvaluateAsync<string>("() => document.querySelector('script[type=\"application/ld+json\"]')?.textContent");
+            var schemaElement = await page.QuerySelectorAsync("script[type=\"application/ld+json\"]");
+            var schemaScript = schemaElement != null ? await schemaElement.TextContentAsync() : null;
             if (string.IsNullOrEmpty(schemaScript))
                 return null;
 
@@ -412,12 +461,46 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private async Task<List<string>> GetSocialShareButtons(IPage page)
         {
-            return (await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('[class*=\"share\"], [class*=\"social\"]')).filter(el => el.classList.contains('facebook') || el.classList.contains('twitter') || el.classList.contains('linkedin') || el.classList.contains('pinterest')).map(el => Array.from(el.classList).find(c => c.includes('facebook') || c.includes('twitter') || c.includes('linkedin') || c.includes('pinterest')))")).ToList();
+            var elements = await page.QuerySelectorAllAsync("[class*=\"share\"], [class*=\"social\"]");
+            var buttons = new List<string>();
+            
+            foreach (var element in elements)
+            {
+                var classList = await element.GetAttributeAsync("class");
+                if (classList != null)
+                {
+                    var classes = classList.Split(' ');
+                    var socialClass = classes.FirstOrDefault(c => 
+                        c.Contains("facebook", StringComparison.OrdinalIgnoreCase) ||
+                        c.Contains("twitter", StringComparison.OrdinalIgnoreCase) ||
+                        c.Contains("linkedin", StringComparison.OrdinalIgnoreCase) ||
+                        c.Contains("pinterest", StringComparison.OrdinalIgnoreCase));
+                    
+                    if (socialClass != null)
+                    {
+                        buttons.Add(socialClass);
+                    }
+                }
+            }
+            
+            return buttons;
         }
 
         private async Task<List<string>> GetSocialMediaLinks(IPage page)
         {
-            return (await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('a[href*=\"facebook.com\"], a[href*=\"twitter.com\"], a[href*=\"linkedin.com\"], a[href*=\"instagram.com\"], a[href*=\"youtube.com\"]')).map(a => a.href)")).ToList();
+            var links = await page.QuerySelectorAllAsync("a[href*=\"facebook.com\"], a[href*=\"twitter.com\"], a[href*=\"linkedin.com\"], a[href*=\"instagram.com\"], a[href*=\"youtube.com\"]");
+            var hrefs = new List<string>();
+            
+            foreach (var link in links)
+            {
+                var href = await link.GetAttributeAsync("href");
+                if (href != null)
+                {
+                    hrefs.Add(href);
+                }
+            }
+            
+            return hrefs;
         }
 
         private async Task<bool> CheckForDuplicateContent(IPage page)
@@ -436,7 +519,8 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private async Task<bool> CheckForThinContent(IPage page)
         {
-            var mainContent = await page.EvaluateAsync<string>("() => (document.querySelector('main, article') || document.body)?.textContent ?? ''");
+            var mainElement = await page.QuerySelectorAsync("main, article") ?? await page.QuerySelectorAsync("body");
+            var mainContent = mainElement != null ? await mainElement.TextContentAsync() : "";
             var wordCount = CountWords(mainContent);
             return wordCount < 300;
         }
@@ -446,16 +530,18 @@ namespace Umbraco.Community.ContentAudit.Services
             var score = 0;
 
             // Word count score
-            var wordCount = CountWords(await page.EvaluateAsync<string>("() => (document.querySelector('main, article') || document.body)?.textContent ?? ''"));
+            var mainElement = await page.QuerySelectorAsync("main, article") ?? await page.QuerySelectorAsync("body");
+            var mainContent = mainElement != null ? await mainElement.TextContentAsync() : "";
+            var wordCount = CountWords(mainContent);
             score += Math.Min(wordCount / 10, 20);
 
             // Image score
-            var imageCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('img').length");
-            score += Math.Min(imageCount * 2, 10);
+            var images = await page.QuerySelectorAllAsync("img");
+            score += Math.Min(images.Count * 2, 10);
 
             // Link score
-            var linkCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('a[href]').length");
-            score += Math.Min(linkCount, 10);
+            var links = await page.QuerySelectorAllAsync("a[href]");
+            score += Math.Min(links.Count, 10);
 
             // Heading structure score
             if (await CheckHeadingStructure(page))
@@ -473,13 +559,13 @@ namespace Umbraco.Community.ContentAudit.Services
             var gaps = new List<string>();
 
             // Check for missing images
-            var imageCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('img').length");
-            if (imageCount == 0)
+            var images = await page.QuerySelectorAllAsync("img");
+            if (images.Count == 0)
                 gaps.Add("No images found");
 
             // Check for missing links
-            var linkCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('a[href]').length");
-            if (linkCount == 0)
+            var links = await page.QuerySelectorAllAsync("a[href]");
+            if (links.Count == 0)
                 gaps.Add("No links found");
 
             // Check for thin content
@@ -487,8 +573,8 @@ namespace Umbraco.Community.ContentAudit.Services
                 gaps.Add("Content is too thin (less than 300 words)");
 
             // Check for missing headings
-            var headingCount = await page.EvaluateAsync<int>("() => document.querySelectorAll('h1, h2, h3').length");
-            if (headingCount == 0)
+            var headings = await page.QuerySelectorAllAsync("h1, h2, h3");
+            if (headings.Count == 0)
                 gaps.Add("No headings found");
 
             return gaps;
@@ -499,18 +585,28 @@ namespace Umbraco.Community.ContentAudit.Services
             var strengths = new List<string>();
 
             // Check for good word count
-            var wordCount = CountWords(await page.EvaluateAsync<string>("() => (document.querySelector('main, article') || document.body)?.textContent ?? ''"));
+            var mainElement = await page.QuerySelectorAsync("main, article") ?? await page.QuerySelectorAsync("body");
+            var mainContent = mainElement != null ? await mainElement.TextContentAsync() : "";
+            var wordCount = CountWords(mainContent);
             if (wordCount >= 500)
                 strengths.Add("Good word count");
 
             // Check for images with alt text
-            var imagesWithAlt = await page.EvaluateAsync<int>("() => document.querySelectorAll('img[alt]').length");
-            if (imagesWithAlt > 0)
+            var imagesWithAlt = await page.QuerySelectorAllAsync("img[alt]");
+            if (imagesWithAlt.Count > 0)
                 strengths.Add("Images have alt text");
 
             // Check for internal links
-            var internalLinks = await page.EvaluateAsync<int>($"" +
-                $"() => Array.from(document.querySelectorAll('a[href]')).filter(a => a.href.startsWith('{_baseUri.AbsoluteUri}')).length");
+            var allLinks = await page.QuerySelectorAllAsync("a[href]");
+            var internalLinks = 0;
+            foreach (var link in allLinks)
+            {
+                var href = await link.GetAttributeAsync("href");
+                if (href != null && href.StartsWith(_baseUri.AbsoluteUri))
+                {
+                    internalLinks++;
+                }
+            }
             if (internalLinks > 0)
                 strengths.Add("Good internal linking");
 

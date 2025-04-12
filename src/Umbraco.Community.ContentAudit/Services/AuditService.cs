@@ -323,9 +323,9 @@ namespace Umbraco.Community.ContentAudit.Services
                 _logger.LogInformation("Found {0} links and {1} resources on page {2}",
                     pageAnalysis.Links.Count(), pageAnalysis.Resources.Count(), url);
 
-                foreach (var link in pageAnalysis.Links.Where(x => !_linkedPages.Contains(x)))
+                foreach (var link in pageAnalysis.Links.Where(x => !_linkedPages.Contains(x.Url)))
                 {
-                    if (Uri.TryCreate(_baseUri, link, out var absoluteUri))
+                    if (Uri.TryCreate(_baseUri, link.Url, out var absoluteUri))
                     {
                         var absoluteUrl = absoluteUri.AbsoluteUri;
                         _logger.LogInformation("Processing discovered link: {0} from page {1}", absoluteUrl, url);
@@ -360,7 +360,7 @@ namespace Umbraco.Community.ContentAudit.Services
                                 _logger.LogInformation("Enqueueing new external URL: {0}", link);
                                 EnqueueUrl(new UrlQueueItem
                                 {
-                                    Url = link,
+                                    Url = absoluteUrl,
                                     IsExternal = true,
                                     IsAsset = false,
                                     SourceUrl = url,

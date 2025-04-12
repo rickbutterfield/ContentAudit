@@ -24,7 +24,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             ContentScore = dto.ContentScore;
             ContentGaps = JsonSerializer.Serialize(dto.ContentGaps);
             ContentStrengths = JsonSerializer.Serialize(dto.ContentStrengths);
-            CreatedDate = dto.CreatedDate;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -45,6 +44,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
         
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? ContentStrengths { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 } 

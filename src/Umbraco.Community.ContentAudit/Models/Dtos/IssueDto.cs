@@ -26,7 +26,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public IssuePriority Priority { get; set; }
         public int? NumberOfUrls { get; set; }
         public double PercentOfTotal { get; set; }
-        public IEnumerable<InternalPageDto>? Pages { get; set; }
+        public IEnumerable<PageAnalysisDto>? Pages { get; set; }
         public IEnumerable<ImageDto>? Images { get; set; }
         public IEnumerable<AuditIssueProperty>? ExposedProperties { get; set; }
 

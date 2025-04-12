@@ -9,7 +9,9 @@ namespace Umbraco.Community.ContentAudit.Schemas
     {
         public const string TableName = "umbContentAuditExternalPages";
 
-        [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
+        [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
+        public int Id { get; set; }
+
         public int RunId { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
@@ -25,5 +27,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? ContentType { get; set; }
         public bool IsAsset { get; set; }
+
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 }

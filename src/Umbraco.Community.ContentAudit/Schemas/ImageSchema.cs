@@ -1,4 +1,4 @@
-﻿using NPoco;
+using NPoco;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 using Umbraco.Community.ContentAudit.Models.Dtos;
 
@@ -12,30 +12,53 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         public ImageSchema() { }
 
-        public ImageSchema(ImageDto image)
+        public ImageSchema(ImageDto dto)
         {
-            Url = image.Url;
-            IsExternal = image.IsExternal;
-            Size = image.Size ?? 0;
-            StatusCode = image.StatusCode;
-            ContentType = image.ContentType?.ToString() ?? "";
-            AltText = image.AltText;
-            FoundPage = image.FoundPage;
-            NodeKey = image.NodeKey;
-            IsBackground = image.IsBackground;
+            Id = dto.Id;
+            RunId = dto.RunId;
+            Url = dto.Url;
+            IsExternal = dto.IsExternal;
+            Size = dto.Size;
+            StatusCode = dto.StatusCode;
+            ContentType = dto.ContentType;
+            AltText = dto.AltText;
+            Title = dto.Title;
+            FoundPage = dto.FoundPage;
+            NodeKey = dto.NodeKey;
+            IsBackground = dto.IsBackground;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }
 
         public int RunId { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
         public string? Url { get; set; }
+
         public bool IsExternal { get; set; }
-        public bool IsBackground { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
         public double? Size { get; set; }
+
         public int StatusCode { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
         public string? ContentType { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
         public string? AltText { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? Title { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
         public string? FoundPage { get; set; }
-        public Guid? NodeKey { get; set; }    }
-}
+
+        public bool IsBackground { get; set; }
+
+        public Guid? NodeKey { get; set; }
+
+        public DateTime CreatedDate => DateTime.UtcNow;
+    }
+} 

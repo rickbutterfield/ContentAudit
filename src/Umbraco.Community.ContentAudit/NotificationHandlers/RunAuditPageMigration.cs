@@ -63,7 +63,9 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 .To<AddAccessibilityTable>("contentaudit-accessibility")
                 .To<AddContentQualityTable>("contentaudit-quality")
                 .To<AddSocialMediaTable>("contentaudit-socialmedia")
-                .To<AddTechnicalSeoTable>("contentaudit-technicalseo");
+                .To<AddTechnicalSeoTable>("contentaudit-technicalseo")
+                .To<AddLinksTable>("contentaudit-links")
+                .To<AddResourcesTable>("contentaudit-resources");
 
             var upgrader = new Upgrader(migrationPlan);
             upgrader.Execute(

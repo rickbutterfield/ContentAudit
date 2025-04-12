@@ -29,7 +29,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             KeywordDensity = JsonSerializer.Serialize(dto.KeywordDensity);
             MissingAltTextImages = dto.MissingAltTextImages;
             MissingTitleImages = dto.MissingTitleImages;
-            CreatedDate = dto.CreatedDate;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -55,6 +54,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
         
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? MissingTitleImages { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 }

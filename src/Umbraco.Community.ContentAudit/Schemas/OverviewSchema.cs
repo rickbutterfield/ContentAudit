@@ -18,5 +18,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int TotalExternal { get; set; }
         public int TotalAssets { get; set; }
         public int TotalBlocked { get; set; }
+
+        public DateTime CreatedDate => DateTime.UtcNow;
     }
 }

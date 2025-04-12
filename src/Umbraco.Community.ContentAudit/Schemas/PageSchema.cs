@@ -33,5 +33,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public Guid? NodeKey { get; set; }
 
         public int StatusCode { get; set; }
+
+        public DateTime CreatedDate => DateTime.Now;
     }
 }
