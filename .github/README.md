@@ -1,12 +1,12 @@
-# Umbraco.Community.ContentAudit
+# ContentAudit
 
 [![Platform](https://img.shields.io/badge/Umbraco-15+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.ContentAudit.svg)](https://www.nuget.org/packages/Umbraco.Community.ContentAudit/)
-[![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/develop/LICENSE)
+[![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/main/LICENSE)
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
 
-## **ContentAudit** is a tool for first class site crawling and SEO auditing for Umbraco
+## First class site crawling and SEO auditing for Umbraco
 
 ![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
 
@@ -18,7 +18,7 @@ For detailed documentation, including:
 - Usage guides
 - Best practices
 
-Visit the [documentation](docs/README.md) folder.
+Visit the [documentation](../docs/README.md) folder.
 
 ## Contributing
 
