@@ -462,7 +462,7 @@ namespace Umbraco.Community.ContentAudit.Services
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string sql = $"SELECT [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC LIMIT 1";
+            string sql = $"SELECT TOP 1 [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC";
 
             int? latestId = await scope.Database.ExecuteScalarAsync<int?>(sql);
 

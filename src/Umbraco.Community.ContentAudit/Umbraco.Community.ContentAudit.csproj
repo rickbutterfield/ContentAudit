@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<VersionPrefix>1.0.0</VersionPrefix>
-		<VersionSuffix>alpha.3</VersionSuffix>
+		<VersionSuffix>alpha.4</VersionSuffix>
 		<Authors>Studio Minim Ltd</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Studio Minim Ltd</Copyright>
 
@@ -27,6 +27,8 @@
 
 		<RepositoryType>git</RepositoryType>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+	
+	    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
 	</PropertyGroup>
 
 	<ItemGroup>
