@@ -4,9 +4,11 @@
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.ContentAudit.svg)](https://www.nuget.org/packages/Umbraco.Community.ContentAudit/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/develop/LICENSE)
 
-**ContentAudit** is a tool designed for auditing content and SEO within Umbraco CMS.
+<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
 
-<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150" align="right">
+**ContentAudit** is a tool for first class site crawling and SEO auditing for Umbraco
+
+![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
 
 ## Installation
 The Umbraco v15 version of this package is available via NuGet.

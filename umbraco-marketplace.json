@@ -1,0 +1,30 @@
+{
+	"$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+	"AuthorDetails": {
+		"Name": "Rick Butterfield",
+		"Description": "2× Umbraco MVP & full stack lead software engineer from the UK.",
+		"Url": "https://rickbutterfield.dev",
+		"ImageUrl": "https://github.com/rickbutterfield.png"
+	},
+	"Category": "Analytics & Insights",
+  "Description": "First class site crawling and SEO auditing for Umbraco",
+	"DocumentationUrl": "https://github.com/rickbutterfield/Umbraco.Community.ContentAudit",
+	"LicenseTypes": [ "Free" ],
+	"IssueTrackerUrl": "https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/issues",
+	"PackageType": "Package",
+	"Screenshots": [
+		{
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/screenshot1.png",
+			"Caption": "The Umbraco backoffice showing the Content Audit dashboard"
+		},
+    {
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/screenshot2.png",
+			"Caption": "Content Audit can show a breakdown of individual page information"
+		},
+    {
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/screenshot3.png",
+			"Caption": "Content Audit comes with issue tracking out of the box, and is extensible by developers"
+		}
+	],
+  "Title": "ContentAudit"
+}
