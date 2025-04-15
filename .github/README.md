@@ -6,7 +6,7 @@
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
 
-## **ContentAudit** is a tool for first class site crawling and SEO auditing for Umbraco
+## **ContentAudit** is a tool for first class site crawling and SEO auditing in Umbraco
 
 ![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
 
