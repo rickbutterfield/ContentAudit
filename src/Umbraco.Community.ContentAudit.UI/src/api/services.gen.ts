@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetAllImagesData, GetAllImagesResponse, GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponse, GetExternalLinksData, GetExternalLinksResponse, GetHealthScoreResponse, GetInteralLinksData, GetInteralLinksResponse, GetIssueData, GetIssueResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
+import type { GetAllImagesData, GetAllImagesResponse, GetAllIssuesData, GetAllIssuesResponse, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponse, GetExternalLinksData, GetExternalLinksResponse, GetHealthScoreResponse, GetInteralLinksData, GetInteralLinksResponse, GetIssueData, GetIssueResponse, GetLatestAuditOverviewResponse, GetLatestAuditDataData, GetLatestAuditDataResponse, GetLatestPageAuditDataData, GetLatestPageAuditDataResponse, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponse, GetOrphanedPagesData, GetOrphanedPagesResponse, StartCrawlResponse, GetSettingsResponse } from './types.gen';
 
 export class AuditService {
     /**
@@ -160,6 +160,22 @@ export class AuditService {
                 take: data.take,
                 filter: data.filter,
                 statusCode: data.statusCode
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.unique
+     * @returns unknown OK
+     * @throws ApiError
+     */
+    public static getLatestPageAuditData(data: GetLatestPageAuditDataData = {}): CancelablePromise<GetLatestPageAuditDataResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/umbraco/content-audit/api/v1/latest-page-data',
+            query: {
+                unique: data.unique
             }
         });
     }

@@ -16,7 +16,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         {
             RunId = runId;
             Url = pageDto.Url;
-            NodeKey = pageDto.NodeKey;
+            Unique = pageDto.Unique;
             StatusCode = pageDto.StatusCode;
         }
 
@@ -30,7 +30,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         public bool IsAsset { get; set; }
 
-        public Guid? NodeKey { get; set; }
+        public Guid Unique { get; set; }
 
         public int StatusCode { get; set; }
 

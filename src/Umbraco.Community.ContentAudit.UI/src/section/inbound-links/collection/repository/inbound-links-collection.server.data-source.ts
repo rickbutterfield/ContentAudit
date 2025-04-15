@@ -1,9 +1,9 @@
 ﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { AuditService, InternalPageGroupDto } from "../../../../api";
+import { AuditService, LinkGroupDto } from "../../../../api";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 
-export class ContentAuditInboundLinksCollectionDataSource implements UmbCollectionDataSource<InternalPageGroupDto> {
+export class ContentAuditInboundLinksCollectionDataSource implements UmbCollectionDataSource<LinkGroupDto> {
 	#host: UmbControllerHost;
 
 	constructor(host: UmbControllerHost) {

@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Api.Common.ViewModels.Pagination;
-using Umbraco.Cms.Core.Models;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
@@ -12,32 +11,32 @@ namespace Umbraco.Community.ContentAudit.Controllers
     [ApiExplorerSettings(GroupName = "Audit")]
     public class AuditController : ContentAuditControllerBase
     {
-        private readonly IDataService _auditService;
+        private readonly IDataService _dataService;
 
         public AuditController(
-            IDataService auditService)
+            IDataService dataService)
         {
-            _auditService = auditService;
+            _dataService = dataService;
         }
 
         [HttpGet("latest-audit")]
         [ProducesResponseType(typeof(OverviewDto), 200)]
         public async Task<OverviewDto> GetLatestAuditOverview()
         {
-            return await _auditService.GetLatestAuditOverview();
+            return await _dataService.GetLatestAuditOverview();
         }
 
         [HttpGet("duplicate-content")]
-        [ProducesResponseType(typeof(PagedViewModel<InternalPageGroupDto>), 200)]
-        public async Task<PagedViewModel<InternalPageGroupDto>> GetDuplicateContentUrls(
+        [ProducesResponseType(typeof(PagedViewModel<PageDto>), 200)]
+        public async Task<PagedViewModel<PageDto>> GetDuplicateContentUrls(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetDuplicateContentUrls(filter);
+            var latestData = await _dataService.GetDuplicateContentUrls(filter);
 
-            var viewModel = new PagedViewModel<InternalPageGroupDto>
+            var viewModel = new PagedViewModel<PageDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)
@@ -47,16 +46,16 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("missing-metadata")]
-        [ProducesResponseType(typeof(PagedViewModel<InternalPageDto>), 200)]
-        public async Task<PagedViewModel<InternalPageDto>> GetPagesWithMissingMetadata(
+        [ProducesResponseType(typeof(PagedViewModel<PageAnalysisDto>), 200)]
+        public async Task<PagedViewModel<PageAnalysisDto>> GetPagesWithMissingMetadata(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetPagesWithMissingMetadata(filter);
+            var latestData = await _dataService.GetPagesWithMissingMetadata(filter);
 
-            var viewModel = new PagedViewModel<InternalPageDto>
+            var viewModel = new PagedViewModel<PageAnalysisDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)
@@ -72,7 +71,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
             int skip = 0,
             int take = 20)
         {
-            var allIssues = await _auditService.GetAllIssues();
+            var allIssues = await _dataService.GetAllIssues();
             var orderedIssues = allIssues.OrderByDescending(x => x.PercentOfTotal).ToList();
 
             var viewModel = new PagedViewModel<IssueDto>
@@ -88,7 +87,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
         [ProducesResponseType(typeof(IssueDto), 200)]
         public async Task<IssueDto?> GetIssue(Guid issueGuid)
         {
-            return await _auditService.GetIssue(issueGuid);
+            return await _dataService.GetIssue(issueGuid);
         }
 
         [HttpGet("latest-data")]
@@ -100,7 +99,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
             string filter = "",
             int statusCode = 0)
         {
-            var latestData = await _auditService.GetLatestAuditData(filter, statusCode);
+            var latestData = await _dataService.GetLatestAuditData(filter, statusCode);
 
             var viewModel = new PagedViewModel<PageAnalysisDto>
             {
@@ -111,13 +110,23 @@ namespace Umbraco.Community.ContentAudit.Controllers
             return viewModel;
         }
 
-        [HttpGet("orphaned-pages")]
-        [ProducesResponseType(typeof(PagedViewModel<InternalPageDto>), 200)]
-        public async Task<PagedViewModel<InternalPageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
-        {
-            var latestData = await _auditService.GetOrphanedPages(filter);
+        [HttpGet("latest-page-data")]
+        [ProducesResponseType(typeof(PageAnalysisDto), 200)]
+        public async Task<PageAnalysisDto> GetLatestPageAuditData(
+            CancellationToken cancellationToken,
+            Guid unique)
+            {
+                var latestData = await _dataService.GetLatestPageAuditData(unique);
+                return latestData;
+            }
 
-            var viewModel = new PagedViewModel<InternalPageDto>
+        [HttpGet("orphaned-pages")]
+        [ProducesResponseType(typeof(PagedViewModel<PageDto>), 200)]
+        public async Task<PagedViewModel<PageDto>> GetOrphanedPages(int skip = 0, int take = 20, string filter = "")
+        {
+            var latestData = await _dataService.GetOrphanedPages(filter);
+
+            var viewModel = new PagedViewModel<PageDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)
@@ -130,7 +139,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
         [ProducesResponseType(typeof(PagedViewModel<ImageDto>), 200)]
         public async Task<PagedViewModel<ImageDto>> GetAllImages(int skip = 0, int take = 20, string filter = "")
         {
-            var latestData = await _auditService.GetAllImages(filter);
+            var latestData = await _dataService.GetAllImages(filter);
 
             var viewModel = new PagedViewModel<ImageDto>
             {
@@ -142,16 +151,16 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("external-links")]
-        [ProducesResponseType(typeof(PagedViewModel<ExternalPageGroupDto>), 200)]
-        public async Task<PagedViewModel<ExternalPageGroupDto>> GetExternalLinks(
+        [ProducesResponseType(typeof(PagedViewModel<LinkGroupDto>), 200)]
+        public async Task<PagedViewModel<LinkGroupDto>> GetExternalLinks(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetExternalLinks(filter);
+            var latestData = await _dataService.GetExternalLinks(filter);
 
-            var viewModel = new PagedViewModel<ExternalPageGroupDto>
+            var viewModel = new PagedViewModel<LinkGroupDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)
@@ -161,16 +170,16 @@ namespace Umbraco.Community.ContentAudit.Controllers
         }
 
         [HttpGet("internal-links")]
-        [ProducesResponseType(typeof(PagedViewModel<InternalPageGroupDto>), 200)]
-        public async Task<PagedViewModel<InternalPageGroupDto>> GetInteralLinks(
+        [ProducesResponseType(typeof(PagedViewModel<LinkGroupDto>), 200)]
+        public async Task<PagedViewModel<LinkGroupDto>> GetInteralLinks(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
             string filter = "")
         {
-            var latestData = await _auditService.GetInternalLinks(filter);
+            var latestData = await _dataService.GetInternalLinks(filter);
 
-            var viewModel = new PagedViewModel<InternalPageGroupDto>
+            var viewModel = new PagedViewModel<LinkGroupDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)
@@ -183,7 +192,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
         [ProducesResponseType(typeof(HealthScoreDto), 200)]
         public async Task<HealthScoreDto> GetHealthScore()
         {
-            return await _auditService.GetHealthScore();
+            return await _dataService.GetHealthScore();
         }
     }
 }

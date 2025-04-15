@@ -28,16 +28,24 @@ export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement)
         if (this.settings !== undefined) {
             return html`
                 <uui-box headline="Settings">
+                    <div slot="header">Discovered from appsettings.json</div>
+
                     <umb-property-layout label="Use Umbraco content index" description="If true, Content Audit will use content from the index instead of the crawler" style="padding-top: 0;">
-                        <div slot="editor">${this.settings.useUmbracoContentIndex ? html`<uui-icon name="icon-check"></uui-icon>` : html`<uui-icon name="icon-wrong"></uui-icon>`}</div>
+                        <div slot="editor">
+                            <uui-toggle .checked=${this.settings.useUmbracoContentIndex} readonly></uui-toggle>
+                        </div>
                     </umb-property-layout>
 
                     <umb-property-layout label="Respect robots.txt" description="If any content is set to 'disallow', it will be ignored by the crawler">
-                        <div slot="editor">${this.settings.respectRobotsTxt ? html`<uui-icon name="icon-check"></uui-icon>` : html`<uui-icon name="icon-wrong"></uui-icon>`}</div>
+                        <div slot="editor">
+                            <uui-toggle .checked=${this.settings.respectRobotsTxt} readonly></uui-toggle>
+                        </div>
                     </umb-property-layout>
 
                     <umb-property-layout label="Use sitemap.xml" description="If true, Content Audit will use pages listed in 'sitemap.xml' instead of the crawler">
-                        <div slot="editor">${this.settings.useSitemapXml ? html`<uui-icon name="icon-check"></uui-icon>` : html`<uui-icon name="icon-wrong"></uui-icon>`}</div>
+                        <div slot="editor">
+                            <uui-toggle .checked=${this.settings.useSitemapXml} readonly></uui-toggle>
+                        </div>
                     </umb-property-layout>
 
                     <umb-property-layout label="Sitemap URL" description="Custom path to sitemap. Defaults to '/sitemap.xml'">

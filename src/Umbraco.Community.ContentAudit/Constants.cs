@@ -28,6 +28,11 @@
             }
         }
 
+        internal class Cache
+        {
+            internal const string Key = "LatestAuditData";
+        }
+
         internal class Emissions
         {
             // SUSTAINABLE WEB DESIGN CONSTANTS

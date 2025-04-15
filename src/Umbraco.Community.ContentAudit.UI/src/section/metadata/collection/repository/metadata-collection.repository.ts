@@ -2,9 +2,9 @@
 import type { UmbCollectionFilterModel, UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditMetadataCollectionDataSource } from "./metadata-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { InternalPageDto } from '../../../../api';
+import { PageAnalysisDto } from '../../../../api';
 
-export class ContentAuditMetadataCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<InternalPageDto, UmbCollectionFilterModel> {
+export class ContentAuditMetadataCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageAnalysisDto, UmbCollectionFilterModel> {
     #collectionSource: ContentAuditMetadataCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

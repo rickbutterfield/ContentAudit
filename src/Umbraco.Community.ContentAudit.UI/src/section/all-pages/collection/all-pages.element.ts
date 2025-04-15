@@ -1,12 +1,12 @@
 ﻿import { html, css, customElement } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
-import { InternalPageDto } from '../../../api';
+import { PageDto } from '../../../api';
 import { UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
 import { ContentAuditAllPagesCollectionFilterModel } from './types';
 
 @customElement('content-audit-all-pages-collection')
 export class ContentAuditAllPagesCollectionElement extends UmbCollectionDefaultElement {
-	_collectionContext?: UmbDefaultCollectionContext<InternalPageDto, ContentAuditAllPagesCollectionFilterModel>;
+	_collectionContext?: UmbDefaultCollectionContext<PageDto, ContentAuditAllPagesCollectionFilterModel>;
 
 	constructor() {
 		super();

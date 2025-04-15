@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-using Umbraco.Community.ContentAudit.Common.Enums;
+﻿using Umbraco.Community.ContentAudit.Common.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 

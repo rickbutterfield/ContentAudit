@@ -13,13 +13,12 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             Id = schema.Id;
             RunId = schema.RunId;
             Url = schema.Url;
-            ResourceUrl = schema.ResourceUrl;
             IsExternal = schema.IsExternal;
             Size = schema.Size;
             StatusCode = schema.StatusCode;
             ContentType = schema.ContentType;
             FoundPage = schema.FoundPage;
-            NodeKey = schema.NodeKey;
+            Unique = schema.Unique;
             CreatedDate = schema.CreatedDate;
         }
 
@@ -32,9 +31,6 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }
-
-        [JsonPropertyName("resourceUrl")]
-        public string? ResourceUrl { get; set; }
 
         [JsonPropertyName("isExternal")]
         public bool IsExternal { get; set; }
@@ -51,8 +47,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         [JsonPropertyName("foundPage")]
         public string? FoundPage { get; set; }
 
-        [JsonPropertyName("nodeKey")]
-        public Guid? NodeKey { get; set; }
+        [JsonPropertyName("unique")]
+        public Guid Unique { get; set; }
 
         [JsonPropertyName("createdDate")]
         public DateTime CreatedDate { get; set; }

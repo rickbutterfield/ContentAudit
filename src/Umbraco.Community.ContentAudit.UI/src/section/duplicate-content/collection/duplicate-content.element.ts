@@ -1,11 +1,11 @@
 ﻿import { css, customElement, html } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbCollectionFilterModel, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
-import { InternalPageDto } from '../../../api';
+import { PageDto } from '../../../api';
 import { UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
 
 @customElement('content-audit-duplicate-content-collection')
 export class ContentAuditDuplicateContentCollectionElement extends UmbCollectionDefaultElement {
-	_collectionContext?: UmbDefaultCollectionContext<InternalPageDto, UmbCollectionFilterModel>;
+	_collectionContext?: UmbDefaultCollectionContext<PageDto, UmbCollectionFilterModel>;
 
 	constructor() {
 		super();

@@ -17,13 +17,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
             Id = dto.Id;
             RunId = dto.RunId;
             Url = dto.Url;
-            ResourceUrl = dto.ResourceUrl;
             IsExternal = dto.IsExternal;
             Size = dto.Size;
             StatusCode = dto.StatusCode;
             ContentType = dto.ContentType;
             FoundPage = dto.FoundPage;
-            NodeKey = dto.NodeKey;
+            Unique = dto.Unique;
         }
 
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
@@ -34,11 +33,9 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? Url { get; set; }
 
-        [NullSetting(NullSetting = NullSettings.Null)]
-        public string? ResourceUrl { get; set; }
-
         public bool IsExternal { get; set; }
 
+        [NullSetting(NullSetting = NullSettings.Null)]
         public double? Size { get; set; }
 
         public int StatusCode { get; set; }
@@ -49,7 +46,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? FoundPage { get; set; }
 
-        public Guid? NodeKey { get; set; }
+        public Guid Unique { get; set; }
 
         public DateTime CreatedDate => DateTime.UtcNow;
     }

@@ -24,6 +24,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
             H3s = string.Join(",", dto.H3s);
             HasNoIndex = dto.HasNoIndex;
             HasNoFollow = dto.HasNoFollow;
+            IsOrphaned = dto.IsOrphaned;
             OpenGraphTitle = dto.OpenGraphTitle;
             OpenGraphDescription = dto.OpenGraphDescription;
             OpenGraphImage = dto.OpenGraphImage;
@@ -59,7 +60,8 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         public bool HasNoIndex { get; set; }
         public bool HasNoFollow { get; set; }
-        
+        public bool IsOrphaned { get; set; }
+
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? OpenGraphTitle { get; set; }
         

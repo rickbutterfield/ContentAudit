@@ -22,7 +22,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
-            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && x.SeoData.H2s != null && x.SeoData?.H2s.Where(y => string.IsNullOrEmpty(y)).Any() == false);
+            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && x.SeoData.H2s != null && x.SeoData?.H2s.Any() == false);
         }
     }
 }

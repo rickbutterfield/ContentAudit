@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { InternalPageGroupDto } from '../../../../../api';
+import { LinkGroupDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
 @customElement('content-audit-inbound-links-table-collection-view')
@@ -36,7 +36,7 @@ export class ContentAuditInboundLinksTableCollectionViewElement extends UmbLitEl
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<InternalPageGroupDto>;
+    #collectionContext?: UmbDefaultCollectionContext<LinkGroupDto>;
 
     constructor() {
         super();
@@ -52,26 +52,26 @@ export class ContentAuditInboundLinksTableCollectionViewElement extends UmbLitEl
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(internalPageGrouping: InternalPageGroupDto[]) {
-        this._tableItems = internalPageGrouping.map((internalPageGroup) => {
+    #createTableItems(linkGroups: LinkGroupDto[]) {
+        this._tableItems = linkGroups.map((linkGroup) => {
             return {
-                id: internalPageGroup.unique,
+                id: linkGroup.unique,
                 data: [
                     {
                         columnAlias: 'url',
-                        value: html`<a href="${internalPageGroup.url}" target="_blank">${internalPageGroup.url}</a>`
+                        value: html`<a href="${linkGroup.url}" target="_blank">${linkGroup.url}</a>`
                     },
                     {
                         columnAlias: 'statusCode',
-                        value: html`<content-audit-status-code-label .statusCode=${internalPageGroup.statusCode}></content-audit-status-code-label>`
+                        value: html`<content-audit-status-code-label .statusCode=${linkGroup.statusCode}></content-audit-status-code-label>`
                     },
                     {
                         columnAlias: 'contentType',
-                        value: internalPageGroup.contentType
+                        value: linkGroup.contentType
                     },
                     {
                         columnAlias: 'inlinks',
-                        value: internalPageGroup.internalPages?.length
+                        value: linkGroup.links?.length
                     }
                 ]
             }

@@ -1,0 +1,205 @@
+﻿<div ng-controller="Umbraco.Community.ContentAudit.AllPages.InfoController as vm">
+
+    <div class="umb-package-details">
+
+        <div class="umb-package-details__main-content form-horizontal">
+
+            <uui-box headline="SEO" ng-if="vm.data.seoData != null" style="margin-bottom: 16px">
+                <umb-control-group label="Title">
+                    <div slot="editor">{{vm.data.seoData.title}}</div>
+                </umb-control-group>
+                <umb-control-group label="Meta Description">
+                    <div slot="editor">{{vm.data.seoData.metaDescription}}</div>
+                </umb-control-group>
+                <umb-control-group label="Canonical URL">
+                    <div slot="editor">{{vm.data.seoData.canonicalUrl}}</div>
+                </umb-control-group>
+                <umb-control-group label="H1">
+                    <div slot="editor">{{vm.data.seoData.h1}}</div>
+                </umb-control-group>
+                <umb-control-group label="H2s">
+                    <div slot="editor">{{vm.data.seoData.h2s}}</div>
+                </umb-control-group>
+                <umb-control-group label="H3s">
+                    <div slot="editor">{{vm.data.seoData.h3s}}</div>
+                </umb-control-group>
+                <umb-control-group label="No Index">
+                    <div slot="editor">{{vm.data.seoData.hasNoIndex ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="No Follow">
+                    <div slot="editor">{{vm.data.seoData.hasNoFollow ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Open Graph Title">
+                    <div slot="editor">{{vm.data.seoData.openGraphTitle}}</div>
+                </umb-control-group>
+                <umb-control-group label="Open Graph Description">
+                    <div slot="editor">{{vm.data.seoData.openGraphDescription}}</div>
+                </umb-control-group>
+                <umb-control-group label="Open Graph Image">
+                    <div slot="editor">{{vm.data.seoData.openGraphImage}}</div>
+                </umb-control-group>
+            </uui-box>
+
+            <uui-box headline="Content Analysis" ng-if="vm.data.contentAnalysis != null" style="margin-bottom: 16px">
+                <umb-control-group label="Word Count">
+                    <div slot="editor">{{vm.data.contentAnalysis.wordCount}}</div>
+                </umb-control-group>
+                <umb-control-group label="Paragraph Count">
+                    <div slot="editor">{{vm.data.contentAnalysis.paragraphCount}}</div>
+                </umb-control-group>
+                <umb-control-group label="Images">
+                    <div slot="editor">{{vm.data.contentAnalysis.images}}</div>
+                </umb-control-group>
+                <umb-control-group label="Resources">
+                    <div slot="editor">{{vm.data.contentAnalysis.resources}}</div>
+                </umb-control-group>
+                <umb-control-group label="Links">
+                    <div slot="editor">{{vm.data.contentAnalysis.links}}</div>
+                </umb-control-group>
+                <umb-control-group label="External Links">
+                    <div slot="editor">{{vm.data.contentAnalysis.externalLinks}}</div>
+                </umb-control-group>
+                <umb-control-group label="Internal Links">
+                    <div slot="editor">{{vm.data.contentAnalysis.internalLinks}}</div>
+                </umb-control-group>
+                <umb-control-group label="Readability Score">
+                    <div slot="editor">{{vm.data.contentAnalysis.readabilityScore}}</div>
+                </umb-control-group>
+                <umb-control-group label="Keyword Density">
+                    <div slot="editor">{{vm.data.contentAnalysis.keywordDensity}}</div>
+                </umb-control-group>
+                <umb-control-group label="Missing Alt Text Images">
+                    <div slot="editor">{{vm.data.contentAnalysis.missingAltTextImages}}</div>
+                </umb-control-group>
+                <umb-control-group label="Missing Title Images">
+                    <div slot="editor">{{vm.data.contentAnalysis.missingTitleImages}}</div>
+                </umb-control-group>
+            </uui-box>
+
+            <uui-box headline="Performance" ng-if="vm.data.performanceData != null" style="margin-bottom: 16px">
+                <umb-control-group label="Page Load Time">
+                    <div slot="editor">{{vm.data.performanceData.pageLoadTime}}ms</div>
+                </umb-control-group>
+                <umb-control-group label="First Contentful Paint">
+                    <div slot="editor">{{vm.data.performanceData.firstContentfulPaint}}ms</div>
+                </umb-control-group>
+                <umb-control-group label="Largest Contentful Paint">
+                    <div slot="editor">{{vm.data.performanceData.largestContentfulPaint}}ms</div>
+                </umb-control-group>
+                <umb-control-group label="Time to Interactive">
+                    <div slot="editor">{{vm.data.performanceData.timeToInteractive}}ms</div>
+                </umb-control-group>
+                <umb-control-group label="Total Requests">
+                    <div slot="editor">{{vm.data.performanceData.totalRequests}}</div>
+                </umb-control-group>
+                <umb-control-group label="Total Bytes">
+                    <div slot="editor">{{vm.data.performanceData.totalBytes}}b</div>
+                </umb-control-group>
+            </uui-box>
+
+            <uui-box headline="Accessibility" ng-if="vm.data.accessibilityData != null" style="margin-bottom: 16px">
+                <umb-control-group label="Accessibility Issues">
+                    <div slot="editor">{{vm.data.accessibilityData.accessibilityIssues}}</div>
+                </umb-control-group>
+                <umb-control-group label="ARIA Labels">
+                    <div slot="editor">{{vm.data.accessibilityData.ariaLabelCount}}</div>
+                </umb-control-group>
+                <umb-control-group label="ARIA Described By">
+                    <div slot="editor">{{vm.data.accessibilityData.ariaDescribedByCount}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has Skip to Content">
+                    <div slot="editor">{{vm.data.accessibilityData.hasSkipToContent ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has Proper Heading Structure">
+                    <div slot="editor">{{vm.data.accessibilityData.hasProperHeadingStructure ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+            </uui-box>
+
+            <uui-box headline="Technical SEO" style="margin-bottom: 16px">
+                <umb-control-group label="Content Type">
+                    <div slot="editor">{{vm.data.technicalSeoData.contentType}}</div>
+                </umb-control-group>
+                <umb-control-group label="Charset">
+                    <div slot="editor">{{vm.data.technicalSeoData.charset}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has GZip Compression">
+                    <div slot="editor">{{vm.data.technicalSeoData.hasGzipCompression ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has Browser Caching">
+                    <div slot="editor">{{vm.data.technicalSeoData.hasBrowserCaching ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has HTTPS">
+                    <div slot="editor">{{vm.data.technicalSeoData.hasHttps ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has Valid HTML">
+                    <div slot="editor">{{vm.data.technicalSeoData.hasValidHtml ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="HTML Validation Errors">
+                    <div slot="editor">{{vm.data.technicalSeoData.htmlValidationErrors}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has Schema Markup">
+                    <div slot="editor">{{vm.data.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Schema Type">
+                    <div slot="editor">{{vm.data.technicalSeoData.schemaType}}</div>
+                </umb-control-group>
+            </uui-box>
+
+            <uui-box headline="Content Quality" ng-if="vm.data.contentQualityData != null" style="margin-bottom: 16px">
+                <umb-control-group label="Has Duplicate Content">
+                    <div slot="editor">{{vm.data.contentQualityData.hasDuplicateContent ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Duplicate Content URLs">
+                    <div slot="editor">{{vm.data.contentQualityData.duplicateContentUrls}}</div>
+                </umb-control-group>
+                <umb-control-group label="Has Thin Content">
+                    <div slot="editor">{{vm.data.contentQualityData.hasThinContent ? 'Yes' : 'No'}}</div>
+                </umb-control-group>
+                <umb-control-group label="Content Score">
+                    <div slot="editor">{{vm.data.contentQualityData.contentScore}}</div>
+                </umb-control-group>
+                <umb-control-group label="Content Gaps">
+                    <div slot="editor">{{vm.data.contentQualityData.contentGaps}}</div>
+                </umb-control-group>
+                <umb-control-group label="Content Strengths">
+                    <div slot="editor">{{vm.data.contentQualityData.contentStrengths}}</div>
+                </umb-control-group>
+            </uui-box>
+
+            <uui-box headline="Emissions" ng-if="vm.data.emissionsData != null" style="margin-bottom: 16px">
+                <umb-control-group label="Emissions per Page View">
+                    <div slot="editor">{{vm.data.emissionsData.emissionsPerPageView}}g CO<sub>2</sub></div>
+                </umb-control-group>
+                <umb-control-group label="Carbon Rating">
+                    <div slot="editor">
+                        <content-audit-carbon-intensity-label .value={{vm.data.emissionsData.carbonRating}}>
+                        </content-audit-carbon-intensity-label>
+                </umb-control-group>
+            </uui-box>
+        </div>
+
+    </div>
+
+        <div class="umb-package-details__sidebar">
+
+            <uui-box headline="Page">
+
+                <umb-control-group label="URL">
+                    {{vm.data.pageData.url}}
+                </umb-control-group>
+
+                <umb-control-group label="Unique">
+                    {{vm.data.unique}}
+                </umb-control-group>
+
+                <umb-control-group label="Status Code">
+                    <div ng-bind-html="vm.renderStatusCodeLabel(vm.data.pageData.statusCode)"></div>
+                </umb-control-group>
+
+            </uui-box>
+
+        </div>
+
+    </div>
+
+</div>

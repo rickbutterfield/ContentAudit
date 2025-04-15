@@ -38,7 +38,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             });
 
             this.observe(context.topIssues, (topIssues) => {
-                this._topIssues = topIssues;
+                this._topIssues = topIssues.filter(x => x.numberOfUrls != 0)
             });
 
             this.observe(context.healthScore, (healthScore) => {
@@ -53,7 +53,6 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
         this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, (instance) => {
             this.#modalManagerContext = instance;
-            // modalManagerContext is now ready to be used.
         });
     }
 
@@ -251,7 +250,6 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                         (data) => data.url,
                         (data) => html`${JSON.stringify(data)}<br/>`
                     )}
-
                 </uui-box>
             `
         }
@@ -275,6 +273,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             <div id="main">
                 ${this.#renderLatestAudit()}
                 ${this.#renderHealthScore()}
+                
                 ${this.#renderTopIssues()}
             </div>
         `

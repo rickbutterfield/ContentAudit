@@ -18,7 +18,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             StatusCode = dto.StatusCode;
             ContentType = dto.ContentType;
             FoundPage = dto.FoundPage;
-            NodeKey = dto.NodeKey;
+            Unique = dto.Unique;
             CreatedDate = dto.CreatedDate;
         }
 
@@ -34,7 +34,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             AltText = schema.AltText;
             Title = schema.Title;
             FoundPage = schema.FoundPage;
-            NodeKey = schema.NodeKey;
+            Unique = schema.Unique;
             CreatedDate = schema.CreatedDate;
             IsBackground = schema.IsBackground;
         }
@@ -70,8 +70,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         [JsonPropertyName("foundPage")]
         public string? FoundPage { get; set; }
 
-        [JsonPropertyName("nodeKey")]
-        public Guid? NodeKey { get; set; }
+        [JsonPropertyName("unique")]
+        public Guid Unique { get; set; }
 
         [JsonPropertyName("createdDate")]
         public DateTime CreatedDate { get; set; }

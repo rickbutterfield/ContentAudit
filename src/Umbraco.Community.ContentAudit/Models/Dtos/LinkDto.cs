@@ -13,7 +13,6 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             Id = schema.Id;
             RunId = schema.RunId;
             Url = schema.Url;
-            LinkUrl = schema.LinkUrl;
             IsExternal = schema.IsExternal;
             FoundPage = schema.FoundPage;
             StatusCode = schema.StatusCode;
@@ -30,9 +29,6 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }
-
-        [JsonPropertyName("linkUrl")]
-        public string? LinkUrl { get; set; }
 
         [JsonPropertyName("isExternal")]
         public bool IsExternal { get; set; }

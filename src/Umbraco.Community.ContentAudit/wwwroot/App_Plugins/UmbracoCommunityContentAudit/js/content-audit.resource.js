@@ -1,12 +1,13 @@
 ﻿(function () {
     'use strict';
 
-    function contentAuditResource($http, umbRequestHelper) {
-        let apiUrl = "/umbraco/content-audit/api/v1";
+    function contentAuditResource($http, $sce, umbRequestHelper) {
+        const apiUrl = "/umbraco/content-audit/api/v1";
 
-        let resource = {
+        const resource = {
             getLatestAuditOverview: getLatestAuditOverview,
             getLatestAuditData: getLatestAuditData,
+            getLatestPageAuditData: getLatestPageAuditData,
             getAllIssues: getAllIssues,
             getIssue: getIssue,
             getHealthScore: getHealthScore,
@@ -15,8 +16,54 @@
             getInboundLinks: getInboundLinks,
             getDuplicatePages: getDuplicatePages,
             getImageAltText: getImageAltText,
-            getMetadata: getMetadata
+            getMetadata: getMetadata,
+            getOrphanedPages: getOrphanedPages,
+            renderTypeLabel: renderTypeLabel,
+            renderPriorityLabel: renderPriorityLabel,
+            renderStatusCodeLabel: renderStatusCodeLabel
         };
+
+        const issueTypeConfigMap = [
+            {
+                label: 'Opportunity',
+                icon: 'icon-info',
+                class: 'opportunity',
+                color: 'default'
+            },
+            {
+                label: 'Warning',
+                icon: 'icon-stop-alt',
+                class: 'warning',
+                color: 'warning'
+            },
+            {
+                label: 'Issue',
+                icon: 'icon-alert',
+                class: 'issue',
+                color: 'danger'
+            }
+        ];
+
+        const issuePriorityConfigMap = [
+            {
+                label: 'Low',
+                icon: 'icon-navigation-bottom',
+                class: 'low',
+                color: 'default'
+            },
+            {
+                label: 'Medium',
+                icon: 'icon-navigation-road',
+                class: 'medium',
+                color: 'warning'
+            },
+            {
+                label: 'High',
+                icon: 'icon-navigation-top',
+                class: 'high',
+                color: 'danger'
+            }
+        ];
 
         function getLatestAuditOverview(skip, take, filter) {
             return umbRequestHelper.resourcePromise(
@@ -67,6 +114,13 @@
             )
         }
 
+        function getLatestPageAuditData(unique) {
+            return umbRequestHelper.resourcePromise(
+                $http.get(`${apiUrl}/latest-page-data?unique=${unique}`),
+                'Failed getting latest page audit data'
+            )
+        }
+
         function getDuplicatePages(skip, take, filter) {
             return umbRequestHelper.resourcePromise(
                 $http.get(`${apiUrl}/duplicate-content?skip=${skip}&take=${take}&filter=${filter}`),
@@ -84,7 +138,14 @@
         function getMetadata(skip, take, filter) {
             return umbRequestHelper.resourcePromise(
                 $http.get(`${apiUrl}/missing-metadata?skip=${skip}&take=${take}&filter=${filter}`),
-                'Failed getting image data'
+                'Failed getting metadata data'
+            )
+        }
+
+        function getOrphanedPages(skip, take, filter) {
+            return umbRequestHelper.resourcePromise(
+                $http.get(`${apiUrl}/orphaned-pages?skip=${skip}&take=${take}&filter=${filter}`),
+                'Failed getting orphaned pages data'
             )
         }
 
@@ -93,6 +154,54 @@
                 $http.get(`${apiUrl}/get-settings`),
                 'Failed getting settings data'
             )
+        }
+
+        function renderTypeLabel(type) {
+            let index = type - 1;
+            let config = issueTypeConfigMap[index];
+
+            if (config != null) {
+                return $sce.trustAsHtml(`
+                    <uui-tag color="${config.color}">
+                        <uui-icon name="${config.icon}"></uui-icon>
+                        ${config.label}
+                    </uui-tag>
+                `);
+            }
+        }
+
+        function renderPriorityLabel(priority) {
+            let index = priority - 1;
+            let config = issuePriorityConfigMap[index];
+
+            if (config != null) {
+                return $sce.trustAsHtml(`
+                    <uui-tag color="${config.color}">
+                        <uui-icon name="${config.icon}"></uui-icon>
+                        ${config.label}
+                    </uui-tag>
+                `);
+            }
+        }
+
+        function renderStatusCodeLabel(statusCode) {
+            let colour = "";
+            if (statusCode >= 200 && statusCode < 300) {
+                colour = "positive";
+            }
+
+            if (statusCode >= 300 && statusCode < 400) {
+                colour = "warning";
+            }
+
+            if (statusCode >= 400 && statusCode < 600) {
+                colour = "danger";
+            }
+            return $sce.trustAsHtml(`
+                <uui-tag color="${colour}">
+                    ${statusCode}
+                </uui-tag>
+            `);
         }
 
         return resource;

@@ -66,32 +66,12 @@ export type CrawlDto = {
     asset: boolean;
     crawled: boolean;
     blocked: boolean;
-    nodeKey: string;
+    unique: string;
 };
 
 export type EmissionsDto = {
     emissionsPerPageView: number;
     carbonRating?: string | null;
-};
-
-export type ExternalPageDto = {
-    unique: string;
-    entityType: string;
-    id: number;
-    url?: string | null;
-    nodeKey?: string | null;
-    foundPage?: string | null;
-    statusCode: number;
-    contentType?: string | null;
-};
-
-export type ExternalPageGroupDto = {
-    unique: string;
-    entityType: string;
-    url?: string | null;
-    statusCode?: number | null;
-    contentType?: string | null;
-    externalPages?: Array<(ExternalPageDto)> | null;
 };
 
 export type HealthScoreDto = {
@@ -101,7 +81,6 @@ export type HealthScoreDto = {
 };
 
 export type ImageDto = {
-    unique: string;
     entityType: string;
     id: number;
     runId: number;
@@ -113,31 +92,9 @@ export type ImageDto = {
     altText?: string | null;
     title?: string | null;
     foundPage?: string | null;
-    nodeKey?: string | null;
+    unique: string;
     createdDate: string;
     isBackground: boolean;
-};
-
-export type InternalPageDto = {
-    unique: string;
-    entityType: string;
-    id: number;
-    url: string;
-    nodeKey?: string | null;
-    pageBytes?: number | null;
-    statusCode: number;
-    contentType?: string | null;
-    emissionsPerPageView?: number | null;
-    carbonRating?: string | null;
-};
-
-export type InternalPageGroupDto = {
-    unique: string;
-    entityType: string;
-    url?: string | null;
-    statusCode?: number | null;
-    contentType?: string | null;
-    internalPages?: Array<(InternalPageDto)> | null;
 };
 
 export type IssueDto = {
@@ -174,12 +131,20 @@ export type LinkDto = {
     id: number;
     runId: number;
     url?: string | null;
-    linkUrl?: string | null;
     isExternal: boolean;
     foundPage?: string | null;
     statusCode: number;
     contentType?: string | null;
     createdDate: string;
+};
+
+export type LinkGroupDto = {
+    unique: string;
+    entityType: string;
+    url?: string | null;
+    statusCode?: number | null;
+    contentType?: string | null;
+    links?: Array<(LinkDto)> | null;
 };
 
 export type OverviewDto = {
@@ -194,31 +159,28 @@ export type OverviewDto = {
 export type PageAnalysisDto = {
     unique: string;
     entityType: string;
-    links?: Array<(LinkDto)> | null;
-    resources?: Array<(ResourceDto)> | null;
-    images?: Array<(ImageDto)> | null;
-    pageData?: PageDto | null;
-    seoData?: SeoDto | null;
-    contentAnalysis?: ContentAnalysisDto | null;
-    performanceData?: PerformanceDto | null;
-    accessibilityData?: AccessibilityDto | null;
-    technicalSeoData?: TechnicalSeoDto | null;
-    socialMediaData?: SocialMediaDto | null;
-    contentQualityData?: ContentQualityDto | null;
-    emissionsData?: EmissionsDto | null;
+    links: Array<(LinkDto)>;
+    resources: Array<(ResourceDto)>;
+    images: Array<(ImageDto)>;
+    issues: Array<(IssueDto)>;
+    pageData: PageDto;
+    seoData: SeoDto;
+    contentAnalysis: ContentAnalysisDto;
+    performanceData: PerformanceDto;
+    accessibilityData: AccessibilityDto;
+    technicalSeoData: TechnicalSeoDto;
+    socialMediaData: SocialMediaDto;
+    contentQualityData: ContentQualityDto;
+    emissionsData: EmissionsDto;
 };
 
 export type PageDto = {
+    entityType: string;
     id: number;
     runId: number;
     url?: string | null;
-    nodeKey?: string | null;
+    unique: string;
     statusCode: number;
-};
-
-export type PagedExternalPageGroupDtoModel = {
-    total: number;
-    items: Array<(ExternalPageGroupDto)>;
 };
 
 export type PagedImageDtoModel = {
@@ -226,24 +188,24 @@ export type PagedImageDtoModel = {
     items: Array<(ImageDto)>;
 };
 
-export type PagedInternalPageDtoModel = {
-    total: number;
-    items: Array<(InternalPageDto)>;
-};
-
-export type PagedInternalPageGroupDtoModel = {
-    total: number;
-    items: Array<(InternalPageGroupDto)>;
-};
-
 export type PagedIssueDtoModel = {
     total: number;
     items: Array<(IssueDto)>;
 };
 
+export type PagedLinkGroupDtoModel = {
+    total: number;
+    items: Array<(LinkGroupDto)>;
+};
+
 export type PagedPageAnalysisDtoModel = {
     total: number;
     items: Array<(PageAnalysisDto)>;
+};
+
+export type PagedPageDtoModel = {
+    total: number;
+    items: Array<(PageDto)>;
 };
 
 export type PerformanceDto = {
@@ -261,18 +223,16 @@ export type PerformanceDto = {
 };
 
 export type ResourceDto = {
-    unique: string;
     entityType: string;
     id: number;
     runId: number;
     url?: string | null;
-    resourceUrl?: string | null;
     isExternal: boolean;
     size?: number | null;
     statusCode: number;
     contentType?: string | null;
     foundPage?: string | null;
-    nodeKey?: string | null;
+    unique: string;
     createdDate: string;
 };
 
@@ -295,6 +255,7 @@ export type SeoDto = {
     h3s?: Array<(string)> | null;
     hasNoIndex: boolean;
     hasNoFollow: boolean;
+    isOrphaned: boolean;
     openGraphTitle?: string | null;
     openGraphDescription?: string | null;
     openGraphImage?: string | null;
@@ -354,7 +315,7 @@ export type GetDuplicateContentUrlsData = {
     take?: number;
 };
 
-export type GetDuplicateContentUrlsResponse = PagedInternalPageGroupDtoModel;
+export type GetDuplicateContentUrlsResponse = PagedPageDtoModel;
 
 export type GetExternalLinksData = {
     filter?: string;
@@ -362,7 +323,7 @@ export type GetExternalLinksData = {
     take?: number;
 };
 
-export type GetExternalLinksResponse = PagedExternalPageGroupDtoModel;
+export type GetExternalLinksResponse = PagedLinkGroupDtoModel;
 
 export type GetHealthScoreResponse = HealthScoreDto;
 
@@ -372,7 +333,7 @@ export type GetInteralLinksData = {
     take?: number;
 };
 
-export type GetInteralLinksResponse = PagedInternalPageGroupDtoModel;
+export type GetInteralLinksResponse = PagedLinkGroupDtoModel;
 
 export type GetIssueData = {
     issueGuid?: string;
@@ -391,13 +352,19 @@ export type GetLatestAuditDataData = {
 
 export type GetLatestAuditDataResponse = PagedPageAnalysisDtoModel;
 
+export type GetLatestPageAuditDataData = {
+    unique?: string;
+};
+
+export type GetLatestPageAuditDataResponse = PageAnalysisDto;
+
 export type GetPagesWithMissingMetadataData = {
     filter?: string;
     skip?: number;
     take?: number;
 };
 
-export type GetPagesWithMissingMetadataResponse = PagedInternalPageDtoModel;
+export type GetPagesWithMissingMetadataResponse = PagedPageAnalysisDtoModel;
 
 export type GetOrphanedPagesData = {
     filter?: string;
@@ -405,7 +372,7 @@ export type GetOrphanedPagesData = {
     take?: number;
 };
 
-export type GetOrphanedPagesResponse = PagedInternalPageDtoModel;
+export type GetOrphanedPagesResponse = PagedPageDtoModel;
 
 export type StartCrawlResponse = Array<(CrawlDto)>;
 
@@ -441,7 +408,7 @@ export type $OpenApiTs = {
                 /**
                  * OK
                  */
-                200: PagedInternalPageGroupDtoModel;
+                200: PagedPageDtoModel;
             };
         };
     };
@@ -452,7 +419,7 @@ export type $OpenApiTs = {
                 /**
                  * OK
                  */
-                200: PagedExternalPageGroupDtoModel;
+                200: PagedLinkGroupDtoModel;
             };
         };
     };
@@ -473,7 +440,7 @@ export type $OpenApiTs = {
                 /**
                  * OK
                  */
-                200: PagedInternalPageGroupDtoModel;
+                200: PagedLinkGroupDtoModel;
             };
         };
     };
@@ -509,6 +476,17 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/umbraco/content-audit/api/v1/latest-page-data': {
+        get: {
+            req: GetLatestPageAuditDataData;
+            res: {
+                /**
+                 * OK
+                 */
+                200: PageAnalysisDto;
+            };
+        };
+    };
     '/umbraco/content-audit/api/v1/missing-metadata': {
         get: {
             req: GetPagesWithMissingMetadataData;
@@ -516,7 +494,7 @@ export type $OpenApiTs = {
                 /**
                  * OK
                  */
-                200: PagedInternalPageDtoModel;
+                200: PagedPageAnalysisDtoModel;
             };
         };
     };
@@ -527,7 +505,7 @@ export type $OpenApiTs = {
                 /**
                  * OK
                  */
-                200: PagedInternalPageDtoModel;
+                200: PagedPageDtoModel;
             };
         };
     };

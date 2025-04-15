@@ -73,7 +73,7 @@ export class ContentAuditImagesAltTextTableCollectionViewElement extends UmbLitE
         this._tableItems = images.map((image) => {
             const modalDocumentEditPath =
                 routeBuilder({ entityType: 'document' }) +
-                UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: image.nodeKey! });
+                UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: image.unique });
 
             return {
                 id: image.unique,

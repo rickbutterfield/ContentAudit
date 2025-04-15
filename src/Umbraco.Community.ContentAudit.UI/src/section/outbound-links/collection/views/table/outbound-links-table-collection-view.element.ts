@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { ExternalPageGroupDto } from '../../../../../api';
+import { LinkGroupDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
 
 @customElement('content-audit-outbound-links-table-collection-view')
@@ -36,7 +36,7 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<ExternalPageGroupDto>;
+    #collectionContext?: UmbDefaultCollectionContext<LinkGroupDto>;
 
     constructor() {
         super();
@@ -52,26 +52,26 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(externalPageGrouping: ExternalPageGroupDto[]) {
-        this._tableItems = externalPageGrouping.map((externalPageGroup) => {
+    #createTableItems(linkGroups: LinkGroupDto[]) {
+        this._tableItems = linkGroups.map((linkGroup) => {
             return {
-                id: externalPageGroup.unique,
+                id: linkGroup.unique,
                 data: [
                     {
                         columnAlias: 'url',
-                        value: html`<a href="${externalPageGroup.url}" target="_blank">${externalPageGroup.url}</a>`
+                        value: html`<a href="${linkGroup.url}" target="_blank">${linkGroup.url}</a>`
                     },
                     {
                         columnAlias: 'statusCode',
-                        value: html`<content-audit-status-code-label .statusCode=${externalPageGroup.statusCode}></content-audit-status-code-label>`
+                        value: html`<content-audit-status-code-label .statusCode=${linkGroup.statusCode}></content-audit-status-code-label>`
                     },
                     {
                         columnAlias: 'contentType',
-                        value: externalPageGroup.contentType
+                        value: linkGroup.contentType
                     },
                     {
                         columnAlias: 'outlinks',
-                        value: externalPageGroup.externalPages?.length
+                        value: linkGroup.links?.length
                     }
                 ]
             }

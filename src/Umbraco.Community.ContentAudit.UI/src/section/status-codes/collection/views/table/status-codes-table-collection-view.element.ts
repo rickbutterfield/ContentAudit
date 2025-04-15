@@ -73,7 +73,7 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
         this._tableItems = pages.map((page) => {
             const modalEditPath =
                 routeBuilder({ entityType: page.entityType }) +
-                UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.pageData?.nodeKey! });
+                UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.unique });
 
             return {
                 id: page?.unique,

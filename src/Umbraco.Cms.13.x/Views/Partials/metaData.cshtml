@@ -26,14 +26,14 @@
 
 <meta property="og:type" content="article" />
 <meta property="og:url" content="@canonicalLink" />
-<meta property="og:title" content="@metaName" />
-<meta property="og:description" content="@metaDescription" />
+<meta property="og:title" content="@(!string.IsNullOrEmpty(metaName) ? metaName : Model.Name)" />
+<meta property="og:description" content="@(!string.IsNullOrEmpty(metaDescription) ? metaDescription : Model.Name)" />
 <meta property="og:image" content="@(domainAddress)/socialimage.png">
 <meta property="og:image:type" content="image/png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="@metaName">
-<meta name="twitter:description" content="@metaDescription">
+<meta name="twitter:title" content="@(!string.IsNullOrEmpty(metaName) ? metaName : Model.Name)">
+<meta name="twitter:description" content="@(!string.IsNullOrEmpty(metaDescription) ? metaDescription : Model.Name)">
 <meta name="twitter:image" content="@(domainAddress)/socialimage.png">
 
 <link rel="apple-touch-icon" sizes="57x57" href="/media/favicon.png?width=57&height=57">

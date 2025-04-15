@@ -1,12 +1,12 @@
 ﻿import { css, customElement, html } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_COLLECTION_CONTEXT, UmbCollectionDefaultElement, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
-import { InternalPageDto } from '../../../api';
+import { PageDto } from '../../../api';
 import { UUISelectEvent, UUITextStyles } from '@umbraco-cms/backoffice/external/uui';
 import { ContentAuditStatusCodesCollectionFilterModel } from './types';
 
 @customElement('content-audit-status-codes-collection')
 export class ContentAuditStatusCodesCollectionElement extends UmbCollectionDefaultElement {
-	#collectionContext?: UmbDefaultCollectionContext<InternalPageDto, ContentAuditStatusCodesCollectionFilterModel>;
+	#collectionContext?: UmbDefaultCollectionContext<PageDto, ContentAuditStatusCodesCollectionFilterModel>;
 
 	#options: Array<Option> = [];
 
@@ -19,7 +19,7 @@ export class ContentAuditStatusCodesCollectionElement extends UmbCollectionDefau
 			this.observe(this.#collectionContext.items, (items) => {
 				if (items != null && items?.length !== 0) {
 					const statusCodes = [...new Set(items.map((x) => x.statusCode))];
-					const options = statusCodes.sort().map((x) => ({ name: x.toString(), value: x.toString() }));
+					const options = statusCodes.sort().map((x) => ({ name: x?.toString(), value: x?.toString() }));
 					this.#options = [{ name: 'All', value: '0' }, ...options];
 				}
 			});

@@ -18,6 +18,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             H3s = schema.H3s?.Split(',').ToList();
             HasNoIndex = schema.HasNoIndex;
             HasNoFollow = schema.HasNoFollow;
+            IsOrphaned = schema.IsOrphaned;
             OpenGraphTitle = schema.OpenGraphTitle;
             OpenGraphDescription = schema.OpenGraphDescription;
             OpenGraphImage = schema.OpenGraphImage;
@@ -45,7 +46,10 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public List<string>? H3s { get; set; }
 
         public bool HasNoIndex { get; set; }
+
         public bool HasNoFollow { get; set; }
+
+        public bool IsOrphaned { get; set; } = false;
 
         public string? OpenGraphTitle { get; set; }
 

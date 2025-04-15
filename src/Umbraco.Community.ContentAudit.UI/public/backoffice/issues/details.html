@@ -8,9 +8,9 @@
                            name-locked="true"
                            description="vm.data.description"
                            description-locked="true"
-                           on-back="vm.back()"
                            hide-icon="true"
                            hide-alias="true"
+                           on-back="vm.back()"
                            show-back-button="true">
         </umb-editor-header>
 
@@ -29,7 +29,7 @@
                             </uui-table-head>
 
                             <uui-table-row ng-repeat="page in vm.data.pages">
-                                <uui-table-cell><a href="#/content/content/edit/{{page.nodeKey}}" ng-click="vm.inlineEditor($event, page.nodeKey)">{{page.url}}</a></uui-table-cell>
+                                <uui-table-cell><a href="#/content/content/edit/{{page.unique}}" ng-click="vm.inlineEditor($event, page.unique)">{{page.pageData.url}}</a></uui-table-cell>
                                 <uui-table-cell ng-if="vm.data.images != null">{{page.foundPage}}</uui-table-cell>
                                 <uui-table-cell ng-repeat="property in vm.data.exposedProperties">
                                     {{page[property.alias]}}

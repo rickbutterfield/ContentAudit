@@ -7,19 +7,19 @@
 		<ContentTargetFolders>.</ContentTargetFolders>
 
 		<RootNamespace>Umbraco.Community.ContentAudit</RootNamespace>
-		<Product>Umbraco.Community.ContentAudit</Product>
+		<Product>ContentAudit</Product>
 		<PackageId>Umbraco.Community.ContentAudit</PackageId>
-		<Title>Umbraco.Community.ContentAudit</Title>
-		<!--<Description>Easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors</Description>-->
+		<Title>ContentAudit</Title>
+		<Description>First class site crawling and SEO auditing for Umbraco</Description>
 		<PackageTags>umbraco plugin package umbraco-marketplace</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<VersionPrefix>1.0.0-alpha</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<Authors>Rick Butterfield</Authors>
-		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
+		<VersionPrefix>1.0.0</VersionPrefix>
+		<VersionSuffix>alpha</VersionSuffix>
+		<Authors>Studio Minim Ltd</Authors>
+		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Studio Minim Ltd</Copyright>
 
 		<PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.ContentAudit</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.ContentAudit</RepositoryUrl>
@@ -50,9 +50,9 @@
 		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[15.0.0, 16.0.0)" />
 	</ItemGroup>
 
-	<!--<ItemGroup>
+	<ItemGroup>
 		<Content Include="buildTransitive\**" PackagePath="buildTransitive" />
-	</ItemGroup>-->
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="..\..\.github\assets\icon.png">
@@ -63,7 +63,6 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-		<None Include="..\Umbraco.Community.ContentAudit.UI\src\modals\run-warning\UmbBlockCatalogueModalElement.ts" Link="UmbBlockCatalogueModalElement.ts" />
 	</ItemGroup>
 
 	<ItemGroup>

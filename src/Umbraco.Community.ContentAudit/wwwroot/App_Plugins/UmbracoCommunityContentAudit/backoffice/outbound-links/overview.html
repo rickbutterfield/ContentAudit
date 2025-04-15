@@ -27,11 +27,11 @@
 
                     <uui-table-row ng-repeat="data in vm.outboundLinks">
                         <uui-table-cell>
-                            <a href="#/content/content/edit/{{data.nodeKey}}" ng-click="vm.inlineEditor($event, data.nodeKey)">{{data.url}}</a>
+                            <a href="#/content/content/edit/{{data.unique}}" ng-click="vm.inlineEditor($event, data.unique)">{{data.url}}</a>
                         </uui-table-cell>
                         <uui-table-cell ng-bind-html="vm.renderStatusCodeLabel(data.statusCode)"></uui-table-cell>
                         <uui-table-cell>{{data.contentType}}</uui-table-cell>
-                        <uui-table-cell>{{data.externalPages.length}}</uui-table-cell>
+                        <uui-table-cell>{{data.links.length}}</uui-table-cell>
                     </uui-table-row>
                 </uui-table>
 

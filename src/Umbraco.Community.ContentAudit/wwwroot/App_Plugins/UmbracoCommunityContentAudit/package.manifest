@@ -9,12 +9,20 @@
     "~/App_Plugins/UmbracoCommunityContentAudit/js/settings.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.overview.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.details.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.overview.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.details.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.info.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.links.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.images.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.resources.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.issues.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/status-codes.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/outbound-links.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/inbound-links.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/duplicate-pages.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/image-alt-text.controller.js",
-    "~/App_Plugins/UmbracoCommunityContentAudit/js/metadata.controller.js"
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/metadata.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/orphaned-pages.controller.js"
   ],
   "css": [
     "~/App_Plugins/UmbracoCommunityContentAudit/css/content-audit.css"

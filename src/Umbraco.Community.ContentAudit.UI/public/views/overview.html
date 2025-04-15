@@ -2,6 +2,9 @@
 
     <div class="content-audit-dashboard">
         <uui-box headline="Latest audit" class="span-2" style="{{vm.latestAuditOverview.runDate !== null ? '--uui-box-default-padding: 0;' : ''}}">
+            <div slot="header" ng-if="vm.latestAuditOverview.runDate != null">
+                {{ vm.latestAuditOverview.runDate | date : 'MMMM d, yyyy h:mm a' }}
+            </div>
             <div slot="header-actions">
                 <uui-button look="primary"
                             ng-click="openModal()"
@@ -12,7 +15,7 @@
             </div>
 
             <div>
-                <div ng-if="vm.latestAuditOverview.runDate === null">
+                <div ng-if="vm.latestAuditOverview.runDate === null && !vm.scanRunning">
                     <p>No scan has been run yet</p>
                 </div>
 

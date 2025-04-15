@@ -3,9 +3,6 @@ import { css, customElement, html, state } from '@umbraco-cms/backoffice/externa
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { PageAnalysisDto } from '../../../../../api';
 import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
-import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN } from '@umbraco-cms/backoffice/document';
-import { UmbModalRouteBuilder, UmbModalRouteRegistrationController } from '@umbraco-cms/backoffice/router';
-import { UMB_WORKSPACE_MODAL } from '@umbraco-cms/backoffice/workspace';
 
 @customElement('content-audit-all-pages-table-collection-view')
 export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElement {
@@ -36,29 +33,15 @@ export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElemen
     private _tableItems: Array<UmbTableItem> = [];
 
     #collectionContext?: UmbDefaultCollectionContext<PageAnalysisDto>;
-    #routeBuilder?: UmbModalRouteBuilder;
 
     constructor() {
         super();
 
         this.consumeContext(UMB_COLLECTION_CONTEXT, (instance) => {
             this.#collectionContext = instance;
+            this.#observeCollectionItems();
         });
 
-        this.#registerModalRoute();
-    }
-
-    #registerModalRoute() {
-        new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
-            .addAdditionalPath(':entityType')
-            .onSetup((params) => {
-                return { data: { entityType: params.entityType, preset: {} } };
-            })
-            .observeRouteBuilder((routeBuilder) => {
-                this.#routeBuilder = routeBuilder;
-
-                this.#observeCollectionItems();
-            });
     }
 
     #observeCollectionItems() {
@@ -67,14 +50,7 @@ export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElemen
     }
 
     #createTableItems(pages: PageAnalysisDto[]) {
-        const routeBuilder = this.#routeBuilder;
-        if (!routeBuilder) throw new Error('Route builder not ready');
-
         this._tableItems = pages.map((page) => {
-            const modalEditPath =
-                routeBuilder({ entityType: page.entityType }) +
-                UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.pageData?.nodeKey! });
-
             return {
                 id: page?.unique,
                 entityType: page?.entityType,
@@ -82,7 +58,7 @@ export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElemen
                 data: [
                     {
                         columnAlias: 'url',
-                        value: html`<a href=${modalEditPath}>${page.pageData?.url}</a>`
+                        value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.pageData?.url}</a>`
                     },
                     {
                         columnAlias: 'contentType',

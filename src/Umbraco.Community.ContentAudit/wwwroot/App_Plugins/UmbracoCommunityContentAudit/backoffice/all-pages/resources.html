@@ -1,0 +1,19 @@
+﻿<div ng-controller="Umbraco.Community.ContentAudit.AllPages.ResourcesController as vm">
+
+    <uui-box ng-if="vm.data.length != 0" style="--uui-box-default-padding: 0;">
+
+        <uui-table>
+            <uui-table-head>
+                <uui-table-head-cell>URL</uui-table-head-cell>
+                <uui-table-head-cell>Content Type</uui-table-head-cell>
+            </uui-table-head>
+
+            <uui-table-row ng-repeat="data in vm.data">
+                <uui-table-cell>{{data.url}}</uui-table-cell>
+                <uui-table-cell>{{data.contentType}}</uui-table-cell>
+            </uui-table-row>
+        </uui-table>
+
+    </uui-box>
+
+</div>

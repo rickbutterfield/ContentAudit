@@ -26,6 +26,7 @@
             vm.filter = '';
 
             vm.changePageNumber = changePageNumber;
+            vm.renderStatusCodeLabel = contentAuditResource.renderStatusCodeLabel;
 
             init();
 
@@ -48,26 +49,6 @@
             function changePageNumber(pageNumber) {
                 vm.pageNumber = pageNumber;
                 init();
-            }
-
-            vm.renderStatusCodeLabel = function (statusCode) {
-                let colour = "";
-                if (statusCode >= 200 && statusCode < 300) {
-                    color = "positive";
-                }
-
-                if (statusCode >= 300 && statusCode < 400) {
-                    color = "warning";
-                }
-
-                if (statusCode >= 400 && statusCode < 600) {
-                    color = "danger";
-                }
-                return $sce.trustAsHtml(`
-                    <uui-tag color="${color}">
-                        ${statusCode}
-                    </uui-tag>
-                `);
             }
 
             vm.inlineEditor = function ($event, nodeKey) {

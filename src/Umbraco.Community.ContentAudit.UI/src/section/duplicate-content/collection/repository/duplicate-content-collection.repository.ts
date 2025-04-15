@@ -2,9 +2,9 @@
 import type { UmbCollectionFilterModel, UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditDuplicateContentCollectionDataSource } from "./duplicate-content-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { InternalPageGroupDto } from '../../../../api';
+import { PageDto } from '../../../../api';
 
-export class ContentAuditDuplicateContentCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<InternalPageGroupDto> {
+export class ContentAuditDuplicateContentCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageDto> {
     #collectionSource: ContentAuditDuplicateContentCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

@@ -27,7 +27,7 @@
                     <uui-table-row ng-repeat="data in vm.data">
                         <uui-table-cell>{{data.url}}</uui-table-cell>
                         <uui-table-cell>
-                            <a href="#/content/content/edit/{{data.nodeKey}}" ng-click="vm.inlineEditor($event, data.nodeKey)">{{data.foundPage}}</a>
+                            <a href="#/content/content/edit/{{data.unique}}" ng-click="vm.inlineEditor($event, data.unique)">{{data.foundPage}}</a>
                         </uui-table-cell>
                         <uui-table-cell>{{data.altText}}</uui-table-cell>
                     </uui-table-row>

@@ -1,0 +1,45 @@
+﻿<div ng-controller="Umbraco.Community.ContentAudit.Controller.OrphanedPages as vm">
+
+    <umb-editor-view footer="false">
+
+        <umb-editor-header name="vm.name" name-locked="true" hide-alias="true" hide-description="true" hide-icon="true">
+        </umb-editor-header>
+
+        <umb-editor-container>
+
+            <umb-search-filter input-id="search"
+                               model="vm.filter"
+                               label-key="placeholders_search"
+                               text="Type to search..."
+                               css-class="w-100 mb-15"
+                               auto-focus="true">
+            </umb-search-filter>
+
+            <uui-box ng-if="!vm.loading && vm.data.length != 0" style="--uui-box-default-padding: 0;">
+
+                <uui-table>
+                    <uui-table-head>
+                        <uui-table-head-cell>URL</uui-table-head-cell>
+                    </uui-table-head>
+
+                    <uui-table-row ng-repeat="data in vm.data">
+                        <uui-table-cell>
+                            <a href="#/content/content/edit/{{data.unique}}" ng-click="vm.inlineEditor($event, data.unique)">{{data.pageData.url}}</a>
+                        </uui-table-cell>
+                    </uui-table-row>
+                </uui-table>
+
+            </uui-box>
+
+            <div ng-if="!vm.loading" class="flex justify-center">
+                <umb-pagination page-number="vm.pageNumber" total-pages="vm.totalPages"
+                                on-change="vm.changePageNumber(pageNumber)">
+                </umb-pagination>
+            </div>
+
+            <umb-empty-state ng-if="vm.data.length == 0" position="center">
+                <p>No data to show yet.</p>
+            </umb-empty-state>
+        </umb-editor-container>
+    </umb-editor-view>
+</div>

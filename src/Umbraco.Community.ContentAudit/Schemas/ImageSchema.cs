@@ -24,7 +24,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
             AltText = dto.AltText;
             Title = dto.Title;
             FoundPage = dto.FoundPage;
-            NodeKey = dto.NodeKey;
+            Unique = dto.Unique;
             IsBackground = dto.IsBackground;
         }
 
@@ -57,7 +57,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         public bool IsBackground { get; set; }
 
-        public Guid? NodeKey { get; set; }
+        public Guid Unique { get; set; }
 
         public DateTime CreatedDate => DateTime.UtcNow;
     }

@@ -17,7 +17,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
             Id = dto.Id;
             RunId = dto.RunId;
             Url = dto.Url;
-            LinkUrl = dto.LinkUrl;
             IsExternal = dto.IsExternal;
             FoundPage = dto.FoundPage;
             StatusCode = dto.StatusCode;
@@ -31,9 +30,6 @@ namespace Umbraco.Community.ContentAudit.Schemas
 
         [NullSetting(NullSetting = NullSettings.Null)]
         public string? Url { get; set; }
-
-        [NullSetting(NullSetting = NullSettings.Null)]
-        public string? LinkUrl { get; set; }
 
         public bool IsExternal { get; set; }
 

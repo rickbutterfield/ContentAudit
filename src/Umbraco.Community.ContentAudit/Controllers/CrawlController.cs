@@ -11,12 +11,12 @@ namespace Umbraco.Community.ContentAudit.Controllers
     [ApiExplorerSettings(GroupName = "Crawl")]
     public class CrawlController : ContentAuditControllerBase
     {
-        private readonly IAuditService _crawlerService;
+        private readonly IAuditService _auditService;
 
         public CrawlController(
-            IAuditService crawlerService)
+            IAuditService auditService)
         {
-            _crawlerService = crawlerService;
+            _auditService = auditService;
         }
 
         [HttpGet("start-crawl")]
@@ -31,7 +31,7 @@ namespace Umbraco.Community.ContentAudit.Controllers
 
             try
             {
-                await foreach (var page in _crawlerService.StartCrawl(absoluteRootUrl, cancellationToken))
+                await foreach (var page in _auditService.StartCrawl(absoluteRootUrl, cancellationToken))
                 {
                     var json = JsonSerializer.Serialize(page);
 
