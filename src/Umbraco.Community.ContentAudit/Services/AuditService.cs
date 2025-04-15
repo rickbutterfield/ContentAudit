@@ -11,7 +11,7 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Cms.Infrastructure.Scoping;
-using Umbraco.Community.ContentAudit.Common.Configuration;
+using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
@@ -23,8 +23,8 @@ namespace Umbraco.Community.ContentAudit.Services
 {
     public class AuditService : IAuditService
     {
-        private string? _baseUrl;
-        private Uri? _baseUri;
+        private string _baseUrl;
+        private Uri _baseUri;
 
         private ConcurrentQueue<UrlQueueItem> _urlQueue = new ConcurrentQueue<UrlQueueItem>();
 
@@ -54,6 +54,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ICrawlService _crawlService;
         private readonly ILogger<AuditService> _logger;
         private readonly IAppPolicyCache _runtimeCache;
+        private readonly GlobalSettings _globalSettings;
 
         private readonly Channel<CrawlDto> _crawlResultsChannel;
         private readonly SemaphoreSlim _crawlSemaphore;
@@ -65,6 +66,7 @@ namespace Umbraco.Community.ContentAudit.Services
         public AuditService(
             IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
             IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
+            IOptionsMonitor<GlobalSettings> globalSettings,
             IScopeProvider scopeProvider,
             IExamineManager examineManager,
             IPublishedUrlProvider urlProvider,
@@ -83,6 +85,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _crawlService = pageScanningService;
             _logger = logger;
             _runtimeCache = appCaches.RuntimeCache;
+            _globalSettings = globalSettings.CurrentValue;
 
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
@@ -93,7 +96,15 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            _baseUrl = _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
+            _baseUrl = !string.IsNullOrEmpty(_contentAuditSettings.BaseUrl)
+                ? _contentAuditSettings.BaseUrl
+                : _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
+            
+            if (string.IsNullOrEmpty(_baseUrl))
+            {
+                throw new ArgumentException("Base URL must be provided either through configuration or as a parameter", nameof(baseUrl));
+            }
+
             _baseUri = new Uri(_baseUrl);
             _isDiscoveryComplete = false;
 
@@ -553,7 +564,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger.LogInformation("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
             if (_contentAuditSettings.UseSitemapXml)
             {
-                var sitemapUrls = await _sitemapService.GetSitemapUrlsAsync(_baseUrl);
+                var sitemapUrls = await _sitemapService.GetSitemapUrlAsync(_baseUrl);
                 sitemapUrls.ForEach(x =>
                 {
                     EnqueueUrl(new UrlQueueItem

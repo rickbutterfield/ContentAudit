@@ -6,7 +6,7 @@ using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Services;
 using Umbraco.Community.ContentAudit.Composing;
-using Umbraco.Community.ContentAudit.Common.Configuration;
+using Umbraco.Community.ContentAudit.Configuration;
 using Microsoft.Playwright;
 
 #if NET9_0_OR_GREATER

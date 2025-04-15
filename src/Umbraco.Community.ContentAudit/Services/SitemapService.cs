@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Xml.Linq;
-using Umbraco.Community.ContentAudit.Common.Configuration;
+using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Services
@@ -18,7 +18,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _contentAuditSettings = optionsMonitor.CurrentValue;
         }
 
-        public async Task<List<string>> GetSitemapUrlsAsync(string baseUrl)
+        public async Task<List<string>> GetSitemapUrlAsync(string baseUrl)
         {
             string sitemapUrl = string.Empty;
             

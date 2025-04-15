@@ -12,7 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Umbraco.Community.ContentAudit.Common\Umbraco.Community.ContentAudit.Common.csproj" />
+	  <ProjectReference Include="..\Umbraco.Community.ContentAudit\Umbraco.Community.ContentAudit.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">

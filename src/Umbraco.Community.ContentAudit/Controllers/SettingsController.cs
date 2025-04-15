@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Umbraco.Community.ContentAudit.Common.Configuration;
+using Umbraco.Community.ContentAudit.Configuration;
 
 namespace Umbraco.Community.ContentAudit.Controllers
 {

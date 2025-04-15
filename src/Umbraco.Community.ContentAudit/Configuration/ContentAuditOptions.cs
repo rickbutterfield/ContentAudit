@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Umbraco.Community.ContentAudit.Common.Configuration
+namespace Umbraco.Community.ContentAudit.Configuration
 {
     public class ContentAuditOptions
     {
@@ -23,5 +23,8 @@ namespace Umbraco.Community.ContentAudit.Common.Configuration
 
         [DefaultValue(4)]
         public int MaxConcurrentCrawls { get; set; } = 4;
+
+        [DefaultValue("")]
+        public string BaseUrl { get; set; } = string.Empty;
     }
 }

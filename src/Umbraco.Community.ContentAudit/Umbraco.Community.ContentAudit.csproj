@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<VersionPrefix>1.0.0</VersionPrefix>
-		<VersionSuffix>alpha.2</VersionSuffix>
+		<VersionSuffix>alpha.3</VersionSuffix>
 		<Authors>Studio Minim Ltd</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Studio Minim Ltd</Copyright>
 
@@ -32,7 +32,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Playwright" Version="1.51.0" />
 	</ItemGroup>
-	
+
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14.0.0)" />
@@ -62,10 +62,14 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+		<None Include="appsettings-schema.contentaudit.json">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Umbraco.Community.ContentAudit.Common\Umbraco.Community.ContentAudit.Common.csproj" />
 		<ProjectReference Include="..\Umbraco.Community.ContentAudit.UI\Umbraco.Community.ContentAudit.UI.esproj">
 			<ReferenceOutputAssembly>False</ReferenceOutputAssembly>
 		</ProjectReference>

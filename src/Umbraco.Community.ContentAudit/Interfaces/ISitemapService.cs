@@ -2,6 +2,6 @@
 {
     public interface ISitemapService
     {
-        Task<List<string>> GetSitemapUrlsAsync(string baseUrl);
+        Task<List<string>> GetSitemapUrlAsync(string baseUrl);
     }
 }
