@@ -4,7 +4,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.ContentAudit.svg)](https://www.nuget.org/packages/Umbraco.Community.ContentAudit/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/develop/LICENSE)
 
-<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
+<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/refs/heads/main/.github/assets/icon.svg?token=GHSAT0AAAAAADBDDTZY4NAPNWW5A6ICZRYCZ76F2KA" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
 
 **ContentAudit** is a tool for first class site crawling and SEO auditing for Umbraco
 
