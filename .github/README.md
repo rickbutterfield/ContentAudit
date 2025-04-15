@@ -8,7 +8,7 @@
 
 **ContentAudit** is a tool for first class site crawling and SEO auditing for Umbraco
 
-![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
+![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/develop/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
 
 ## Installation
 The Umbraco v15 version of this package is available via NuGet.
