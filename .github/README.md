@@ -18,7 +18,7 @@ For detailed documentation, including:
 - Usage guides
 - Best practices
 
-Visit the [documentation](docs/README.md) folder.
+Visit the [documentation](../docs/README.md) folder.
 
 ## Contributing
 
