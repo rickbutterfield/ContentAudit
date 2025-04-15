@@ -1,4 +1,4 @@
-# Umbraco.Community.ContentAudit
+# ContentAudit
 
 [![Platform](https://img.shields.io/badge/Umbraco-15+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.ContentAudit.svg)](https://www.nuget.org/packages/Umbraco.Community.ContentAudit/)
