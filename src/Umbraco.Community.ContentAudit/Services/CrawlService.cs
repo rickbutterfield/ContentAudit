@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
+using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -46,7 +47,7 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
-        public async Task<PageAnalysisDto> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey)
+        public async Task<PageAnalysisDto?> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey)
         {
             try
             {
@@ -109,7 +110,25 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (response == null || !response.Ok)
                 {
                     _logger.LogWarning("Failed to fetch page {0}: {1}", url, response?.Status);
-                    return new PageAnalysisDto();
+
+                    if (response != null)
+                    {
+                        pageAnalysis.PageData.StatusCode = response.Status;
+                        pageAnalysis.TechnicalSeoData.ContentType = response.Headers["content-type"];
+                    }
+                    else
+                    {
+                        pageAnalysis.PageData.StatusCode = (int)HttpStatusCode.NotFound;
+                    }
+
+                    return pageAnalysis;
+                }
+
+                string contentType = response.Headers["content-type"];
+                if (!contentType.Contains("text/html"))
+                {
+                    _logger.LogWarning("Can't crawl page {0}: content type is {1}", url, contentType);
+                    return null;
                 }
 
                 // Wait for the page to be fully loaded
@@ -118,7 +137,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 var analysisData = Task.Run(async () =>
                 {
-                    var linkElements = await page.Locator("a[href]").AllAsync();
+                    var linkElements = await page.Locator("a:not([href*='mailto:'])").AllAsync();
                     pageAnalysis.Links = (await Task.WhenAll(linkElements.Select(async a =>
                     {
                         var href = await a.GetAttributeAsync("href");
@@ -134,6 +153,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     var pageImages = (await Task.WhenAll(imageElements.Select(async a =>
                     {
                         var src = await a.GetAttributeAsync("src");
+                        var title = await a.GetAttributeAsync("title");
                         var resource = new ResourceDto()
                         {
                             Url = src,
@@ -145,7 +165,8 @@ namespace Umbraco.Community.ContentAudit.Services
                         var altText = await a.GetAttributeAsync("alt");
                         return new ImageDto(resource)
                         {
-                            AltText = altText
+                            AltText = altText,
+                            Title = title
                         };
                     }))).ToList();
 
@@ -171,31 +192,52 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     try
                     {
-                        var metaDescription = await page.Locator("meta[name=\"description\"]").GetAttributeAsync("content");
-                        var canonicalUrl = await page.Locator("link[rel=\"canonical\"]").GetAttributeAsync("href");
-                        var h1Text = await page.Locator("h1").TextContentAsync();
+                        string metaDescription = "";
+                        string canonicalUrl = "";
+                        string h1Text = "";
+                        string robotsContent = "";
+
+                        if (await page.Locator("meta[name=\"description\"]").CountAsync() > 0)
+                        {
+                            metaDescription = await page.Locator("meta[name=\"description\"]").GetAttributeAsync("content") ?? "";
+                        }
+
+                        if (await page.Locator("link[rel=\"canonical\"]").CountAsync() > 0)
+                        {
+                            canonicalUrl = await page.Locator("link[rel=\"canonical\"]").GetAttributeAsync("href") ?? "";
+                        }
+
+                        if (await page.Locator("h1").CountAsync() > 0)
+                        {
+                            h1Text = await page.Locator("h1").TextContentAsync() ?? "";
+                        }
+
                         var h2Elements = await page.Locator("h2").AllAsync();
                         var h3Elements = await page.Locator("h3").AllAsync();
-                        var robotsContent = await page.Locator("meta[name=\"robots\"]").GetAttributeAsync("content") ?? "";
+
+                        if (await page.Locator("meta[name=\"robots\"]").CountAsync() > 0)
+                        {
+                            robotsContent = await page.Locator("meta[name=\"robots\"]").GetAttributeAsync("content") ?? "";
+                        }
 
                         pageAnalysis.SeoData = new SeoDto
                         {
                             Url = url,
                             Title = await page.TitleAsync(),
-                            MetaDescription = metaDescription ?? "",
-                            CanonicalUrl = canonicalUrl ?? "",
-                            H1 = h1Text ?? "",
+                            MetaDescription = metaDescription,
+                            CanonicalUrl = canonicalUrl,
+                            H1 = h1Text,
                             H2s = (await Task.WhenAll(h2Elements.Select(h => h.TextContentAsync()))).Where(text => text != null).Select(text => text!).ToList(),
                             H3s = (await Task.WhenAll(h3Elements.Select(h => h.TextContentAsync()))).Where(text => text != null).Select(text => text!).ToList(),
                             HasNoIndex = robotsContent.ToLower().Contains("noindex"),
                             HasNoFollow = robotsContent.ToLower().Contains("nofollow"),
-                            OpenGraphTitle = await page.Locator("meta[property=\"og:title\"]").GetAttributeAsync("content") ?? "",
-                            OpenGraphDescription = await page.Locator("meta[property=\"og:description\"]").GetAttributeAsync("content") ?? "",
-                            OpenGraphImage = await page.Locator("meta[property=\"og:image\"]").GetAttributeAsync("content") ?? "",
-                            TwitterCard = await page.Locator("meta[name=\"twitter:card\"]").GetAttributeAsync("content") ?? "",
-                            TwitterTitle = await page.Locator("meta[name=\"twitter:title\"]").GetAttributeAsync("content") ?? "",
-                            TwitterDescription = await page.Locator("meta[name=\"twitter:description\"]").GetAttributeAsync("content") ?? "",
-                            TwitterImage = await page.Locator("meta[name=\"twitter:image\"]").GetAttributeAsync("content") ?? ""
+                            OpenGraphTitle = await page.Locator("meta[property=\"og:title\"]").CountAsync() > 0 ? await page.Locator("meta[property=\"og:title\"]").GetAttributeAsync("content") ?? "" : "",
+                            OpenGraphDescription = await page.Locator("meta[property=\"og:description\"]").CountAsync() > 0 ? await page.Locator("meta[property=\"og:description\"]").GetAttributeAsync("content") ?? "" : "",
+                            OpenGraphImage = await page.Locator("meta[property=\"og:image\"]").CountAsync() > 0 ? await page.Locator("meta[property=\"og:image\"]").GetAttributeAsync("content") ?? "" : "",
+                            TwitterCard = await page.Locator("meta[name=\"twitter:card\"]").CountAsync() > 0 ? await page.Locator("meta[name=\"twitter:card\"]").GetAttributeAsync("content") ?? "" : "",
+                            TwitterTitle = await page.Locator("meta[name=\"twitter:title\"]").CountAsync() > 0 ? await page.Locator("meta[name=\"twitter:title\"]").GetAttributeAsync("content") ?? "" : "",
+                            TwitterDescription = await page.Locator("meta[name=\"twitter:description\"]").CountAsync() > 0 ? await page.Locator("meta[name=\"twitter:description\"]").GetAttributeAsync("content") ?? "" : "",
+                            TwitterImage = await page.Locator("meta[name=\"twitter:image\"]").CountAsync() > 0 ? await page.Locator("meta[name=\"twitter:image\"]").GetAttributeAsync("content") ?? "" : ""
                         };
                     }
                     catch (Exception ex)
@@ -205,7 +247,11 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     try
                     {
-                        var bodyText = await page.Locator("body").TextContentAsync() ?? "";
+                        var bodyText = "";
+                        if (await page.Locator("body").CountAsync() > 0)
+                        {
+                            bodyText = await page.Locator("body").TextContentAsync() ?? "";
+                        }
 
                         pageAnalysis.ContentAnalysis = new ContentAnalysisDto
                         {
@@ -214,12 +260,12 @@ namespace Umbraco.Community.ContentAudit.Services
                             ParagraphCount = await page.Locator("p").CountAsync(),
                             Images = await page.Locator("img").CountAsync(),
                             Links = await page.Locator("a[href]").CountAsync(),
-                            ExternalLinks = await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => !link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length"),
-                            InternalLinks = await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length"),
+                            ExternalLinks = await page.Locator("a[href]").CountAsync() > 0 ? await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => !link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length") : 0,
+                            InternalLinks = await page.Locator("a[href]").CountAsync() > 0 ? await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length") : 0,
                             ReadabilityScore = CalculateReadabilityScore(bodyText),
                             KeywordDensity = CalculateKeywordDensity(bodyText),
-                            MissingAltTextImages = string.Join(',', (await page.Locator("img:not([alt])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)),
-                            MissingTitleImages = string.Join(',', (await page.Locator("img:not([title])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result))
+                            //MissingAltTextImages = await page.Locator("img:not([alt])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([alt])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : "",
+                            //MissingTitleImages = await page.Locator("img:not([title])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([title])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : ""
                         };
                     }
                     catch (Exception ex)
@@ -270,14 +316,13 @@ namespace Umbraco.Community.ContentAudit.Services
                         {
                             Url = url,
                             ContentType = response.Headers["content-type"],
-                            Charset = await page.EvaluateAsync<string>("() => document.querySelector('meta[charset]')?.charset ?? document.querySelector('meta[http-equiv=\"Content-Type\"]')?.content") ?? "",
+                            Charset = await page.Locator("meta[charset]").CountAsync() > 0 ? await page.EvaluateAsync<string>("() => document.querySelector('meta[charset]')?.charset") ?? "" : 
+                                      await page.Locator("meta[http-equiv=\"Content-Type\"]").CountAsync() > 0 ? await page.EvaluateAsync<string>("() => document.querySelector('meta[http-equiv=\"Content-Type\"]')?.content") ?? "" : "",
                             HasGzipCompression = response.Headers.ContainsKey("content-encoding") && response.Headers["content-encoding"].Contains("gzip"),
                             HasBrowserCaching = response.Headers.ContainsKey("cache-control") && response.Headers["cache-control"].Contains("max-age"),
                             HasHttps = url.StartsWith("https://"),
                             HasValidHtml = await ValidateHtml(page),
-                            HtmlValidationErrors = await GetHtmlValidationErrors(page),
-                            //HasSchemaMarkup = await page.Locator("script[type=\"application/ld+json\"]").CountAsync() > 0,
-                            //SchemaType = await GetSchemaType(page)
+                            HtmlValidationErrors = await GetHtmlValidationErrors(page)
                         };
                     }
                     catch (Exception ex)
@@ -403,10 +448,25 @@ namespace Umbraco.Community.ContentAudit.Services
             return await page.EvaluateAsync<long>("() => performance.getEntriesByType('longtask').reduce((acc, entry) => Math.max(acc, entry.startTime + entry.duration), 0)");
         }
 
-        private async Task<List<ResourceTimingDto>> GetResourceTimings(IPage page)
+        private async Task<List<ResourceTimingDto>?> GetResourceTimings(IPage page)
         {
-            var timings = await page.EvaluateAsync<object[]>("() => performance.getEntriesByType('resource').map(entry => ({ url: entry.name, resourceType: entry.initiatorType, duration: entry.duration, startTime: entry.startTime, size: entry.transferSize }))");
-            return timings.Select(t => JsonSerializer.Deserialize<ResourceTimingDto>(JsonSerializer.Serialize(t))).ToList();
+            var timings = await page.EvaluateAsync(@"
+                () => {
+                    return performance.getEntriesByType('resource').map(entry => {
+                        return {
+                            url: entry.name,
+                            resourceType: entry.initiatorType,
+                            duration: entry.duration,
+                            startTime: entry.startTime,
+                            size: entry.transferSize
+                        };
+                    });
+                }");
+
+            if (timings.HasValue)
+                return JsonSerializer.Deserialize<List<ResourceTimingDto>?>(timings.Value.ToString());
+
+            return new();
         }
 
         private async Task<List<string>> CheckAccessibilityIssues(IPage page)

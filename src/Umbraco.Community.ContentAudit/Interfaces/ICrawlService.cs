@@ -5,7 +5,7 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface ICrawlService
     {
-        Task<PageAnalysisDto> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey);
+        Task<PageAnalysisDto?> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey);
         Task<HeadResponseDto> GetHeadResponse(string url);
     }
 }

@@ -20,8 +20,14 @@ namespace Umbraco.Community.ContentAudit.Schemas
             MetaDescription = dto.MetaDescription;
             CanonicalUrl = dto.CanonicalUrl;
             H1 = dto.H1;
-            H2s = string.Join(",", dto.H2s);
-            H3s = string.Join(",", dto.H3s);
+            if (dto.H2s != null)
+            {
+                H2s = string.Join(",", dto.H2s);
+            }
+            if (dto.H3s != null)
+            {
+                H3s = string.Join(",", dto.H3s);
+            }
             HasNoIndex = dto.HasNoIndex;
             HasNoFollow = dto.HasNoFollow;
             IsOrphaned = dto.IsOrphaned;

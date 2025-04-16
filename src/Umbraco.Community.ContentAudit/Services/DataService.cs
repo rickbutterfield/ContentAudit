@@ -356,7 +356,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async Task<List<LinkGroupDto>> GetExternalLinks(string filter = "")
         {
-            var result = new List<LinkGroupDto>();
+            var results = new List<LinkGroupDto>();
             var latestRunId = await GetLatestAuditId();
 
             var latestAuditData = await GetLatestAuditData(filter);
@@ -374,16 +374,18 @@ namespace Umbraco.Community.ContentAudit.Services
                         StatusCode = group.FirstOrDefault()?.StatusCode,
                         Links = group.ToList()
                     };
-                    result.Add(linkGroup);
+                    results.Add(linkGroup);
                 }
             }
 
-            return result;
+            results = results.OrderByDescending(x => x.Links?.Count).ToList();
+
+            return results;
         }
 
         public async Task<List<LinkGroupDto>> GetInternalLinks(string filter = "")
         {
-            var result = new List<LinkGroupDto>();
+            var results = new List<LinkGroupDto>();
             var latestRunId = await GetLatestAuditId();
 
             var latestAuditData = await GetLatestAuditData(filter);
@@ -401,11 +403,13 @@ namespace Umbraco.Community.ContentAudit.Services
                         StatusCode = group.FirstOrDefault()?.StatusCode,
                         Links = group.ToList()
                     };
-                    result.Add(linkGroup);
+                    results.Add(linkGroup);
                 }
             }
 
-            return result;
+            results = results.OrderByDescending(x => x.Links?.Count).ToList();
+
+            return results;
         }
 
         public async Task<HealthScoreDto> GetHealthScore()
@@ -462,7 +466,12 @@ namespace Umbraco.Community.ContentAudit.Services
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string sql = $"SELECT TOP 1 [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC";
+            string providerName = scope.Database.DatabaseType.GetProviderName();
+            bool isSQLite = providerName.Contains("sqlite", StringComparison.OrdinalIgnoreCase);
+
+            string sql = isSQLite
+                ? $"SELECT [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC LIMIT 1"
+                : $"SELECT TOP 1 [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC";
 
             int? latestId = await scope.Database.ExecuteScalarAsync<int?>(sql);
 

@@ -1,6 +1,7 @@
 ﻿using Umbraco.Community.ContentAudit.Common.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Extensions;
 
 namespace Umbraco.Community.ContentAudit.AuditIssues
 {
@@ -22,7 +23,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
-            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && x.SeoData.H2s != null && x.SeoData?.H2s.Any() == false);
+            return pages.Where(x => x.PageData.StatusCode == 200 && (x.SeoData.H2s?.Any() == false || x.SeoData.H2s?.Where(y => y == "").Any() == true));
         }
     }
 }

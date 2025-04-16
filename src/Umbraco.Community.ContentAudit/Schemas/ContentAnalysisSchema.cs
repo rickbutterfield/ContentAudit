@@ -47,6 +47,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public double ReadabilityScore { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? KeywordDensity { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]

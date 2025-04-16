@@ -55,6 +55,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ILogger<AuditService> _logger;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly GlobalSettings _globalSettings;
+        private readonly WebRoutingSettings _webRoutingSettings;
 
         private readonly Channel<CrawlDto> _crawlResultsChannel;
         private readonly SemaphoreSlim _crawlSemaphore;
@@ -67,6 +68,7 @@ namespace Umbraco.Community.ContentAudit.Services
             IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
             IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
             IOptionsMonitor<GlobalSettings> globalSettings,
+            IOptionsMonitor<WebRoutingSettings> webRoutingSettings,
             IScopeProvider scopeProvider,
             IExamineManager examineManager,
             IPublishedUrlProvider urlProvider,
@@ -86,6 +88,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger = logger;
             _runtimeCache = appCaches.RuntimeCache;
             _globalSettings = globalSettings.CurrentValue;
+            _webRoutingSettings = webRoutingSettings.CurrentValue;
 
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
@@ -99,6 +102,8 @@ namespace Umbraco.Community.ContentAudit.Services
             _baseUrl = !string.IsNullOrEmpty(_contentAuditSettings.BaseUrl)
                 ? _contentAuditSettings.BaseUrl
                 : _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
+
+            var umbracoApplicationUrl = _webRoutingSettings.UmbracoApplicationUrl;
             
             if (string.IsNullOrEmpty(_baseUrl))
             {
@@ -113,6 +118,17 @@ namespace Umbraco.Community.ContentAudit.Services
 
             LoadUmbracoContentUrls();
             QueueUmbracoContent();
+
+            if (_urlQueue.IsEmpty)
+            {
+                _urlQueue.Enqueue(new UrlQueueItem()
+                {
+                    Url = _baseUrl,
+                    IsExternal = false,
+                    IsAsset = false,
+                    Unique = Guid.Empty
+                });
+            }
 
             var processUrlBlock = new ActionBlock<UrlQueueItem>(
                 async queueItem => await ProcessUrlAsync(queueItem, _baseUri, cancellationToken),
@@ -268,7 +284,7 @@ namespace Umbraco.Community.ContentAudit.Services
         {
             _logger.LogInformation("Starting internal crawl: {0}", url);
 
-            var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == url.EnsureEndsWith('/'));
+            var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == (_requestHandlerSettings.AddTrailingSlash ? url.EnsureEndsWith('/') : url));
             var pageAnalysis = await _crawlService.GetPageAnalysis(url, baseUri, matchingUmbracoNode.Key);
             if (pageAnalysis == null)
             {
@@ -490,7 +506,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 {
                     seoData.RunId = runId;
 
-                    seoData.IsOrphaned = internalLinks.Any(x => seoData.Url.Contains(x.Url)) == false;
+                    seoData.IsOrphaned = internalLinks.Any(x => seoData.Url?.Contains(x.Url) == true) == false;
                     await scope.Database.InsertAsync(new SeoSchema(seoData));
                 }
 
@@ -612,7 +628,6 @@ namespace Umbraco.Community.ContentAudit.Services
 
                         if (!_visitedUrls.Contains(absoluteUrl) && !IsDisallowed(absoluteUrl))
                         { 
-                            _visitedUrls.Add(absoluteUrl);
                             EnqueueUrl(new UrlQueueItem
                             {
                                 Url = absoluteUrl,

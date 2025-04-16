@@ -53,7 +53,9 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int? TotalBytes { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? ResourceTimings { get; set; }
+
         public DateTime CreatedDate => DateTime.UtcNow;
     }
 } 
