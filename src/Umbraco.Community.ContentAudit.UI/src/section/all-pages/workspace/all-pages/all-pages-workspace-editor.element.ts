@@ -1,8 +1,9 @@
-﻿import { customElement, html, state } from "@umbraco-cms/backoffice/external/lit";
+﻿import { css, customElement, html, state } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "./all-pages-workspace.context";
 import { UMB_WORKSPACE_PATH_PATTERN } from "@umbraco-cms/backoffice/workspace";
 import { PageAnalysisDto } from "../../../../api";
+import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 
 @customElement('content-audit-all-pages-workspace-editor')
 export class ContentAuditAllPagesWorkspaceEditorElement extends UmbLitElement {
@@ -19,7 +20,7 @@ export class ContentAuditAllPagesWorkspaceEditorElement extends UmbLitElement {
 
 			this.observe(this.#workspaceContext.data, (data) => {
 				this._data = data;
-			})
+			});
 		});
 	}
 
@@ -31,10 +32,20 @@ export class ContentAuditAllPagesWorkspaceEditorElement extends UmbLitElement {
 					<div slot="header">
 						<h3 id="headline">${this._data.pageData?.url}</h3>
 					</div>
+					<slot></slot>
 				</umb-workspace-editor>
 			`;
 		}
 	}
+
+	static override styles = [
+		UmbTextStyles,
+		css`
+			:host {
+				//padding: 
+			}
+		`
+	]
 }
 
 export default ContentAuditAllPagesWorkspaceEditorElement;

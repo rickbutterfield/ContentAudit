@@ -31,9 +31,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? AccessibilityIssues { get; set; }
         public int AriaLabelCount { get; set; }
         public int AriaDescribedByCount { get; set; }
@@ -41,6 +43,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public bool HasProperHeadingStructure { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? ColorContrastIssues { get; set; }
         public DateTime CreatedDate => DateTime.UtcNow;
     }

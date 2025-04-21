@@ -44,24 +44,31 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Title { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? MetaDescription { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? CanonicalUrl { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? H1 { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? H2s { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? H3s { get; set; }
 
         public bool HasNoIndex { get; set; }
@@ -69,24 +76,31 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public bool IsOrphaned { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? OpenGraphTitle { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? OpenGraphDescription { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? OpenGraphImage { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? TwitterCard { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? TwitterTitle { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? TwitterDescription { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? TwitterImage { get; set; }
 
         public DateTime CreatedDate => DateTime.UtcNow;

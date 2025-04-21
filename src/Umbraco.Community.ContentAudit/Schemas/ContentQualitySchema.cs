@@ -31,18 +31,22 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
         public bool HasDuplicateContent { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? DuplicateContentUrls { get; set; }
         public bool HasThinContent { get; set; }
         public int ContentScore { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? ContentGaps { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? ContentStrengths { get; set; }
         public DateTime CreatedDate => DateTime.UtcNow;
     }

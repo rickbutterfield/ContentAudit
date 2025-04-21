@@ -26,6 +26,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
 
         public bool IsAsset { get; set; }

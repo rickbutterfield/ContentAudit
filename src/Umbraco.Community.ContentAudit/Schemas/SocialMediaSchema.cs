@@ -31,9 +31,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? SocialShareButtons { get; set; }
 
         public bool HasFacebookPixel { get; set; }
@@ -41,6 +43,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public bool HasLinkedInPixel { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? SocialMediaLinks { get; set; }
 
         public DateTime CreatedDate => DateTime.UtcNow;

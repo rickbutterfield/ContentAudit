@@ -289,7 +289,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             #main {
                 display: grid;
                 gap: var(--uui-size-space-5); 
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: 1fr 1fr 350px;
             }
 
             .span-2 {

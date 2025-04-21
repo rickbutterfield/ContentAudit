@@ -9,22 +9,25 @@ import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 @customElement('content-audit-all-pages-details-workspace-view')
 export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
     @state()
-    _data?: PageAnalysisDto;
+	_data?: PageAnalysisDto;
+
+	@state()
+	_documentUnique: string = '';
 
     #workspaceContext?: typeof CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT.TYPE;
 
-    constructor() {
-        super();
+	constructor() {
+		super();
 
-        this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
-            this.#workspaceContext = instance;
-            this.#observeCollectionItems();
-        });
-    }
+		this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
+			this.#workspaceContext = instance;
+			this.#observeCollectionItems();
+		});
+	}
 
     #observeCollectionItems() {
         if (!this.#workspaceContext) return;
-        this.observe(this.#workspaceContext.data, (data) => {
+		this.observe(this.#workspaceContext.data, (data) => {
             this._data = data;
         }, 'umbCollectionItemsObserver');
     }

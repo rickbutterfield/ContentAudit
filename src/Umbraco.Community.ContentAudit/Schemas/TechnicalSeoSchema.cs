@@ -35,12 +35,15 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? ContentType { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Charset { get; set; }
 
         public bool HasGzipCompression { get; set; }
@@ -52,11 +55,13 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public bool HasValidHtml { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? HtmlValidationErrors { get; set; }
 
         public bool HasSchemaMarkup { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? SchemaType { get; set; }
 
         public DateTime CreatedDate => DateTime.UtcNow;

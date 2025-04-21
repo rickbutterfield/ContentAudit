@@ -36,6 +36,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
         public int WordCount { get; set; }
         public int ParagraphCount { get; set; }
@@ -51,9 +52,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public string? KeywordDensity { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? MissingAltTextImages { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? MissingTitleImages { get; set; }
         public DateTime CreatedDate => DateTime.UtcNow;
     }

@@ -31,6 +31,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int RunId { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
 
         public bool IsExternal { get; set; }
@@ -41,9 +42,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int StatusCode { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? ContentType { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? FoundPage { get; set; }
 
         public Guid Unique { get; set; }
