@@ -1,6 +1,6 @@
 ﻿import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, state } from "@umbraco-cms/backoffice/external/lit";
+import { customElement, html, LitElement, state } from "@umbraco-cms/backoffice/external/lit";
 import { UmbRoute, UmbRouterSlotChangeEvent, UmbRouterSlotInitEvent } from "@umbraco-cms/backoffice/router";
 import { ContentAuditAllPagesDetailsWorkspaceViewElement } from "../../section/all-pages/workspace/all-pages/views/all-pages-details-workspace-view.element";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, ContentAuditAllPagesWorkspaceContext } from "../../section/all-pages/workspace/all-pages/all-pages-workspace.context";
