@@ -45,6 +45,7 @@ export type ContentAuditSettings = {
     useSitemapXml: boolean;
     sitemapUrl: string;
     maxConcurrentCrawls: number;
+    baseUrl: string;
 };
 
 export type ContentQualityDto = {
@@ -147,6 +148,27 @@ export type LinkGroupDto = {
     links?: Array<(LinkDto)> | null;
 };
 
+export type MetricDto = {
+    name: MetricName;
+    value: number;
+    rating: MetricRating;
+};
+
+export enum MetricName {
+    CLS = 'CLS',
+    FCP = 'FCP',
+    FID = 'FID',
+    INP = 'INP',
+    LCP = 'LCP',
+    TTFB = 'TTFB'
+}
+
+export enum MetricRating {
+    GOOD = 'Good',
+    NEEDS_IMPROVEMENT = 'NeedsImprovement',
+    POOR = 'Poor'
+}
+
 export type OverviewDto = {
     runDate?: (string) | null;
     total?: (number) | null;
@@ -213,9 +235,11 @@ export type PerformanceDto = {
     runId: number;
     url?: (string) | null;
     pageLoadTime?: (number) | null;
-    firstContentfulPaint?: (number) | null;
-    largestContentfulPaint?: (number) | null;
-    timeToInteractive?: (number) | null;
+    cumulativeLayoutShift?: ((MetricDto) | null);
+    firstContentfulPaint?: ((MetricDto) | null);
+    largestContentfulPaint?: ((MetricDto) | null);
+    timeToInteractive?: ((MetricDto) | null);
+    timeToFirstByte?: ((MetricDto) | null);
     totalRequests?: (number) | null;
     totalBytes?: (number) | null;
     resourceTimings?: Array<(ResourceTimingDto)> | null;

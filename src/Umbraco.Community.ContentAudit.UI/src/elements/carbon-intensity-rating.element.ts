@@ -8,22 +8,24 @@ export class ContentAuditCarbonIntensityLabel extends UmbElementMixin(LitElement
     @property({ attribute: true })
     value: string = '';
 
-    _getColour(carbonRating: string | null | undefined): UUIInterfaceColor {
-        if (carbonRating == "E" || carbonRating == "F") {
+    _getColour(): UUIInterfaceColor {
+        if (this.value == "E" || this.value == "F") {
             return "danger";
         }
-        else if (carbonRating == "D") {
+        else if (this.value == "D") {
             return "warning";
         }
         else return "positive";
     }
 
     render() {
-        return html`
-            <uui-tag .color=${this._getColour(this.value)}>
-                ${this.value}
-            </uui-tag>
-        `
+        if (this.value != null) {
+            return html`
+                <uui-tag .color=${this._getColour()}>
+                    ${this.value}
+                </uui-tag>
+            `
+        }
     }
 }
 

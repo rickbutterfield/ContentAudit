@@ -10,7 +10,9 @@ import { manifests as outboundLinksManifests } from './outbound-links/manifests'
 import { manifests as inboundLinksManifests } from './inbound-links/manifests';
 import { manifests as metadataManifests } from './metadata/manifests';
 import { manifests as duplicateContentManifests } from './duplicate-content/manifests';
-import { CONTENT_AUDIT_MENU_0_ALIAS, CONTENT_AUDIT_MENU_1_ALIAS } from './constants';
+import { manifests as carbonRatingManifests } from './carbon-rating/manifests';
+import { manifests as coreWebVitalsManifests } from './core-web-vitals/manifests';
+import { CONTENT_AUDIT_MENU_0_ALIAS, CONTENT_AUDIT_MENU_1_ALIAS, CONTENT_AUDIT_MENU_2_ALIAS } from './constants';
 
 const sectionAlias = 'Umb.Section.ContentAudit';
 
@@ -53,6 +55,11 @@ const menus: ManifestMenu[] = [
         alias: CONTENT_AUDIT_MENU_1_ALIAS,
         name: 'Content Menu'
     },
+    {
+        type: 'menu',
+        alias: CONTENT_AUDIT_MENU_2_ALIAS,
+        name: 'Performance Menu'
+    }
 ]
 
 const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
@@ -87,6 +94,22 @@ const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
                 match: sectionAlias
             }
         ]
+    },
+    {
+        type: 'sectionSidebarApp',
+        kind: 'menu',
+        alias: 'Umb.SidebarMenu.ContentPerformance',
+        name: 'Content Performance Sidebar Menu',
+        meta: {
+            label: 'Performance',
+            menu: CONTENT_AUDIT_MENU_2_ALIAS
+        },
+        conditions: [
+            {
+                alias: 'Umb.Condition.SectionAlias',
+                match: sectionAlias
+            }
+        ]
     }
 ]
 
@@ -103,5 +126,7 @@ export const manifests = [
     ...outboundLinksManifests,
     ...inboundLinksManifests,
     ...metadataManifests,
-    ...duplicateContentManifests
+    ...duplicateContentManifests,
+    ...carbonRatingManifests,
+    ...coreWebVitalsManifests
 ]

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Umbraco.Community.ContentAudit.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
@@ -103,6 +105,26 @@ namespace Umbraco.Community.ContentAudit.Services
                 var response = await page.GotoAsync(url, new PageGotoOptions
                 {
                     WaitUntil = WaitUntilState.NetworkIdle
+                });
+
+                await page.AddScriptTagAsync(new PageAddScriptTagOptions
+                {
+                    Url = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js"                    
+                });
+
+                await page.AddScriptTagAsync(new PageAddScriptTagOptions
+                {
+                    Content = @"
+                        function setWebVitalsData(metricName, metricValue) {
+                            document.body.setAttribute(`data-${metricName.toLowerCase()}`, JSON.stringify(metricValue));
+                        }
+
+                        self.webVitals.onCLS((metric) => setWebVitalsData('CLS', metric), { reportAllChanges: true });
+                        self.webVitals.onFCP((metric) => setWebVitalsData('FCP', metric), { reportAllChanges: true });
+                        self.webVitals.onINP((metric) => setWebVitalsData('INP', metric), { reportAllChanges: true });
+                        self.webVitals.onLCP((metric) => setWebVitalsData('LCP', metric), { reportAllChanges: true });
+                        self.webVitals.onTTFB((metric) => setWebVitalsData('TTFB', metric), { reportAllChanges: true });
+                    "
                 });
 
                 var endTime = DateTime.UtcNow;
@@ -279,9 +301,10 @@ namespace Umbraco.Community.ContentAudit.Services
                         {
                             Url = url,
                             PageLoadTime = (long)(endTime - startTime).TotalMilliseconds,
+                            CumulativeLayoutShift = await GetCumulativeLayoutShift(page),
                             FirstContentfulPaint = await GetFirstContentfulPaint(page),
                             LargestContentfulPaint = await GetLargestContentfulPaint(page),
-                            TimeToInteractive = await GetTimeToInteractive(page),
+                            TimeToFirstByte = await GetTimeToFirstByte(page),
                             TotalRequests = await page.EvaluateAsync<int>("() => performance.getEntriesByType('resource').length"),
                             TotalBytes = await page.EvaluateAsync<int>("() => performance.getEntriesByType('resource').reduce((acc, entry) => acc + entry.transferSize, 0)"),
                             ResourceTimings = await GetResourceTimings(page)
@@ -433,19 +456,78 @@ namespace Umbraco.Community.ContentAudit.Services
             return keywordDensity;
         }
 
-        private async Task<long> GetFirstContentfulPaint(IPage page)
+        private async Task<MetricDto?> GetCumulativeLayoutShift(IPage page)
         {
-            return await page.EvaluateAsync<long>("() => performance.getEntriesByType('paint').find(entry => entry.name === 'first-contentful-paint')?.startTime ?? 0");
+            var body = await page.QuerySelectorAsync("body");
+            if (body != null)
+            {
+                var clsAttribute = await body.GetAttributeAsync("data-cls");
+                if (!string.IsNullOrEmpty(clsAttribute))
+                {
+                    try
+                    {
+                        var clsObject = JsonSerializer.Deserialize<MetricDto>(clsAttribute);
+                        return clsObject;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message, ex);
+                    }
+                }
+            }
+
+            return new MetricDto() { Name = MetricName.CLS, Value = 0 };
         }
 
-        private async Task<long> GetLargestContentfulPaint(IPage page)
+        private async Task<MetricDto?> GetFirstContentfulPaint(IPage page)
         {
-            return await page.EvaluateAsync<long>("() => performance.getEntriesByType('largest-contentful-paint')[0]?.startTime ?? 0");
+            var body = await page.QuerySelectorAsync("body");
+            if (body != null)
+            {
+                var fcpAttribute = await body.GetAttributeAsync("data-fcp");
+                if (!string.IsNullOrEmpty(fcpAttribute))
+                {
+                    var fcpObject = JsonSerializer.Deserialize<MetricDto>(fcpAttribute);
+                    return fcpObject;
+                }
+            }
+
+            long fcpEntry = await page.EvaluateAsync<long>("() => performance.getEntriesByType('paint').find(entry => entry.name === 'first-contentful-paint')?.startTime ?? 0");
+            return new MetricDto() { Name = MetricName.FCP, Value = fcpEntry };
         }
 
-        private async Task<long> GetTimeToInteractive(IPage page)
+        private async Task<MetricDto?> GetLargestContentfulPaint(IPage page)
         {
-            return await page.EvaluateAsync<long>("() => performance.getEntriesByType('longtask').reduce((acc, entry) => Math.max(acc, entry.startTime + entry.duration), 0)");
+            var body = await page.QuerySelectorAsync("body");
+            if (body != null)
+            {
+                var lcpAttribute = await body.GetAttributeAsync("data-lcp");
+                if (!string.IsNullOrEmpty(lcpAttribute))
+                {
+                    var lcpObject = JsonSerializer.Deserialize<MetricDto>(lcpAttribute);
+                    return lcpObject;
+                }
+            }
+
+            long lcpEntry = await page.EvaluateAsync<long>("() => performance.getEntriesByType('largest-contentful-paint')[0]?.startTime ?? 0");
+            return new MetricDto() { Name = MetricName.LCP, Value = lcpEntry };
+        }
+
+        private async Task<MetricDto?> GetTimeToFirstByte(IPage page)
+        {
+            var body = await page.QuerySelectorAsync("body");
+            if (body != null)
+            {
+                var ttfbAttribute = await body.GetAttributeAsync("data-ttfb");
+                if (!string.IsNullOrEmpty(ttfbAttribute))
+                {
+                    var ttfbObject = JsonSerializer.Deserialize<MetricDto>(ttfbAttribute);
+                    return ttfbObject;
+                }
+            }
+
+            long ttfbEntry = await page.EvaluateAsync<long>("() => performance.getEntriesByType('navigation')[0]?.responseStart ?? 0");
+            return new MetricDto() { Name = MetricName.TTFB, Value = ttfbEntry };
         }
 
         private async Task<List<ResourceTimingDto>?> GetResourceTimings(IPage page)

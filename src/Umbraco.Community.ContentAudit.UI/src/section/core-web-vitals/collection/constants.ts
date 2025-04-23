@@ -1,0 +1,2 @@
+﻿export const CONTENT_AUDIT_CORE_WEB_VITALS_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.CoreWebVitals';
+export const CONTENT_AUDIT_CORE_WEB_VITALS_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.CoreWebVitals.Table';

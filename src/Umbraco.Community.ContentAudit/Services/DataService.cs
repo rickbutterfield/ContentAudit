@@ -14,15 +14,18 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IScopeProvider _scopeProvider;
         private readonly AuditIssueCollection _auditIssueCollection;
         private readonly IAppPolicyCache _runtimeCache;
+        private readonly IEmissionsService _emissionsService;
 
         public DataService(
             IScopeProvider scopeProvider,
             AuditIssueCollection auditIssueCollection,
-            AppCaches appCaches)
+            AppCaches appCaches,
+            IEmissionsService emissionsService)
         {
             _scopeProvider = scopeProvider;
             _auditIssueCollection = auditIssueCollection;
             _runtimeCache = appCaches.RuntimeCache;
+            _emissionsService = emissionsService;
         }
 
         public async Task<OverviewDto> GetLatestAuditOverview()
@@ -480,7 +483,6 @@ namespace Umbraco.Community.ContentAudit.Services
             return latestId;
         }
 
-
         private async Task<PageAnalysisDto> PopulatePageAnalysisData(PageSchema page, int? latestRunId, IScope scope)
         {
             var result = new PageAnalysisDto();
@@ -511,6 +513,18 @@ namespace Umbraco.Community.ContentAudit.Services
             if (performanceData != null && performanceData.Any())
             {
                 result.PerformanceData = new PerformanceDto(performanceData.FirstOrDefault());
+
+                if (result.PerformanceData.TotalBytes.HasValue)
+                {
+                    result.EmissionsData = new();
+
+                    var score = _emissionsService.PerVisit(result.PerformanceData.TotalBytes.Value, false, false, true);
+                    if (score.Total.HasValue)
+                    {
+                        result.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                    }
+                    result.EmissionsData.CarbonRating = score.Rating;
+                }
             }
 
             // Get accessibility data

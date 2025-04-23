@@ -1,0 +1,2 @@
+﻿export const CONTENT_AUDIT_CARBON_RATING_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.CarbonRating';
+export const CONTENT_AUDIT_CARBON_RATING_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.CarbonRating.Table';

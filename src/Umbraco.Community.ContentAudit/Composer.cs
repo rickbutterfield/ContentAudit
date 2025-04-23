@@ -9,9 +9,7 @@ using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
 using Microsoft.Playwright;
 
-#if NET9_0_OR_GREATER
-using Umbraco.Community.ContentAudit.Configuration;
-#else
+#if NET8_0
 using Umbraco.Community.ContentAudit.Sections;
 using Umbraco.Community.ContentAudit.Dashboards;
 #endif

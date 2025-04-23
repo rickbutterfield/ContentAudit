@@ -22,7 +22,7 @@ export class ContentAuditAllPagesCollectionElement extends UmbCollectionDefaultE
 				<umb-collection-filter-field></umb-collection-filter-field>
 			</umb-collection-toolbar>
 		`;
-}
+	}
 
 static override styles = [
 	UUITextStyles,

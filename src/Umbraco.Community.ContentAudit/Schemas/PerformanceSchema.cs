@@ -19,9 +19,11 @@ namespace Umbraco.Community.ContentAudit.Schemas
             RunId = dto.RunId;
             Url = dto.Url;
             PageLoadTime = dto.PageLoadTime;
-            FirstContentfulPaint = dto.FirstContentfulPaint;
-            LargestContentfulPaint = dto.LargestContentfulPaint;
-            TimeToInteractive = dto.TimeToInteractive;
+            CumulativeLayoutShift = JsonSerializer.Serialize(dto.CumulativeLayoutShift);
+            FirstContentfulPaint = JsonSerializer.Serialize(dto.FirstContentfulPaint);
+            LargestContentfulPaint = JsonSerializer.Serialize(dto.LargestContentfulPaint);
+            TimeToInteractive = JsonSerializer.Serialize(dto.TimeToInteractive);
+            TimeToFirstByte = JsonSerializer.Serialize(dto.TimeToFirstByte);
             TotalRequests = dto.TotalRequests;
             TotalBytes = dto.TotalBytes;
             ResourceTimings = JsonSerializer.Serialize(dto.ResourceTimings);
@@ -37,16 +39,22 @@ namespace Umbraco.Community.ContentAudit.Schemas
         
         [NullSetting(NullSetting = NullSettings.Null)]
         public long? PageLoadTime { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? CumulativeLayoutShift { get; set; }
+
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? FirstContentfulPaint { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
-        public long? FirstContentfulPaint { get; set; }
+        public string? LargestContentfulPaint { get; set; }
         
         [NullSetting(NullSetting = NullSettings.Null)]
-        public long? LargestContentfulPaint { get; set; }
-        
+        public string? TimeToInteractive { get; set; }
+
         [NullSetting(NullSetting = NullSettings.Null)]
-        public long? TimeToInteractive { get; set; }
-        
+        public string? TimeToFirstByte { get; set; }
+
         [NullSetting(NullSetting = NullSettings.Null)]
         public int? TotalRequests { get; set; }
         

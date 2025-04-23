@@ -13,9 +13,26 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             RunId = schema.RunId;
             Url = schema.Url;
             PageLoadTime = schema.PageLoadTime;
-            FirstContentfulPaint = schema.FirstContentfulPaint;
-            LargestContentfulPaint = schema.LargestContentfulPaint;
-            TimeToInteractive = schema.TimeToInteractive;
+            if (!string.IsNullOrEmpty(schema.CumulativeLayoutShift))
+            {
+                CumulativeLayoutShift = JsonSerializer.Deserialize<MetricDto>(schema.CumulativeLayoutShift);
+            }
+            if (!string.IsNullOrEmpty(schema.FirstContentfulPaint))
+            {
+                FirstContentfulPaint = JsonSerializer.Deserialize<MetricDto>(schema.FirstContentfulPaint);
+            }
+            if (!string.IsNullOrEmpty(schema.LargestContentfulPaint))
+            {
+                LargestContentfulPaint = JsonSerializer.Deserialize<MetricDto>(schema.LargestContentfulPaint);
+            }
+            if (!string.IsNullOrEmpty(schema.TimeToInteractive))
+            {
+                TimeToInteractive = JsonSerializer.Deserialize<MetricDto>(schema.TimeToInteractive);
+            }
+            if (!string.IsNullOrEmpty(schema.TimeToFirstByte))
+            {
+                TimeToFirstByte = JsonSerializer.Deserialize<MetricDto>(schema.TimeToFirstByte);
+            }
             TotalRequests = schema.TotalRequests;
             TotalBytes = schema.TotalBytes;
             ResourceTimings = JsonSerializer.Deserialize<List<ResourceTimingDto>>(schema.ResourceTimings);
@@ -26,9 +43,11 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public int RunId { get; set; }
         public string? Url { get; set; }
         public long? PageLoadTime { get; set; }
-        public long? FirstContentfulPaint { get; set; }
-        public long? LargestContentfulPaint { get; set; }
-        public long? TimeToInteractive { get; set; }
+        public MetricDto? CumulativeLayoutShift { get; set; }
+        public MetricDto? FirstContentfulPaint { get; set; }
+        public MetricDto? LargestContentfulPaint { get; set; }
+        public MetricDto? TimeToInteractive { get; set; }
+        public MetricDto? TimeToFirstByte { get; set; }
         public int? TotalRequests { get; set; }
         public int? TotalBytes { get; set; }
         public List<ResourceTimingDto>? ResourceTimings { get; set; }
