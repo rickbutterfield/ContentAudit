@@ -107,26 +107,6 @@ namespace Umbraco.Community.ContentAudit.Services
                     WaitUntil = WaitUntilState.NetworkIdle
                 });
 
-                await page.AddScriptTagAsync(new PageAddScriptTagOptions
-                {
-                    Url = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js"                    
-                });
-
-                await page.AddScriptTagAsync(new PageAddScriptTagOptions
-                {
-                    Content = @"
-                        function setWebVitalsData(metricName, metricValue) {
-                            document.body.setAttribute(`data-${metricName.toLowerCase()}`, JSON.stringify(metricValue));
-                        }
-
-                        self.webVitals.onCLS((metric) => setWebVitalsData('CLS', metric), { reportAllChanges: true });
-                        self.webVitals.onFCP((metric) => setWebVitalsData('FCP', metric), { reportAllChanges: true });
-                        self.webVitals.onINP((metric) => setWebVitalsData('INP', metric), { reportAllChanges: true });
-                        self.webVitals.onLCP((metric) => setWebVitalsData('LCP', metric), { reportAllChanges: true });
-                        self.webVitals.onTTFB((metric) => setWebVitalsData('TTFB', metric), { reportAllChanges: true });
-                    "
-                });
-
                 var endTime = DateTime.UtcNow;
 
                 if (response == null || !response.Ok)
@@ -152,6 +132,26 @@ namespace Umbraco.Community.ContentAudit.Services
                     _logger.LogWarning("Can't crawl page {0}: content type is {1}", url, contentType);
                     return null;
                 }
+
+                await page.AddScriptTagAsync(new PageAddScriptTagOptions
+                {
+                    Url = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js"
+                });
+
+                await page.AddScriptTagAsync(new PageAddScriptTagOptions
+                {
+                    Content = @"
+                        function setWebVitalsData(metricName, metricValue) {
+                            document.body.setAttribute(`data-${metricName.toLowerCase()}`, JSON.stringify(metricValue));
+                        }
+
+                        self.webVitals.onCLS((metric) => setWebVitalsData('CLS', metric), { reportAllChanges: true });
+                        self.webVitals.onFCP((metric) => setWebVitalsData('FCP', metric), { reportAllChanges: true });
+                        self.webVitals.onINP((metric) => setWebVitalsData('INP', metric), { reportAllChanges: true });
+                        self.webVitals.onLCP((metric) => setWebVitalsData('LCP', metric), { reportAllChanges: true });
+                        self.webVitals.onTTFB((metric) => setWebVitalsData('TTFB', metric), { reportAllChanges: true });
+                    "
+                });
 
                 // Wait for the page to be fully loaded
                 await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);

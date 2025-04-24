@@ -185,13 +185,15 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
 
                     _logger.LogInformation("URL processing complete, signaling completion");
-                    processUrlBlock.Complete();
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in URL processing task");
-                    processUrlBlock.Complete();
                     throw;
+                }
+                finally
+                {
+                    processUrlBlock.Complete();
                 }
             }, cancellationToken);
 
@@ -210,6 +212,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error during completion");
+                    _crawlResultsChannel.Writer.Complete(ex);
                     throw;
                 }
             }, cancellationToken);
