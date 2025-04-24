@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Playwright;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Community.ContentAudit.Composing;
+using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Services;
-using Umbraco.Community.ContentAudit.Composing;
-using Umbraco.Community.ContentAudit.Configuration;
-using Microsoft.Playwright;
 
 #if NET8_0
 using Umbraco.Community.ContentAudit.Sections;

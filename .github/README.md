@@ -2,13 +2,13 @@
 
 [![Platform](https://img.shields.io/badge/Umbraco-15+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.ContentAudit.svg)](https://www.nuget.org/packages/Umbraco.Community.ContentAudit/)
-[![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.ContentAudit)](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/license/rickbutterfield/ContentAudit)](https://github.com/rickbutterfield/ContentAudit/blob/main/LICENSE)
 
-<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
+<img src="https://raw.githubusercontent.com/rickbutterfield/ContentAudit/main/.github/assets/icon.svg" alt="Umbraco.Community.ContentAudit icon" width="150" height="150">
 
 ## First class site crawling and SEO auditing for Umbraco
 
-![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.ContentAudit/main/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
+![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/ContentAudit/main/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
 
 ## Documentation
 
@@ -38,4 +38,4 @@ This project is maintained by [Rick Butterfield](https://rickbutterfield.dev) an
 ## License
 Copyright &copy; 2025 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
-Licensed under the [MIT License](https://github.com/rickbutterfield/Umbraco.Community.ContentAudit/blob/main/LICENSE.md).
+Licensed under the [MIT License](https://github.com/rickbutterfield/ContentAudit/blob/main/LICENSE.md).

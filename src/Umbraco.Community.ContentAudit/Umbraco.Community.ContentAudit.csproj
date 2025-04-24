@@ -21,8 +21,8 @@
 		<Authors>Studio Minim Ltd</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Studio Minim Ltd</Copyright>
 
-		<PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.ContentAudit</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.ContentAudit</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/rickbutterfield/ContentAudit</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/rickbutterfield/ContentAudit</RepositoryUrl>
 		<PackageIcon>icon.png</PackageIcon>
 
 		<RepositoryType>git</RepositoryType>
