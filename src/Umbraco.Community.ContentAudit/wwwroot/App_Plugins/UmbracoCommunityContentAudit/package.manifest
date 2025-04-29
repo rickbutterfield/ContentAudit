@@ -22,7 +22,8 @@
     "~/App_Plugins/UmbracoCommunityContentAudit/js/duplicate-pages.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/image-alt-text.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/metadata.controller.js",
-    "~/App_Plugins/UmbracoCommunityContentAudit/js/orphaned-pages.controller.js"
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/orphaned-pages.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/core-web-vitals.controller.js"
   ],
   "css": [
     "~/App_Plugins/UmbracoCommunityContentAudit/css/content-audit.css"

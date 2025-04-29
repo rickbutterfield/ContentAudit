@@ -6,5 +6,6 @@
 	<area alias="treeHeaders">
 		<key alias="Audit">Audit</key>
 		<key alias="Content">Content</key>
+		<key alias="Performance">Performance</key>
 	</area>
 </language>

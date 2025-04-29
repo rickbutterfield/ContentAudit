@@ -11,13 +11,13 @@ using Umbraco.Cms.Web.Common.ModelBinders;
 
 namespace Umbraco.Community.ContentAudit.Trees
 {
-    [Tree(Constants.SectionAlias, "all-pages", TreeGroup = Constants.Trees.Audit.Group, TreeTitle = "Site Audit", SortOrder = -1)]
+    [Tree(Constants.SectionAlias, "core-web-vitals", TreeGroup = Constants.Trees.Performance.Group, SortOrder = 20)]
     [PluginController("UmbracoCommunityContentAudit")]
-    public class AllPagesTreeController : TreeController
+    public class CoreWebVitalsTreeController : TreeController
     {
         private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
 
-        public AllPagesTreeController(ILocalizedTextService localizedTextService,
+        public CoreWebVitalsTreeController(ILocalizedTextService localizedTextService,
             UmbracoApiControllerTypeCollection umbracoApiControllerTypeCollection,
             IMenuItemCollectionFactory menuItemCollectionFactory,
             IEventAggregator eventAggregator)
@@ -41,9 +41,9 @@ namespace Umbraco.Community.ContentAudit.Trees
 
             if (root is not null)
             {
-                root.RoutePath = $"{Constants.SectionAlias}/all-pages/overview";
-                root.Name = "All Pages";
-                root.Icon = "icon-browser-window";
+                root.RoutePath = $"{Constants.SectionAlias}/core-web-vitals/overview";
+                root.Name = "Core Web Vitals";
+                root.Icon = "icon-speed-gauge";
                 root.HasChildren = false;
                 root.MenuUrl = null;
             }

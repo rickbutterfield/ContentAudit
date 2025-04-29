@@ -1,6 +1,5 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
-import { UMB_APP_CONTEXT } from '@umbraco-cms/backoffice/app';
 import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";

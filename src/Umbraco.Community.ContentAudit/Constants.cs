@@ -26,6 +26,13 @@
                 internal const string Title = "Content";
                 internal const string Group = "content";
             }
+
+            internal class Performance
+            {
+                internal const string Alias = "performance";
+                internal const string Title = "Performance";
+                internal const string Group = "performance";
+            }
         }
 
         internal class Cache

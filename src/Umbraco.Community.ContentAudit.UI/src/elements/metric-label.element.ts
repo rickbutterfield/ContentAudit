@@ -1,5 +1,5 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, nothing, property } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, LitElement, property } from "@umbraco-cms/backoffice/external/lit";
 import { MetricDto, MetricName, MetricRating } from "../api";
 import { UUIInterfaceColor } from "@umbraco-cms/backoffice/external/uui";
 

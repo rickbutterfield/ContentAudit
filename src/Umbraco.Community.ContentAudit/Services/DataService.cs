@@ -48,20 +48,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async Task<List<PageAnalysisDto>> GetLatestAuditData(string filter = "", int statusCode = 0)
         {
-#if NET9_0
-            var data = await _runtimeCache.GetCacheItemAsync(Constants.Cache.Key,
-#else
-            var data = await _runtimeCache.GetCacheItem(Constants.Cache.Key,
-#endif
-                async () =>
-                {
-                    var results = await GetLatestAuditDataInternal(filter, statusCode);
-                    return results;
-                },
-                TimeSpan.FromMinutes(30));
-
-            return data ?? new List<PageAnalysisDto>();
-
+            return await GetLatestAuditDataInternal(filter, statusCode);
         }
 
         private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0)
@@ -70,13 +57,21 @@ namespace Umbraco.Community.ContentAudit.Services
             var latestRunId = await GetLatestAuditId();
 
             using var scope = _scopeProvider.CreateScope();
+#if NET9_0
+            var pageData = await _runtimeCache.GetCacheItemAsync(Constants.Cache.Key,
+#else
+            var pageData = await _runtimeCache.GetCacheItem(Constants.Cache.Key,
+#endif
+                async () =>
+                {
+                    string sqlQuery = $@"
+                        SELECT * 
+                        FROM [{PageSchema.TableName}] 
+                        WHERE RunId = @0";
 
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{PageSchema.TableName}] 
-                WHERE RunId = @0";
-
-            var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+                    var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
+                    return pageData;
+                }, TimeSpan.FromMinutes(30));
 
             if (pageData != null && pageData.Any())
             {

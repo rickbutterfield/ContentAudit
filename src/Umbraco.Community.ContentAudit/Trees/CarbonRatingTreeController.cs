@@ -11,13 +11,13 @@ using Umbraco.Cms.Web.Common.ModelBinders;
 
 namespace Umbraco.Community.ContentAudit.Trees
 {
-    [Tree(Constants.SectionAlias, "all-pages", TreeGroup = Constants.Trees.Audit.Group, TreeTitle = "Site Audit", SortOrder = -1)]
+    [Tree(Constants.SectionAlias, "carbon-rating", TreeGroup = Constants.Trees.Performance.Group, SortOrder = 21)]
     [PluginController("UmbracoCommunityContentAudit")]
-    public class AllPagesTreeController : TreeController
+    public class CarbonRatingTreeController : TreeController
     {
         private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
 
-        public AllPagesTreeController(ILocalizedTextService localizedTextService,
+        public CarbonRatingTreeController(ILocalizedTextService localizedTextService,
             UmbracoApiControllerTypeCollection umbracoApiControllerTypeCollection,
             IMenuItemCollectionFactory menuItemCollectionFactory,
             IEventAggregator eventAggregator)
@@ -41,9 +41,9 @@ namespace Umbraco.Community.ContentAudit.Trees
 
             if (root is not null)
             {
-                root.RoutePath = $"{Constants.SectionAlias}/all-pages/overview";
-                root.Name = "All Pages";
-                root.Icon = "icon-browser-window";
+                root.RoutePath = $"{Constants.SectionAlias}/carbon-rating/overview";
+                root.Name = "Carbon Rating";
+                root.Icon = "icon-eco";
                 root.HasChildren = false;
                 root.MenuUrl = null;
             }

@@ -20,7 +20,8 @@
             getOrphanedPages: getOrphanedPages,
             renderTypeLabel: renderTypeLabel,
             renderPriorityLabel: renderPriorityLabel,
-            renderStatusCodeLabel: renderStatusCodeLabel
+            renderStatusCodeLabel: renderStatusCodeLabel,
+            renderCoreWebVitalLabel: renderCoreWebVitalLabel
         };
 
         const issueTypeConfigMap = [
@@ -201,6 +202,36 @@
                 <uui-tag color="${colour}">
                     ${statusCode}
                 </uui-tag>
+            `);
+        }
+
+        function renderCoreWebVitalLabel(metric) {
+            if (metric == null) {
+                return;
+            }
+
+            let value = metric.value;
+            let colour = "positive";
+
+            if (metric.name == "CLS") {
+                value = metric.value.toFixed(3);
+            }
+            else {
+                let seconds = (metric.value / 1000) % 60;
+                value = `${seconds.toFixed(2)}s`;
+            }
+
+            if (metric.rating == "Poor") {
+                colour = "danger";
+            }
+            if (metric.rating == "NeedsImprovement") {
+                colour = "warning";
+            }
+
+            return $sce.trustAsHtml(`
+                 <uui-tag color="${colour}">
+                     ${value}
+                 </uui-tag>
             `);
         }
 
