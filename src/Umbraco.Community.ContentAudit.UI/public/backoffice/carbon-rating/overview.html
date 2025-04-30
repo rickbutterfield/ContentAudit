@@ -1,4 +1,4 @@
-﻿<div ng-controller="Umbraco.Community.ContentAudit.CoreWebVitals.OverviewController as vm">
+﻿<div ng-controller="Umbraco.Community.ContentAudit.CarbonRating.OverviewController as vm">
 
     <umb-editor-view footer="false">
 
@@ -25,18 +25,18 @@
                 <uui-table>
                     <uui-table-head>
                         <uui-table-head-cell>URL</uui-table-head-cell>
-                        <uui-table-head-cell>Cumulative Layout Shift</uui-table-head-cell>
-                        <uui-table-head-cell>First Contentful Paint</uui-table-head-cell>
-                        <uui-table-head-cell>Largest Contentful Paint</uui-table-head-cell>
-                        <uui-table-head-cell>Time to First Byte</uui-table-head-cell>
+                        <uui-table-head-cell>Content Type</uui-table-head-cell>
+                        <uui-table-head-cell>Page Size</uui-table-head-cell>
+                        <uui-table-head-cell>Carbon Rating</uui-table-head-cell>
+                        <uui-table-head-cell>Emissions Per Page View</uui-table-head-cell>
                     </uui-table-head>
 
                     <uui-table-row selectable ng-repeat="data in vm.data">
                         <uui-table-cell ng-click="vm.inlineEditor($event, data.unique)">{{data.pageData.url}}</uui-table-cell>
-                        <uui-table-cell ng-bind-html="vm.renderCoreWebVitalLabel(data.performanceData.cumulativeLayoutShift)"></uui-table-cell>
-                        <uui-table-cell ng-bind-html="vm.renderCoreWebVitalLabel(data.performanceData.firstContentfulPaint)"></uui-table-cell>
-                        <uui-table-cell ng-bind-html="vm.renderCoreWebVitalLabel(data.performanceData.largestContentfulPaint)"></uui-table-cell>
-                        <uui-table-cell ng-bind-html="vm.renderCoreWebVitalLabel(data.performanceData.timeToFirstByte)"></uui-table-cell>
+                        <uui-table-cell>{{data.technicalSeoData.contentType}}</uui-table-cell>
+                        <uui-table-cell ng-bind-html="vm.renderTotalBytes(data.performanceData.totalBytes)"></uui-table-cell>
+                        <uui-table-cell ng-bind-html="vm.renderCarbonRatingLabel(data.emissionsData.carbonRating)"></uui-table-cell>
+                        <uui-table-cell>{{data.emissionsData.emissionsPerPageView}}g</uui-table-cell>
                     </uui-table-row>
                 </uui-table>
 

@@ -99,7 +99,7 @@ export class ContentAuditCarbonRatingTableCollectionViewElement extends UmbLitEl
                     },
                     {
                         columnAlias: 'pageSize',
-                        value: html`${Math.round(page.performanceData?.totalBytes! / 1024)}Kb`
+                        value: html`${Math.round(page.performanceData?.totalBytes! / 1024)}KB`
                     },
                     {
                         columnAlias: 'carbonRating',

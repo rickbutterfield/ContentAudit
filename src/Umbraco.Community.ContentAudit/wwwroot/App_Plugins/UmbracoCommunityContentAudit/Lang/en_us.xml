@@ -4,8 +4,8 @@
 		<key alias="audit">Audit</key>
 	</area>
 	<area alias="treeHeaders">
-		<key alias="Audit">Audit</key>
-		<key alias="Content">Content</key>
-		<key alias="Performance">Performance</key>
+		<key alias="audit">Audit</key>
+		<key alias="content">Content</key>
+		<key alias="performance">Performance</key>
 	</area>
 </language>

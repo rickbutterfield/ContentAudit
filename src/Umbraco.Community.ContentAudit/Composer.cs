@@ -8,7 +8,6 @@ using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Services;
-
 #if NET8_0
 using Umbraco.Community.ContentAudit.Sections;
 using Umbraco.Community.ContentAudit.Dashboards;

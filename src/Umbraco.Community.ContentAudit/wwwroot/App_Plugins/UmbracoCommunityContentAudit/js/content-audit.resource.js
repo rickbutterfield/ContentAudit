@@ -21,7 +21,8 @@
             renderTypeLabel: renderTypeLabel,
             renderPriorityLabel: renderPriorityLabel,
             renderStatusCodeLabel: renderStatusCodeLabel,
-            renderCoreWebVitalLabel: renderCoreWebVitalLabel
+            renderCoreWebVitalLabel: renderCoreWebVitalLabel,
+            renderCarbonRatingLabel: renderCarbonRatingLabel
         };
 
         const issueTypeConfigMap = [
@@ -231,6 +232,27 @@
             return $sce.trustAsHtml(`
                  <uui-tag color="${colour}">
                      ${value}
+                 </uui-tag>
+            `);
+        }
+
+        function renderCarbonRatingLabel(rating) {
+            if (rating == null) {
+                return;
+            }
+
+            let colour = "positive";
+
+            if (rating == "E" || rating == "F") {
+                colour = "danger";
+            }
+            if (rating == "D") {
+                colour = "warning";
+            }
+
+            return $sce.trustAsHtml(`
+                 <uui-tag color="${colour}">
+                     ${rating}
                  </uui-tag>
             `);
         }
