@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using System.Net;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Umbraco.Community.ContentAudit.Enums;
@@ -109,30 +108,62 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 var endTime = DateTime.UtcNow;
 
-                if (response == null || !response.Ok)
+                if (response == null)
                 {
-                    _logger.LogWarning("Failed to fetch page {0}: {1}", url, response?.Status);
+                    _logger.LogWarning("Failed to fetch page {0}: No response", url);
+                    pageAnalysis.PageData.StatusCode = (int)HttpStatusCode.NotFound;
+                    return pageAnalysis;
+                }
 
-                    if (response != null)
+                if (response.Request.IsNavigationRequest)
+                {
+                    if (response.Request.RedirectedFrom != null)
                     {
-                        pageAnalysis.PageData.StatusCode = response.Status;
-                        pageAnalysis.TechnicalSeoData.ContentType = response.Headers["content-type"];
+                        var redirectResponse = await response.Request.RedirectedFrom.ResponseAsync();
+
+                        if (redirectResponse != null)
+                        {
+                            _logger.LogInformation("Followed redirect chain from {0} to {1} with initial status {2}", url, redirectResponse.Url, redirectResponse.Status);
+
+                            pageAnalysis.PageData.Url = redirectResponse.Url;
+                            pageAnalysis.PageData.RedirectUrl = response.Url;
+                            pageAnalysis.PageData.StatusCode = redirectResponse.Status;
+                            pageAnalysis.PageData.Redirect = true;
+                            return pageAnalysis;
+                        }
                     }
-                    else
+                }
+
+                string contentType = response.Headers.TryGetValue("content-type", out var ct) ? ct : string.Empty;
+
+                if (!response.Ok)
+                {
+                    _logger.LogWarning("Failed to fetch page {0}: {1}", url, response.Status);
+
+                    pageAnalysis.PageData = new()
                     {
-                        pageAnalysis.PageData.StatusCode = (int)HttpStatusCode.NotFound;
-                    }
+                        Url = url,
+                        StatusCode = response.Status,
+                        Unique = nodeKey,
+                    };
+
+                    pageAnalysis.TechnicalSeoData = new()
+                    {
+                        Url = url,
+                        ContentType = contentType
+                    };
 
                     return pageAnalysis;
                 }
 
-                string contentType = response.Headers["content-type"];
                 if (!contentType.Contains("text/html"))
                 {
-                    _logger.LogWarning("Can't crawl page {0}: content type is {1}", url, contentType);
+                    _logger.LogWarning("Can't crawl page {0}: content type is {1}", url, ct);
                     return null;
                 }
 
+                //if (!wasRedirected)
+                //{
                 await page.AddScriptTagAsync(new PageAddScriptTagOptions
                 {
                     Url = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js"
@@ -152,6 +183,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         self.webVitals.onTTFB((metric) => setWebVitalsData('TTFB', metric), { reportAllChanges: true });
                     "
                 });
+                //}
 
                 // Wait for the page to be fully loaded
                 await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
@@ -205,12 +237,15 @@ namespace Umbraco.Community.ContentAudit.Services
                         }
                     }
 
-                    pageAnalysis.PageData = new PageDto
+                    if (pageAnalysis.PageData == default)
                     {
-                        Url = url,
-                        Unique = nodeKey,
-                        StatusCode = response.Status,
-                    };
+                        pageAnalysis.PageData = new PageDto
+                        {
+                            Url = url,
+                            StatusCode = response.Status,
+                            Unique = nodeKey
+                        };
+                    }
 
                     try
                     {
@@ -339,7 +374,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         {
                             Url = url,
                             ContentType = response.Headers["content-type"],
-                            Charset = await page.Locator("meta[charset]").CountAsync() > 0 ? await page.EvaluateAsync<string>("() => document.querySelector('meta[charset]')?.charset") ?? "" : 
+                            Charset = await page.Locator("meta[charset]").CountAsync() > 0 ? await page.EvaluateAsync<string>("() => document.querySelector('meta[charset]')?.charset") ?? "" :
                                       await page.Locator("meta[http-equiv=\"Content-Type\"]").CountAsync() > 0 ? await page.EvaluateAsync<string>("() => document.querySelector('meta[http-equiv=\"Content-Type\"]')?.content") ?? "" : "",
                             HasGzipCompression = response.Headers.ContainsKey("content-encoding") && response.Headers["content-encoding"].Contains("gzip"),
                             HasBrowserCaching = response.Headers.ContainsKey("cache-control") && response.Headers["cache-control"].Contains("max-age"),
@@ -390,6 +425,14 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     return pageAnalysis;
                 });
+
+                pageAnalysis.PageData = new PageDto
+                {
+                    Url = url,
+                    Redirect = false,
+                    StatusCode = response.Status,
+                    Unique = nodeKey
+                };
 
                 await analysisData;
 

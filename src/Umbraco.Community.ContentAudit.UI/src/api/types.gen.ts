@@ -226,6 +226,11 @@ export type PageDto = {
     id: number;
     runId: number;
     url?: (string) | null;
+    originalUrl?: (string) | null;
+    redirect: boolean;
+    redirectType?: (string) | null;
+    redirectStatusCode: number;
+    redirectChain?: Array<(string)> | null;
     unique: string;
     statusCode: number;
 };

@@ -1,4 +1,5 @@
 ﻿using NPoco;
+using System.Text.Json;
 using Umbraco.Cms.Infrastructure.Persistence.DatabaseAnnotations;
 using Umbraco.Community.ContentAudit.Models.Dtos;
 
@@ -16,6 +17,8 @@ namespace Umbraco.Community.ContentAudit.Schemas
         {
             RunId = runId;
             Url = pageDto.Url;
+            RedirectUrl = pageDto.RedirectUrl;
+            Redirect = pageDto.Redirect;
             Unique = pageDto.Unique;
             StatusCode = pageDto.StatusCode;
         }
@@ -29,7 +32,13 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
         public string? Url { get; set; }
 
+        [NullSetting(NullSetting = NullSettings.Null)]
+        [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
+        public string? RedirectUrl { get; set; }
+
         public bool IsAsset { get; set; }
+
+        public bool Redirect { get; set; }
 
         public Guid Unique { get; set; }
 

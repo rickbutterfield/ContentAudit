@@ -4,6 +4,7 @@ import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
+import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 
 @customElement('content-audit-scan-view')
 export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
@@ -11,6 +12,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
     #context?: ContentAuditContext;
     #modalManagerContext?: typeof UMB_MODAL_MANAGER_CONTEXT.TYPE;
+    #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
 
     @state()
     scanRunning?: boolean = false;
@@ -29,6 +31,10 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
     constructor() {
         super();
+
+        this.consumeContext(UMB_NOTIFICATION_CONTEXT, (instance) => {
+            this.#notificationContext = instance;
+        });
 
         this.consumeContext(CONTENT_AUDIT_CONTEXT_TOKEN, (context) => {
             this.#context = context;
@@ -80,6 +86,11 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
         this.scanRunning = true;
         this.crawlData = [];
+        this.#notificationContext?.peek("positive", {
+            data: {
+                message: 'Crawl started'
+            }
+        });
 
         eventSource.onmessage = (event) => {
             const data: CrawlDto = JSON.parse(event.data);
@@ -95,6 +106,13 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
             this.scanRunning = false;
             this.#init();
+
+            this.#notificationContext?.peek("default", {
+                data: {
+                    message: 'Crawl completed'
+                }
+            });
+
             eventSource.close();
         };
     }

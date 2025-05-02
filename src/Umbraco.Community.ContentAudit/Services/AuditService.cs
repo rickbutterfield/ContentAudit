@@ -1,6 +1,8 @@
 ﻿using Examine;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1;
+using Polly.Caching;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
@@ -102,6 +104,8 @@ namespace Umbraco.Community.ContentAudit.Services
             _baseUrl = !string.IsNullOrEmpty(_contentAuditSettings.BaseUrl)
                 ? _contentAuditSettings.BaseUrl
                 : _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
+
+            _baseUrl = "https://rickbutterfield.dev";
 
             var umbracoApplicationUrl = _webRoutingSettings.UmbracoApplicationUrl;
             
@@ -295,6 +299,28 @@ namespace Umbraco.Community.ContentAudit.Services
                 return new() { Url = url, Crawled = false };
             }
 
+            if (pageAnalysis.PageData != null)
+            {
+                _pageDtos.Add(pageAnalysis.PageData);
+
+                if (pageAnalysis.PageData.Redirect && !string.IsNullOrEmpty(pageAnalysis.PageData.RedirectUrl))
+                {
+                    var urlQueueItem = new UrlQueueItem()
+                    {
+                        Url = pageAnalysis.PageData.RedirectUrl,
+                        IsExternal = false,
+                        IsAsset = false,
+                        SourceUrl = url,
+                        Unique = matchingUmbracoNode.Key
+                    };
+
+                    EnqueueUrl(urlQueueItem);
+
+                    return new() { Url = url, Crawled = false };
+                }
+            }
+
+
             if (pageAnalysis.SeoData != null)
             {
                 _seoDtos.Add(pageAnalysis.SeoData);
@@ -426,8 +452,6 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 _imageDtos.Add(image);
             }
-
-            _pageDtos.Add(pageAnalysis.PageData);
 
             return new CrawlDto
             {

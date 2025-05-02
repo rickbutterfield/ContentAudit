@@ -26,6 +26,10 @@ export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElemen
         {
             name: 'Status Code',
             alias: 'statusCode'
+        },
+        {
+            name: 'Redirected',
+            alias: 'redirect'
         }
     ];
 
@@ -67,6 +71,10 @@ export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElemen
                     {
                         columnAlias: 'statusCode',
                         value: html`<content-audit-status-code-label .statusCode=${page.pageData?.statusCode}></content-audit-status-code-label>`
+                    },
+                    {
+                        columnAlias: 'redirect',
+                        value: page.pageData.redirect ? 'Yes' : 'No'
                     }
                 ]
             }
