@@ -105,8 +105,6 @@ namespace Umbraco.Community.ContentAudit.Services
                 ? _contentAuditSettings.BaseUrl
                 : _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
 
-            _baseUrl = "https://rickbutterfield.dev";
-
             var umbracoApplicationUrl = _webRoutingSettings.UmbracoApplicationUrl;
             
             if (string.IsNullOrEmpty(_baseUrl))

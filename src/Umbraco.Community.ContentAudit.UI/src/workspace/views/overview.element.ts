@@ -88,7 +88,8 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         this.crawlData = [];
         this.#notificationContext?.peek("positive", {
             data: {
-                message: 'Crawl started'
+                headline: 'Crawl started',
+                message: 'You will be notified when it is complete.'
             }
         });
 
@@ -109,7 +110,8 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
             this.#notificationContext?.peek("default", {
                 data: {
-                    message: 'Crawl completed'
+                    headline: 'Crawl completed',
+                    message: 'You can now view the results.',
                 }
             });
 

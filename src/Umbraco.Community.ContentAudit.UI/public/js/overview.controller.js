@@ -1,5 +1,5 @@
-﻿angular.module('umbraco').controller('Umbraco.Community.ContentAudit.OverviewController', ['$scope', '$sce', '$location', '$routeParams', 'Umbraco.Community.ContentAudit.Resource', 'overlayService',
-    function ($scope, $sce, $location, $routeParams, contentAuditResource, overlayService) {
+﻿angular.module('umbraco').controller('Umbraco.Community.ContentAudit.OverviewController', ['$scope', '$sce', '$location', '$routeParams', 'Umbraco.Community.ContentAudit.Resource', 'overlayService', 'notificationsService',
+    function ($scope, $sce, $location, $routeParams, contentAuditResource, overlayService, notificationsService) {
 
         var vm = this;
 
@@ -42,7 +42,9 @@
         function getLatestAuditOverview() {
             contentAuditResource.getLatestAuditOverview().then(function (data) {
                 vm.latestAuditOverview = data;
-                vm.latestAuditOverview.runDate = new Date(vm.latestAuditOverview.runDate);
+                if (vm.latestAuditOverview.runDate !== null) {
+                    vm.latestAuditOverview.runDate = new Date(vm.latestAuditOverview.runDate);
+                }
             });
         }
 
@@ -68,6 +70,7 @@
             vm.scanRunning = true;
             vm.buttonState = 'waiting';
             vm.crawlData = [];
+            notificationsService.success("Crawl started", "You will be notified when it is complete.");
 
             eventSource.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -99,6 +102,9 @@
                 }
                 vm.scanRunning = false;
                 vm.buttonState = 'success';
+
+                notificationsService.info("Crawl completed", "You can now view the results.");
+
                 eventSource.close();
                 init();
             };
