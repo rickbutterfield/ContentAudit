@@ -33,6 +33,13 @@
                 internal const string Title = "Performance";
                 internal const string Group = "performance";
             }
+
+            internal class Tools
+            {
+                internal const string Alias = "tools";
+                internal const string Title = "Tools";
+                internal const string Group = "tools";
+            }
         }
 
         internal class Cache

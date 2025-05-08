@@ -17,5 +17,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<List<IssueDto>> GetAllIssues();
         Task<IssueDto?> GetIssue(Guid issueGuid);
         Task<HealthScoreDto> GetHealthScore();
+        Task<List<PageAnalysisDto>> GetExportData();
     }
 }

@@ -12,7 +12,8 @@ import { manifests as metadataManifests } from './metadata/manifests';
 import { manifests as duplicateContentManifests } from './duplicate-content/manifests';
 import { manifests as carbonRatingManifests } from './carbon-rating/manifests';
 import { manifests as coreWebVitalsManifests } from './core-web-vitals/manifests';
-import { CONTENT_AUDIT_MENU_0_ALIAS, CONTENT_AUDIT_MENU_1_ALIAS, CONTENT_AUDIT_MENU_2_ALIAS } from './constants';
+import { manifests as exportManifests } from './export/manifests';
+import { CONTENT_AUDIT_MENU_0_ALIAS, CONTENT_AUDIT_MENU_1_ALIAS, CONTENT_AUDIT_MENU_2_ALIAS, CONTENT_AUDIT_MENU_3_ALIAS } from './constants';
 
 const sectionAlias = 'Umb.Section.ContentAudit';
 
@@ -59,6 +60,11 @@ const menus: ManifestMenu[] = [
         type: 'menu',
         alias: CONTENT_AUDIT_MENU_2_ALIAS,
         name: 'Performance Menu'
+    },
+    {
+        type: 'menu',
+        alias: CONTENT_AUDIT_MENU_3_ALIAS,
+        name: 'Tools Menu'
     }
 ]
 
@@ -110,6 +116,22 @@ const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
                 match: sectionAlias
             }
         ]
+    },
+    {
+        type: 'sectionSidebarApp',
+        kind: 'menu',
+        alias: 'Umb.SidebarMenu.ContentTools',
+        name: 'Content Tools Sidebar Menu',
+        meta: {
+            label: 'Tools',
+            menu: CONTENT_AUDIT_MENU_3_ALIAS
+        },
+        conditions: [
+            {
+                alias: 'Umb.Condition.SectionAlias',
+                match: sectionAlias
+            }
+        ]
     }
 ]
 
@@ -128,5 +150,6 @@ export const manifests = [
     ...metadataManifests,
     ...duplicateContentManifests,
     ...carbonRatingManifests,
-    ...coreWebVitalsManifests
+    ...coreWebVitalsManifests,
+    ...exportManifests
 ]

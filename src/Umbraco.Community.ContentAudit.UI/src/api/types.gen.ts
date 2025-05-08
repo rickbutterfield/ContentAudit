@@ -226,11 +226,8 @@ export type PageDto = {
     id: number;
     runId: number;
     url?: (string) | null;
-    originalUrl?: (string) | null;
     redirect: boolean;
-    redirectType?: (string) | null;
-    redirectStatusCode: number;
-    redirectChain?: Array<(string)> | null;
+    redirectUrl?: (string) | null;
     unique: string;
     statusCode: number;
 };
@@ -345,6 +342,8 @@ export type GetDuplicateContentUrlsData = {
 };
 
 export type GetDuplicateContentUrlsResponse = ((PagedPageDtoModel));
+
+export type GetExportDataResponse = (((Blob | File)));
 
 export type GetExternalLinksData = {
     filter?: string;

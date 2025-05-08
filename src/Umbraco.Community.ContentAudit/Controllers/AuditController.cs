@@ -1,6 +1,10 @@
 ﻿using Asp.Versioning;
+using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
+using System.Formats.Asn1;
+using System.Globalization;
 using Umbraco.Cms.Api.Common.ViewModels.Pagination;
+using Umbraco.Community.ContentAudit.ClassMaps;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
@@ -193,6 +197,34 @@ namespace Umbraco.Community.ContentAudit.Controllers
         public async Task<HealthScoreDto> GetHealthScore()
         {
             return await _dataService.GetHealthScore();
+        }
+
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileResult), 200, "text/csv")]
+        public async Task<FileResult> GetExportData()
+        {
+            var data = await _dataService.GetExportData();
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var streamWriter = new StreamWriter(memoryStream))
+                using (var csv = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                {
+                    csv.Context.RegisterClassMap<PageDtoMap>();
+                    csv.Context.RegisterClassMap<SeoDtoMap>();
+                    csv.Context.RegisterClassMap<ContentAnalysisDtoMap>();
+                    csv.Context.RegisterClassMap<PerformanceDtoMap>();
+                    csv.Context.RegisterClassMap<AccessibilityDtoMap>();
+                    csv.Context.RegisterClassMap<TechnicalSeoDtoMap>();
+                    csv.Context.RegisterClassMap<SocialMediaDtoMap>();
+                    csv.Context.RegisterClassMap<ContentQualityDtoMap>();
+                    csv.Context.RegisterClassMap<EmissionsDtoMap>();
+
+                    csv.WriteRecords(data);
+                }
+
+                return File(memoryStream.ToArray(), "text/csv", $"Export-{DateTime.Now.ToString("s")}.csv");
+            }
         }
     }
 }

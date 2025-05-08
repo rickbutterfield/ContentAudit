@@ -22,7 +22,8 @@
             renderPriorityLabel: renderPriorityLabel,
             renderStatusCodeLabel: renderStatusCodeLabel,
             renderCoreWebVitalLabel: renderCoreWebVitalLabel,
-            renderCarbonRatingLabel: renderCarbonRatingLabel
+            renderCarbonRatingLabel: renderCarbonRatingLabel,
+            getExportData: getExportData,
         };
 
         const issueTypeConfigMap = [
@@ -155,6 +156,13 @@
             return umbRequestHelper.resourcePromise(
                 $http.get(`${apiUrl}/get-settings`),
                 'Failed getting settings data'
+            )
+        }
+
+        function getExportData() {
+            return umbRequestHelper.resourcePromise(
+                $http.get(`${apiUrl}/export`),
+                'Failed getting export data'
             )
         }
 

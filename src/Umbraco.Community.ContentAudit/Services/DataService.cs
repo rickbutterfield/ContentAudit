@@ -580,5 +580,10 @@ namespace Umbraco.Community.ContentAudit.Services
 
             return result;
         }
+
+        public async Task<List<PageAnalysisDto>> GetExportData()
+        {
+            return await GetLatestAuditData();
+        }
     }
 }
