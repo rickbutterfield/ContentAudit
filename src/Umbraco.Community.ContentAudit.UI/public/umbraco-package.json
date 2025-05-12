@@ -2,7 +2,7 @@
 	"$schema": "../umbraco-package-schema.json",
 	"name": "Umbraco.Community.ContentAudit",
 	"id": "Umbraco.Community.ContentAudit",
-	"version": "1.0.0-alpha.8",
+	"version": "1.0.0-beta",
 	"allowTelemetry": true,
 	"extensions": [
 		{
