@@ -8,7 +8,7 @@
 
 ## First class site crawling and SEO auditing for Umbraco
 
-![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/ContentAudit/main/.github/assets/screenshot1.png "The Umbraco backoffice showing the Content Audit dashboard")
+![Screenshot1](https://raw.githubusercontent.com/rickbutterfield/ContentAudit/main/.github/assets/dashboard.png "The Umbraco backoffice showing the Content Audit dashboard")
 
 ## Documentation
 
