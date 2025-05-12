@@ -9,9 +9,11 @@ using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Repositories;
 using Umbraco.Community.ContentAudit.Services;
+
 #if NET8_0
 using Umbraco.Community.ContentAudit.Sections;
 using Umbraco.Community.ContentAudit.Dashboards;
+using Umbraco.Community.ContentAudit.ContentApps;
 #endif
 
 namespace Umbraco.Community.ContentAudit
@@ -54,6 +56,7 @@ namespace Umbraco.Community.ContentAudit
 #else
             builder.Sections().Append<AuditSection>();
             builder.Dashboards().Add<ContentAuditDashboard>();
+            builder.ContentApps().Append<ContentAuditContentApp>();
 #endif
         }
     }

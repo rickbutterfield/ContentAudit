@@ -497,7 +497,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
             }
 
-            return keywordDensity;
+            return keywordDensity.OrderByDescending(x => x.Value).ToDictionary();
         }
 
         private async Task<MetricDto?> GetCumulativeLayoutShift(IPage page)

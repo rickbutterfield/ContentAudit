@@ -3,7 +3,7 @@ import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspace.context";
 import { PageAnalysisDto } from "../../../../../api";
-import { css, html } from "@umbraco-cms/backoffice/external/lit";
+import { css, html, repeat } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 
 @customElement('content-audit-all-pages-details-workspace-view')
@@ -50,10 +50,14 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 						<div slot="editor">${this._data?.seoData.h1}</div>
 					</umb-property-layout>
 					<umb-property-layout label="H2s">
-						<div slot="editor">${this._data?.seoData.h2s}</div>
+						<div slot="editor">
+							<ul>${this._data?.seoData.h2s?.map((h2: string) => html`<li>${h2}</li>`)}<ul>
+						</div>
 					</umb-property-layout>
 					<umb-property-layout label="H3s">
-						<div slot="editor">${this._data?.seoData.h3s}</div>
+						<div slot="editor">
+							<ul>${this._data?.seoData.h3s?.map((h3: string) => html`<li>${h3}</li>`)}<ul>
+						</div>
 					</umb-property-layout>
 					<umb-property-layout label="No Index">
 						<div slot="editor">${this._data?.seoData.hasNoIndex ? 'Yes' : 'No'}</div>
@@ -100,7 +104,22 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 						<div slot="editor">${Math.round(this._data?.contentAnalysis.readabilityScore)}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Keyword Density">
-						<div slot="editor">${this._data?.contentAnalysis.keywordDensity}</div>
+						<div slot="editor">
+						<uui-table>
+							<uui-table-head>
+								<uui-table-head-cell>Keyword</uui-table-head-cell>
+								<uui-table-head-cell>Density</uui-table-head-cell>
+							</uui-table-head>
+							${Object.entries(this._data?.contentAnalysis.keywordDensity!).map((value) => {
+								return html`
+									<uui-table-row>
+										<uui-table-cell>${value[0]}</uui-table-cell>
+										<uui-table-cell>${value[1]}%</uui-table-cell>
+									</uui-table-row>	
+								`
+							})}
+							</uui-table>
+						</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ''}

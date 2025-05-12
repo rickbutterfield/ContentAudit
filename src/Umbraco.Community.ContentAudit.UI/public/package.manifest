@@ -7,6 +7,7 @@
     "~/App_Plugins/UmbracoCommunityContentAudit/js/section.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/overview.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/settings.controller.js",
+    "~/App_Plugins/UmbracoCommunityContentAudit/js/contentapp.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.overview.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/issues.details.controller.js",
     "~/App_Plugins/UmbracoCommunityContentAudit/js/all-pages.overview.controller.js",

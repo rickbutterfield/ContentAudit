@@ -19,9 +19,19 @@
             init();
 
             function init() {
-                contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
-                    vm.data = data.resources;
-                });
+                if (!contentAuditResource.isGuid(detailsId)) {
+                    contentAuditResource.getKey(detailsId).then(function (key) {
+                        contentAuditResource.getLatestPageAuditData(key).then(function (data) {
+                            vm.data = data.resources;
+                        });
+                    });
+                }
+
+                else {
+                    contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
+                        vm.data = data.resources;
+                    });
+                }
             }
 
         }

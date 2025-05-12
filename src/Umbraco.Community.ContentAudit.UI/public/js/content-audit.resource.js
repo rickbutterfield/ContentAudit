@@ -1,7 +1,7 @@
 ﻿(function () {
     'use strict';
 
-    function contentAuditResource($http, $sce, umbRequestHelper) {
+    function contentAuditResource($http, $sce, umbRequestHelper, contentResource) {
         const apiUrl = "/umbraco/content-audit/api/v1";
 
         const resource = {
@@ -24,6 +24,8 @@
             renderCoreWebVitalLabel: renderCoreWebVitalLabel,
             renderCarbonRatingLabel: renderCarbonRatingLabel,
             getExportData: getExportData,
+            isGuid: isGuid,
+            getKey: getKey
         };
 
         const issueTypeConfigMap = [
@@ -264,6 +266,20 @@
                  </uui-tag>
             `);
         }
+
+        function isGuid(str) {
+            const guidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            return guidPattern.test(str);
+        }
+
+        function getKey(id) {
+            return contentResource.getById(id)
+                .then(function (data) {
+                    if (data && data.key) {
+                        return data.key;
+                    }
+                });
+         }
 
         return resource;
     }

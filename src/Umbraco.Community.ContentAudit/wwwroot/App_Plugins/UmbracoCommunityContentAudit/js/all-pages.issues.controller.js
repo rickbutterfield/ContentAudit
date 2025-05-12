@@ -16,14 +16,26 @@
             vm.renderTypeLabel = contentAuditResource.renderTypeLabel;
             vm.renderPriorityLabel = contentAuditResource.renderPriorityLabel;
 
-            let detailsId = $routeParams.id;
+            var isInfiniteMode = editorService.getNumberOfEditors() > 0 ? true : false;
+            var infiniteModel = editorService.getEditors()[0];
+            let detailsId = isInfiniteMode ? infiniteModel.id : $routeParams.id;
 
             init();
 
             function init() {
-                contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
-                    vm.data = data.issues;
-                });
+                if (!contentAuditResource.isGuid(detailsId)) {
+                    contentAuditResource.getKey(detailsId).then(function (key) {
+                        contentAuditResource.getLatestPageAuditData(key).then(function (data) {
+                            vm.data = data.issues;
+                        });
+                    });
+                }
+
+                else {
+                    contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
+                        vm.data = data.issues;
+                    });
+                }
             }
 
             vm.issueDetails = function (unique) {

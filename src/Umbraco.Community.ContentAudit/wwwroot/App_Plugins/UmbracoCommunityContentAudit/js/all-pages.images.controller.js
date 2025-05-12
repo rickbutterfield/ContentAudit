@@ -14,14 +14,26 @@
 
             var vm = this;
 
-            let detailsId = $routeParams.id;
+            var isInfiniteMode = editorService.getNumberOfEditors() > 0 ? true : false;
+            var infiniteModel = editorService.getEditors()[0];
+            let detailsId = isInfiniteMode ? infiniteModel.id : $routeParams.id;
 
             init();
 
             function init() {
-                contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
-                    vm.data = data.images;
-                });
+                if (!contentAuditResource.isGuid(detailsId)) {
+                    contentAuditResource.getKey(detailsId).then(function (key) {
+                        contentAuditResource.getLatestPageAuditData(key).then(function (data) {
+                            vm.data = data.images;
+                        });
+                    });
+                }
+
+                else {
+                    contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
+                        vm.data = data.images;
+                    });
+                }
             }
 
         }

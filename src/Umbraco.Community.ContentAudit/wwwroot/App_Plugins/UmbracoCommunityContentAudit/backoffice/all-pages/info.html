@@ -18,10 +18,14 @@
                     <div slot="editor">{{vm.data.seoData.h1}}</div>
                 </umb-control-group>
                 <umb-control-group label="H2s">
-                    <div slot="editor">{{vm.data.seoData.h2s}}</div>
+                    <div slot="editor">
+                        <ul><li ng-repeat="h2 in vm.data.seoData.h2s">{{h2}}</li></ul>
+                    </div>
                 </umb-control-group>
                 <umb-control-group label="H3s">
-                    <div slot="editor">{{vm.data.seoData.h3s}}</div>
+                    <div slot="editor">
+                    <ul><li ng-repeat="h3 in vm.data.seoData.h3s">{{h3}}</li></ul>
+                    </div>
                 </umb-control-group>
                 <umb-control-group label="No Index">
                     <div slot="editor">{{vm.data.seoData.hasNoIndex ? 'Yes' : 'No'}}</div>
@@ -63,16 +67,21 @@
                     <div slot="editor">{{vm.data.contentAnalysis.internalLinks}}</div>
                 </umb-control-group>
                 <umb-control-group label="Readability Score" description="Flesch Reading Ease Score. Scores around 100 mean the document is extremely easy to read, while scores around 0 mean that it is highly complex and difficult to understand.">
-                    <div slot="editor">{{Math.round(vm.data.contentAnalysis.readabilityScore)}}</div>
+                    <div slot="editor">{{vm.data.contentAnalysis.readabilityScore}}</div>
                 </umb-control-group>
                 <umb-control-group label="Keyword Density">
-                    <div slot="editor">{{vm.data.contentAnalysis.keywordDensity}}</div>
-                </umb-control-group>
-                <umb-control-group label="Missing Alt Text Images">
-                    <div slot="editor">{{vm.data.contentAnalysis.missingAltTextImages}}</div>
-                </umb-control-group>
-                <umb-control-group label="Missing Title Images">
-                    <div slot="editor">{{vm.data.contentAnalysis.missingTitleImages}}</div>
+                    <div slot="editor">
+                        <uui-table>
+                            <uui-table-head>
+                                <uui-table-head-cell>Keyword</uui-table-head-cell>
+                                <uui-table-head-cell>Density</uui-table-head-cell>
+                            </uui-table-head>
+                            <uui-table-row ng-repeat="(key, value) in vm.data.contentAnalysis.keywordDensity">
+                                <uui-table-cell>{{key}}</uui-table-cell>
+                                <uui-table-cell>{{value}}%</uui-table-cell>
+                            </uui-table-row>
+                        </uui-table>
+                    </div>
                 </umb-control-group>
             </uui-box>
 
@@ -81,13 +90,13 @@
                     <div slot="editor">{{vm.data.performanceData.pageLoadTime}}ms</div>
                 </umb-control-group>
                 <umb-control-group label="First Contentful Paint">
-                    <div slot="editor">{{vm.data.performanceData.firstContentfulPaint}}ms</div>
+                    <div slot="editor">{{vm.data.performanceData.firstContentfulPaint.value}}ms</div>
                 </umb-control-group>
                 <umb-control-group label="Largest Contentful Paint">
-                    <div slot="editor">{{vm.data.performanceData.largestContentfulPaint}}ms</div>
+                    <div slot="editor">{{vm.data.performanceData.largestContentfulPaint.value}}ms</div>
                 </umb-control-group>
                 <umb-control-group label="Time to Interactive">
-                    <div slot="editor">{{vm.data.performanceData.timeToInteractive}}ms</div>
+                    <div slot="editor">{{vm.data.performanceData.timeToInteractive.value}}ms</div>
                 </umb-control-group>
                 <umb-control-group label="Total Requests">
                     <div slot="editor">{{vm.data.performanceData.totalRequests}}</div>
@@ -140,12 +149,6 @@
             </uui-box>
 
             <uui-box headline="Content Quality" ng-if="vm.data.contentQualityData != null" style="margin-bottom: 16px">
-                <umb-control-group label="Has Duplicate Content">
-                    <div slot="editor">{{vm.data.contentQualityData.hasDuplicateContent ? 'Yes' : 'No'}}</div>
-                </umb-control-group>
-                <umb-control-group label="Duplicate Content URLs">
-                    <div slot="editor">{{vm.data.contentQualityData.duplicateContentUrls}}</div>
-                </umb-control-group>
                 <umb-control-group label="Has Thin Content">
                     <div slot="editor">{{vm.data.contentQualityData.hasThinContent ? 'Yes' : 'No'}}</div>
                 </umb-control-group>
@@ -159,14 +162,10 @@
                     <div slot="editor">{{vm.data.emissionsData.emissionsPerPageView}}g CO<sub>2</sub></div>
                 </umb-control-group>
                 <umb-control-group label="Carbon Rating">
-                    <div slot="editor">
-                        <content-audit-carbon-intensity-label .value={{vm.data.emissionsData.carbonRating}}>
-                        </content-audit-carbon-intensity-label>
+                    <div slot="editor" ng-bind-html="vm.renderCarbonRatingLabel(vm.data.emissionsData.carbonRating)"></div>
                 </umb-control-group>
             </uui-box>
         </div>
-
-    </div>
 
         <div class="umb-package-details__sidebar">
 
