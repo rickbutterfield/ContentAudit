@@ -77,7 +77,7 @@ The `PageAnalysisDto` contains various properties that you can use to check for 
 - `AccessibilityData`: Contains accessibility-related information like ARIA labels, proper heading structure, etc.
 - `TechincalSeoData`: Contains technical SEO-related information like content type, GZip compression, etc.
 - `SocialMediaData`: Contains social media-related information
-- `EmissionsData`: Contains carbon emissions data about emissions per page view and carbon rating (based on [Sustainable Web Design](https://sustainablewebdesign.org/digital-carbon-ratings/)
+- `EmissionsData`: Contains carbon emissions data about emissions per page view and carbon rating (based on [Sustainable Web Design](https://sustainablewebdesign.org/digital-carbon-ratings/) digital carbon ratings)
 
 ## Registering Your Custom Issue
 By extending the `IAuditPageIssue` interface, your custom issue will be automatically registered with the ContentAudit package. You don't need to do anything extra to register it.

@@ -32,12 +32,4 @@ The basic configuration for the package looks like this:
 
 ## Base URL Configuration
 
-The `BaseUrl` setting is particularly important for the content audit to work correctly. You have two options for providing the base URL:
-
-1. **Configuration**: Set the `BaseUrl` in your `appsettings.json` as shown above. This is the recommended approach for most scenarios.
-
-2. **Runtime**: Pass the base URL as a parameter when calling `StartCrawl`. This is useful when you need to override the configured URL or when running the audit programmatically.
-
-If neither a configured base URL nor a parameter is provided, the service will throw an `ArgumentException`.
-
-This configuration is especially important for headless setups where the request URL might not be available or might not match the actual site URL.
+The `BaseUrl` setting is particularly important for the content audit to work correctly. This configuration is especially important for headless setups where the request URL might not be available or might not match the actual site URL.
