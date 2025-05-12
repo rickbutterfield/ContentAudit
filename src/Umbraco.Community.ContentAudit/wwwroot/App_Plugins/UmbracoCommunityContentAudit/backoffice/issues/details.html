@@ -32,7 +32,7 @@
                                 <uui-table-cell><a href="#/content/content/edit/{{page.unique}}" ng-click="vm.inlineEditor($event, page.unique)">{{page.pageData.url}}</a></uui-table-cell>
                                 <uui-table-cell ng-if="vm.data.images != null">{{page.foundPage}}</uui-table-cell>
                                 <uui-table-cell ng-repeat="property in vm.data.exposedProperties">
-                                    {{page[property.alias]}}
+                                    {{vm.renderExposedProperty(page, property)}}
                                 </uui-table-cell>
                             </uui-table-row>
                         </uui-table>

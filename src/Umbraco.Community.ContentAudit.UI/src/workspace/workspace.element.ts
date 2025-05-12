@@ -16,7 +16,7 @@ export class ContentAuditWorkspaceRootElement extends UmbElementMixin(LitElement
 
 	override render() {
 		return html`
-			<umb-workspace-editor headline="Content Audit" .enforceNoFooter=${true}>
+			<umb-workspace-editor headline="ContentAudit" .enforceNoFooter=${true}>
 			</umb-workspace-editor>
 		`;
 	}

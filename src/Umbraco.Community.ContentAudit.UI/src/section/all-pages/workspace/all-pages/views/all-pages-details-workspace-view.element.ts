@@ -68,7 +68,7 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 						<div slot="editor">${this._data?.seoData.openGraphDescription}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Open Graph Image">
-						<div slot="editor">${this._data?.seoData.openGraphImage}</div>
+						<div slot="editor"><a href=${this._data?.seoData.openGraphImage} target="_blank">${this._data?.seoData.openGraphImage}</a></div>
 					</umb-property-layout>
 				</uui-box>
 			` : ''}
@@ -96,17 +96,11 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					<umb-property-layout label="Internal Links">
 						<div slot="editor">${this._data?.contentAnalysis.internalLinks}</div>
 					</umb-property-layout>
-					<umb-property-layout label="Readability Score">
-						<div slot="editor">${this._data?.contentAnalysis.readabilityScore}</div>
+					<umb-property-layout label="Readability Score" description="Flesch Reading Ease Score. Scores around 100 mean the document is extremely easy to read, while scores around 0 mean that it is highly complex and difficult to understand.">
+						<div slot="editor">${Math.round(this._data?.contentAnalysis.readabilityScore)}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Keyword Density">
 						<div slot="editor">${this._data?.contentAnalysis.keywordDensity}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Missing Alt Text Images">
-						<div slot="editor">${this._data?.contentAnalysis.missingAltTextImages}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Missing Title Images">
-						<div slot="editor">${this._data?.contentAnalysis.missingTitleImages}</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ''}
@@ -117,13 +111,13 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 						<div slot="editor">${this._data?.performanceData.pageLoadTime}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="First Contentful Paint">
-						<div slot="editor">${this._data?.performanceData.firstContentfulPaint}ms</div>
+						<div slot="editor">${this._data?.performanceData.firstContentfulPaint?.value}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="Largest Contentful Paint">
-						<div slot="editor">${this._data?.performanceData.largestContentfulPaint}ms</div>
+						<div slot="editor">${this._data?.performanceData.largestContentfulPaint?.value}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="Time to Interactive">
-						<div slot="editor">${this._data?.performanceData.timeToInteractive}ms</div>
+						<div slot="editor">${this._data?.performanceData.timeToInteractive?.value}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="Total Requests">
 						<div slot="editor">${this._data?.performanceData.totalRequests}</div>
@@ -136,9 +130,6 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 
 			${this._data?.accessibilityData ? html`
 				<uui-box headline="Accessibility">
-					<umb-property-layout label="Accessibility Issues">
-						<div slot="editor">${this._data?.accessibilityData.accessibilityIssues}</div>
-					</umb-property-layout>
 					<umb-property-layout label="ARIA Labels">
 						<div slot="editor">${this._data?.accessibilityData.ariaLabelCount}</div>
 					</umb-property-layout>
@@ -174,9 +165,6 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					<umb-property-layout label="Has Valid HTML">
 						<div slot="editor">${this._data?.technicalSeoData.hasValidHtml ? 'Yes' : 'No'}</div>
 					</umb-property-layout>
-					<umb-property-layout label="HTML Validation Errors">
-						<div slot="editor">${this._data?.technicalSeoData.htmlValidationErrors}</div>
-					</umb-property-layout>
 					<umb-property-layout label="Has Schema Markup">
 						<div slot="editor">${this._data?.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}</div>
 					</umb-property-layout>
@@ -188,23 +176,11 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 
 			${this._data?.contentQualityData ? html`
 				<uui-box headline="Content Quality">
-					<umb-property-layout label="Has Duplicate Content">
-						<div slot="editor">${this._data?.contentQualityData.hasDuplicateContent ? 'Yes' : 'No'}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Duplicate Content URLs">
-						<div slot="editor">${this._data?.contentQualityData.duplicateContentUrls}</div>
-					</umb-property-layout>
 					<umb-property-layout label="Has Thin Content">
 						<div slot="editor">${this._data?.contentQualityData.hasThinContent ? 'Yes' : 'No'}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Content Score">
 						<div slot="editor">${this._data?.contentQualityData.contentScore}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Content Gaps">
-						<div slot="editor">${this._data?.contentQualityData.contentGaps}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Content Strengths">
-						<div slot="editor">${this._data?.contentQualityData.contentStrengths}</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ''}

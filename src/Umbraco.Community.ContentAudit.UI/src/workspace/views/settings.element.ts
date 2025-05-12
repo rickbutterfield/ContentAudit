@@ -30,7 +30,7 @@ export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement)
                 <uui-box headline="Settings">
                     <div slot="header">Discovered from appsettings.json</div>
 
-                    <umb-property-layout label="Use Umbraco content index" description="If true, Content Audit will use content from the index instead of the crawler" style="padding-top: 0;">
+                    <umb-property-layout label="Use Umbraco content index" description="If true, ContentAudit will use content from the index instead of the crawler" style="padding-top: 0;">
                         <div slot="editor">
                             <uui-toggle .checked=${this.settings.useUmbracoContentIndex} readonly></uui-toggle>
                         </div>
@@ -42,7 +42,7 @@ export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement)
                         </div>
                     </umb-property-layout>
 
-                    <umb-property-layout label="Use sitemap.xml" description="If true, Content Audit will use pages listed in 'sitemap.xml' instead of the crawler">
+                    <umb-property-layout label="Use sitemap.xml" description="If true, ContentAudit will use pages listed in 'sitemap.xml' instead of the crawler">
                         <div slot="editor">
                             <uui-toggle .checked=${this.settings.useSitemapXml} readonly></uui-toggle>
                         </div>

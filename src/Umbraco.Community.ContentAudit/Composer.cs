@@ -7,6 +7,7 @@ using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
+using Umbraco.Community.ContentAudit.Repositories;
 using Umbraco.Community.ContentAudit.Services;
 #if NET8_0
 using Umbraco.Community.ContentAudit.Sections;
@@ -30,6 +31,7 @@ namespace Umbraco.Community.ContentAudit
 
             builder.AddNotificationHandler<UmbracoApplicationStartingNotification, RunAuditPageMigration>();
 
+            builder.Services.AddScoped<IAuditRepository, AuditRepository>();
             builder.Services.AddScoped<IRobotsService, RobotsService>();
             builder.Services.AddScoped<ISitemapService, SitemapService>();
             builder.Services.AddScoped<IDataService, DataService>();
@@ -44,9 +46,8 @@ namespace Umbraco.Community.ContentAudit
                 .Add(() => builder.TypeLoader.GetTypes<IAuditIssue>());
 
             var options = builder.Services.AddOptions<ContentAuditSettings>()
-                .Bind(builder.Config.GetSection("ContentAudit"));
-
-            options.ValidateDataAnnotations();
+                .Bind(builder.Config.GetSection("ContentAudit"))
+                .ValidateDataAnnotations();
 
 #if NET9_0_OR_GREATER
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();

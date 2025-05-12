@@ -1,7 +1,6 @@
 ﻿using Umbraco.Community.ContentAudit.Common.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
-using Umbraco.Community.ContentAudit.Models.Dtos;
 using Umbraco.Community.ContentAudit.Services;
 
 namespace Umbraco.Community.ContentAudit.AuditIssues
@@ -22,7 +21,11 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<AuditIssueProperty> ExposedProperties => new List<AuditIssueProperty>()
         {
-            new() { Name = "Emissions per page view", Alias = "emissionsData.emissionsPerPageView", LabelTemplate = "{umbValue: value}g" },
+#if NET9_0
+            new() { Name = "Emissions per page view", Alias = "emissionsData.emissionsPerPageView", LabelTemplate = "{=value}g" },
+#else
+            new() { Name = "Emissions per page view", Alias = "emissionsData.emissionsPerPageView", LabelTemplate = "{{value}}g" },
+#endif
             new() { Name = "Carbon rating", Alias = "emissionsData.carbonRating", ElementName = "content-audit-carbon-intensity-label" }
         };
 

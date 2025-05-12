@@ -468,6 +468,7 @@ namespace Umbraco.Community.ContentAudit.Services
             if (words == 0 || sentences == 0)
                 return 0;
 
+            // Flesch Reading Ease formula
             return 206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words);
         }
 

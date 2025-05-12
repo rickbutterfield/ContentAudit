@@ -37,7 +37,7 @@
         }
 
         function setPageName() {
-            vm.page.name = 'Content Audit';
+            vm.page.name = 'ContentAudit';
         }
     }
 

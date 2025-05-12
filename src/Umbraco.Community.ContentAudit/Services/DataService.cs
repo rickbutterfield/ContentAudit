@@ -4,6 +4,7 @@ using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
+using Umbraco.Community.ContentAudit.Repositories;
 using Umbraco.Community.ContentAudit.Schemas;
 using Umbraco.Extensions;
 
@@ -11,18 +12,18 @@ namespace Umbraco.Community.ContentAudit.Services
 {
     public class DataService : IDataService
     {
-        private readonly IScopeProvider _scopeProvider;
+        private readonly IAuditRepository _auditRepository;
         private readonly AuditIssueCollection _auditIssueCollection;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly IEmissionsService _emissionsService;
 
         public DataService(
-            IScopeProvider scopeProvider,
+            IAuditRepository auditRepository,
             AuditIssueCollection auditIssueCollection,
             AppCaches appCaches,
             IEmissionsService emissionsService)
         {
-            _scopeProvider = scopeProvider;
+            _auditRepository = auditRepository;
             _auditIssueCollection = auditIssueCollection;
             _runtimeCache = appCaches.RuntimeCache;
             _emissionsService = emissionsService;
@@ -31,17 +32,17 @@ namespace Umbraco.Community.ContentAudit.Services
         public async Task<OverviewDto> GetLatestAuditOverview()
         {
             var auditOverview = new OverviewDto();
-            var latestRunId = await GetLatestAuditId();
+            var latestRunId = await _auditRepository.GetLatestAuditId();
 
-            using var scope = _scopeProvider.CreateScope();
-
-            var latestAudit = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE Id = @0", latestRunId);
-
-            if (latestAudit != null && latestAudit?.Any() == true)
-                auditOverview = new OverviewDto(latestAudit.FirstOrDefault());
-
-            scope.Complete();
+            if (latestRunId.HasValue)
+            {
+                var latestAudit = await _auditRepository.GetLatestAuditOverview(latestRunId.Value);
+                var firstAudit = latestAudit?.FirstOrDefault();
+                if (firstAudit != null)
+                {
+                    auditOverview = new OverviewDto(firstAudit);
+                }
+            }
 
             return auditOverview;
         }
@@ -54,9 +55,11 @@ namespace Umbraco.Community.ContentAudit.Services
         private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0)
         {
             var results = new List<PageAnalysisDto>();
-            var latestRunId = await GetLatestAuditId();
+            var latestRunId = await _auditRepository.GetLatestAuditId();
 
-            using var scope = _scopeProvider.CreateScope();
+            if (!latestRunId.HasValue)
+                return results;
+
 #if NET9_0
             var pageData = await _runtimeCache.GetCacheItemAsync(Constants.Cache.Key,
 #else
@@ -64,42 +67,139 @@ namespace Umbraco.Community.ContentAudit.Services
 #endif
                 async () =>
                 {
-                    string sqlQuery = $@"
-                        SELECT * 
-                        FROM [{PageSchema.TableName}] 
-                        WHERE RunId = @0";
-
-                    var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
-                    return pageData;
+                    return await _auditRepository.GetPagesByRunId(latestRunId.Value);
                 }, TimeSpan.FromMinutes(30));
 
             if (pageData != null && pageData.Any())
             {
+                var filteredData = pageData.AsEnumerable();
+                
                 if (!string.IsNullOrEmpty(filter))
                 {
-                    pageData = pageData.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
+                    filteredData = filteredData.Where(x => x.Url?.ToLower().Contains(filter.ToLower()) == true);
                 }
 
                 if (statusCode != 0)
                 {
-                    pageData = pageData.Where(x => x.StatusCode == statusCode).ToList();
+                    filteredData = filteredData.Where(x => x.StatusCode == statusCode);
                 }
 
-                foreach (var page in pageData)
+                foreach (var page in filteredData)
                 {
-                    var result = await PopulatePageAnalysisData(page, latestRunId, scope);
+                    var result = await PopulatePageAnalysisData(page, latestRunId.Value);
                     results.Add(result);
                 }
             }
 
-            scope.Complete();
             return results;
+        }
+
+        private async Task<PageAnalysisDto> PopulatePageAnalysisData(PageSchema page, int latestRunId)
+        {
+            var result = new PageAnalysisDto();
+            result.PageData = new PageDto(page);
+
+            result.EntityType = "document";
+            result.Unique = result.PageData.Unique;
+
+            // Get SEO data
+            if (!string.IsNullOrEmpty(page.Url))
+            {
+                var seoData = await _auditRepository.GetSeoData(latestRunId, page.Url);
+                var firstSeoData = seoData?.FirstOrDefault();
+                if (firstSeoData != null)
+                {
+                    result.SeoData = new SeoDto(firstSeoData);
+                }
+
+                // Get content analysis data
+                var contentAnalysisData = await _auditRepository.GetContentAnalysisData(latestRunId, page.Url);
+                var firstContentAnalysis = contentAnalysisData?.FirstOrDefault();
+                if (firstContentAnalysis != null)
+                {
+                    result.ContentAnalysis = new ContentAnalysisDto(firstContentAnalysis);
+                }
+
+                // Get performance data
+                var performanceData = await _auditRepository.GetPerformanceData(latestRunId, page.Url);
+                var firstPerformanceData = performanceData?.FirstOrDefault();
+                if (firstPerformanceData != null)
+                {
+                    result.PerformanceData = new PerformanceDto(firstPerformanceData);
+
+                    if (result.PerformanceData.TotalBytes.HasValue)
+                    {
+                        result.EmissionsData = new();
+
+                        var score = _emissionsService.PerVisit(result.PerformanceData.TotalBytes.Value, false, false, true);
+                        if (score.Total.HasValue)
+                        {
+                            result.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                        }
+                        result.EmissionsData.CarbonRating = score.Rating;
+                    }
+                }
+
+                // Get accessibility data
+                var accessibilityData = await _auditRepository.GetAccessibilityData(latestRunId, page.Url);
+                var firstAccessibilityData = accessibilityData?.FirstOrDefault();
+                if (firstAccessibilityData != null)
+                {
+                    result.AccessibilityData = new AccessibilityDto(firstAccessibilityData);
+                }
+
+                // Get technical SEO data
+                var technicalSeoData = await _auditRepository.GetTechnicalSeoData(latestRunId, page.Url);
+                var firstTechnicalSeoData = technicalSeoData?.FirstOrDefault();
+                if (firstTechnicalSeoData != null)
+                {
+                    result.TechnicalSeoData = new TechnicalSeoDto(firstTechnicalSeoData);
+                }
+
+                // Get social media data
+                var socialMediaData = await _auditRepository.GetSocialMediaData(latestRunId, page.Url);
+                var firstSocialMediaData = socialMediaData?.FirstOrDefault();
+                if (firstSocialMediaData != null)
+                {
+                    result.SocialMediaData = new SocialMediaDto(firstSocialMediaData);
+                }
+
+                // Get content quality data
+                var contentQualityData = await _auditRepository.GetContentQualityData(latestRunId, page.Url);
+                var firstContentQualityData = contentQualityData?.FirstOrDefault();
+                if (firstContentQualityData != null)
+                {
+                    result.ContentQualityData = new ContentQualityDto(firstContentQualityData);
+                }
+
+                // Get links
+                var linksData = await _auditRepository.GetLinkData(latestRunId, page.Url);
+                if (linksData != null)
+                {
+                    result.Links = linksData.Select(x => new LinkDto(x)).ToList();
+                }
+
+                // Get resources
+                var resourcesData = await _auditRepository.GetResourceData(latestRunId, page.Url);
+                if (resourcesData != null)
+                {
+                    result.Resources = resourcesData.Select(x => new ResourceDto(x)).ToList();
+                }
+
+                // Get images
+                var imagesData = await _auditRepository.GetImageData(latestRunId, page.Url);
+                if (imagesData != null)
+                {
+                    result.Images = imagesData.Select(x => new ImageDto(x)).ToList();
+                }
+            }
+
+            return result;
         }
 
         public async Task<PageAnalysisDto> GetLatestPageAuditData(Guid unique)
         {
             var result = new PageAnalysisDto();
-
             var latestData = await GetLatestAuditData();
 
             if (latestData != null && latestData.Any())
@@ -132,39 +232,14 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        public async Task<PageAnalysisDto?> GetAuditDataByUrl(string url)
-        {
-            var latestRunId = await GetLatestAuditId();
-
-            using var scope = _scopeProvider.CreateScope();
-
-            string sqlQuery = $@"
-                SELECT * 
-                FROM [{PageSchema.TableName}] 
-                WHERE RunId = @0
-                AND Url = @1";
-
-            var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId, url);
-
-            if (pageData != null && pageData.Any())
-            {
-                var page = pageData.FirstOrDefault();
-                var result = await PopulatePageAnalysisData(page, latestRunId, scope);
-            }
-
-            scope.Complete();
-            return null;
-        }
-
         public async Task<List<PageDto>> GetOrphanedPages(string filter = "")
         {
             var result = new List<PageDto>();
-
             var pageData = await GetLatestAuditData();
 
             if (pageData != null && pageData.Any())
             {
-                var filtered = pageData.Where(x => x.SeoData.IsOrphaned);
+                var filtered = pageData.Where(x => x.SeoData?.IsOrphaned == true);
                 result.AddRange(filtered.Select(x => x.PageData));
             }
 
@@ -173,75 +248,31 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async Task<List<ImageDto>> GetAllImages(string filter = "")
         {
-            var latestRunId = await GetLatestAuditId();
-
             var latestAuditData = await GetLatestAuditData(filter);
-            var images = latestAuditData.SelectMany(x => x.Images).Where(x => !x.IsBackground);
+            var images = latestAuditData.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>())
+                .Where(x => x?.IsBackground == false);
 
             return images.ToList();
         }
 
         public async Task<List<PageDto>> GetDuplicateContentUrls(string filter = "")
         {
-            //var result = new List<InternalPageGroupDto>();
-            //var latestRunId = await GetLatestAuditId();
-
-            //using var scope = _scopeProvider.CreateScope();
-
-            //string sqlQuery = $"SELECT * FROM [{PageSchema.TableName}] WHERE RunId = @0 AND CanonicalUrl IS NOT NULL";
-            //var data = await scope.Database.FetchAsync<PageSchema>(sqlQuery, latestRunId);
-
-            //if (data != null && data.Any())
-            //{
-            //    if (!string.IsNullOrEmpty(filter))
-            //    {
-            //        data = data.Where(x => x.Url.ToLower().Contains(filter.ToLower())).ToList();
-            //    }
-
-            //    var convertedData = data.Select(x => new PageDto(x));
-
-            //    //var groupedData = convertedData.GroupBy(x => x.CanonicalUrl).Where(x => x.Count() > 1).ToList();
-
-            //    //var finalGrouping = groupedData.Select(x =>
-            //    //{
-            //    //    return new InternalPageGroupDto()
-            //    //    {
-            //    //        Url = x.Key,
-            //    //        Unique = Guid.Parse(x.FirstOrDefault()?.Unique.ToString()),
-            //    //        InternalPages = x.ToList(),
-            //    //        StatusCode = x.FirstOrDefault()?.StatusCode,
-            //    //        ContentType = x.FirstOrDefault()?.ContentType,
-            //    //    };
-            //    //});
-
-            //    //result = finalGrouping.ToList();
-
-            //    result = default;
-            //}
-
-            //scope.Complete();
-
-            //return result;
             throw new NotImplementedException();
         }
 
         public async Task<List<PageAnalysisDto>> GetPagesWithMissingMetadata(string filter = "")
         {
             var result = new List<PageAnalysisDto>();
-
             var pageData = await GetLatestAuditData();
-
             result.AddRange(pageData);
-
             return result;
         }
 
         public async Task<List<IssueDto>> GetAllIssues()
         {
             var result = new List<IssueDto>();
-
             var pageData = await GetLatestAuditData();
-            var imageData = pageData.SelectMany(x => x.Images);
+            var imageData = pageData.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>());
 
             if (pageData != null && pageData.Any())
             {
@@ -264,7 +295,6 @@ namespace Umbraco.Community.ContentAudit.Services
                         };
 
                         auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
                         result.Add(auditIssue);
                     }
                 }
@@ -276,7 +306,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     foreach (IAuditImageIssue issue in _auditIssueCollection.Where(x => x is IAuditImageIssue))
                     {
                         var issueCheck = issue.CheckImages(imageData, pageData);
-                        var imagesWithIssues = issueCheck.DistinctBy(x => x.FoundPage).Count();
+                        var imagesWithIssues = issueCheck?.DistinctBy(x => x.FoundPage).Count() ?? 0;
 
                         double percent = ((double)imagesWithIssues / (double)imageCount) * 100.0;
 
@@ -288,7 +318,6 @@ namespace Umbraco.Community.ContentAudit.Services
                         };
 
                         auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
                         result.Add(auditIssue);
                     }
                 }
@@ -299,9 +328,8 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public async Task<IssueDto?> GetIssue(Guid issueGuid)
         {
-            var result = new List<IssueDto>();
             var pageData = await GetLatestAuditData();
-            var imageData = pageData.SelectMany(x => x.Images);
+            var imageData = pageData.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>());
 
             if (pageData != null && pageData.Any())
             {
@@ -311,7 +339,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (issue is IAuditPageIssue pageIssue)
                 {
                     var issueCheck = pageIssue.CheckPages(pageData);
-                    var pagesWithIssue = issueCheck.Count();
+                    var pagesWithIssue = issueCheck?.Count() ?? 0;
                     double percent = ((double)pagesWithIssue / (double)pageCount) * 100.0;
 
                     var auditIssue = new IssueDto(pageIssue)
@@ -322,30 +350,24 @@ namespace Umbraco.Community.ContentAudit.Services
                     };
 
                     auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
                     return auditIssue;
                 }
-
-                else if (issue is IAuditImageIssue imageIssue)
+                else if (issue is IAuditImageIssue imageIssue && imageData != null && imageData.Any())
                 {
-                    if (imageData != null && imageData.Any())
+                    var imageCount = imageData.Count();
+                    var issueCheck = imageIssue.CheckImages(imageData, pageData);
+                    var imagesWithIssues = issueCheck?.Count() ?? 0;
+                    double percent = ((double)imagesWithIssues / (double)imageCount) * 100.0;
+
+                    var auditIssue = new IssueDto(issue)
                     {
-                        var imageCount = imageData.Count();
-                        var issueCheck = imageIssue.CheckImages(imageData, pageData);
-                        var imagesWithIssues = issueCheck.Count();
-                        double percent = ((double)imagesWithIssues / (double)imageCount) * 100.0;
+                        NumberOfUrls = imagesWithIssues,
+                        PercentOfTotal = percent,
+                        Images = issueCheck
+                    };
 
-                        var auditIssue = new IssueDto(issue)
-                        {
-                            NumberOfUrls = imagesWithIssues,
-                            PercentOfTotal = percent,
-                            Images = issueCheck
-                        };
-
-                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-
-                        return auditIssue;
-                    }
+                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                    return auditIssue;
                 }
             }
 
@@ -355,15 +377,14 @@ namespace Umbraco.Community.ContentAudit.Services
         public async Task<List<LinkGroupDto>> GetExternalLinks(string filter = "")
         {
             var results = new List<LinkGroupDto>();
-            var latestRunId = await GetLatestAuditId();
-
             var latestAuditData = await GetLatestAuditData(filter);
-            var linkData = latestAuditData.SelectMany(x => x.Links).Where(x => x.IsExternal);
+            var linkData = latestAuditData.SelectMany(x => x.Links ?? Enumerable.Empty<LinkDto>())
+                .Where(x => x?.IsExternal == true);
 
-            if (linkData != null && linkData.Any())
+            if (linkData.Any())
             {
                 var groupedData = linkData.GroupBy(x => x.Url).ToList();
-                foreach (var group in groupedData)
+                foreach (var group in groupedData.Where(g => g.Key != null))
                 {
                     var linkGroup = new LinkGroupDto()
                     {
@@ -374,9 +395,9 @@ namespace Umbraco.Community.ContentAudit.Services
                     };
                     results.Add(linkGroup);
                 }
-            }
 
-            results = results.OrderByDescending(x => x.Links?.Count).ToList();
+                results = results.OrderByDescending(x => x.Links?.Count).ToList();
+            }
 
             return results;
         }
@@ -384,15 +405,14 @@ namespace Umbraco.Community.ContentAudit.Services
         public async Task<List<LinkGroupDto>> GetInternalLinks(string filter = "")
         {
             var results = new List<LinkGroupDto>();
-            var latestRunId = await GetLatestAuditId();
-
             var latestAuditData = await GetLatestAuditData(filter);
-            var linkData = latestAuditData.SelectMany(x => x.Links).Where(x => !x.IsExternal);
+            var linkData = latestAuditData.SelectMany(x => x.Links ?? Enumerable.Empty<LinkDto>())
+                .Where(x => x?.IsExternal == false);
 
-            if (linkData != null && linkData.Any())
+            if (linkData.Any())
             {
                 var groupedData = linkData.GroupBy(x => x.Url).ToList();
-                foreach (var group in groupedData)
+                foreach (var group in groupedData.Where(g => g.Key != null))
                 {
                     var linkGroup = new LinkGroupDto()
                     {
@@ -403,9 +423,9 @@ namespace Umbraco.Community.ContentAudit.Services
                     };
                     results.Add(linkGroup);
                 }
-            }
 
-            results = results.OrderByDescending(x => x.Links?.Count).ToList();
+                results = results.OrderByDescending(x => x.Links?.Count).ToList();
+            }
 
             return results;
         }
@@ -458,127 +478,6 @@ namespace Umbraco.Community.ContentAudit.Services
                 return typeWeight + priorityWeight + percentageWeight;
 
             return 0;
-        }
-
-        private async Task<int?> GetLatestAuditId()
-        {
-            using var scope = _scopeProvider.CreateScope();
-
-            string providerName = scope.Database.DatabaseType.GetProviderName();
-            bool isSQLite = providerName.Contains("sqlite", StringComparison.OrdinalIgnoreCase);
-
-            string sql = isSQLite
-                ? $"SELECT [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC LIMIT 1"
-                : $"SELECT TOP 1 [Id] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC";
-
-            int? latestId = await scope.Database.ExecuteScalarAsync<int?>(sql);
-
-            scope.Complete();
-
-            return latestId;
-        }
-
-        private async Task<PageAnalysisDto> PopulatePageAnalysisData(PageSchema page, int? latestRunId, IScope scope)
-        {
-            var result = new PageAnalysisDto();
-            result.PageData = new PageDto(page);
-
-            result.EntityType = "document";
-            result.Unique = result.PageData.Unique;
-
-            // Get SEO data
-            string seoSqlQuery = $@"SELECT * FROM [{SeoSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var seoData = await scope.Database.FetchAsync<SeoSchema>(seoSqlQuery, latestRunId, page.Url);
-            if (seoData != null && seoData.Any())
-            {
-                result.SeoData = new SeoDto(seoData.FirstOrDefault());
-            }
-
-            // Get content analysis data
-            string contentAnalysisSqlQuery = $@"SELECT * FROM [{ContentAnalysisSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var contentAnalysisData = await scope.Database.FetchAsync<ContentAnalysisSchema>(contentAnalysisSqlQuery, latestRunId, page.Url);
-            if (contentAnalysisData != null && contentAnalysisData.Any())
-            {
-                result.ContentAnalysis = new ContentAnalysisDto(contentAnalysisData.FirstOrDefault());
-            }
-
-            // Get performance data
-            string performanceSqlQuery = $@"SELECT * FROM [{PerformanceSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var performanceData = await scope.Database.FetchAsync<PerformanceSchema>(performanceSqlQuery, latestRunId, page.Url);
-            if (performanceData != null && performanceData.Any())
-            {
-                result.PerformanceData = new PerformanceDto(performanceData.FirstOrDefault());
-
-                if (result.PerformanceData.TotalBytes.HasValue)
-                {
-                    result.EmissionsData = new();
-
-                    var score = _emissionsService.PerVisit(result.PerformanceData.TotalBytes.Value, false, false, true);
-                    if (score.Total.HasValue)
-                    {
-                        result.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
-                    }
-                    result.EmissionsData.CarbonRating = score.Rating;
-                }
-            }
-
-            // Get accessibility data
-            string accessibilitySqlQuery = $@"SELECT * FROM [{AccessibilitySchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var accessibilityData = await scope.Database.FetchAsync<AccessibilitySchema>(accessibilitySqlQuery, latestRunId, page.Url);
-            if (accessibilityData != null && accessibilityData.Any())
-            {
-                result.AccessibilityData = new AccessibilityDto(accessibilityData.FirstOrDefault());
-            }
-
-            // Get technical SEO data
-            string technicalSeoSqlQuery = $@"SELECT * FROM [{TechnicalSeoSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var technicalSeoData = await scope.Database.FetchAsync<TechnicalSeoSchema>(technicalSeoSqlQuery, latestRunId, page.Url);
-            if (technicalSeoData != null && technicalSeoData.Any())
-            {
-                result.TechnicalSeoData = new TechnicalSeoDto(technicalSeoData.FirstOrDefault());
-            }
-
-            // Get social media data
-            string socialMediaSqlQuery = $@"SELECT * FROM [{SocialMediaSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var socialMediaData = await scope.Database.FetchAsync<SocialMediaSchema>(socialMediaSqlQuery, latestRunId, page.Url);
-            if (socialMediaData != null && socialMediaData.Any())
-            {
-                result.SocialMediaData = new SocialMediaDto(socialMediaData.FirstOrDefault());
-            }
-
-            // Get content quality data
-            string contentQualitySqlQuery = $@"SELECT * FROM [{ContentQualitySchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var contentQualityData = await scope.Database.FetchAsync<ContentQualitySchema>(contentQualitySqlQuery, latestRunId, page.Url);
-            if (contentQualityData != null && contentQualityData.Any())
-            {
-                result.ContentQualityData = new ContentQualityDto(contentQualityData.FirstOrDefault());
-            }
-
-            // Get links
-            string linksSqlQuery = $@"SELECT * FROM [{LinkSchema.TableName}] WHERE {nameof(LinkSchema.RunId)} = @0 AND {nameof(LinkSchema.FoundPage)} = @1";
-            var linksData = await scope.Database.FetchAsync<LinkSchema>(linksSqlQuery, latestRunId, page.Url);
-            if (linksData != null && linksData.Any())
-            {
-                result.Links = linksData.Select(x => new LinkDto(x)).ToList();
-            }
-
-            // Get resources
-            string resourcesSqlQuery = $@"SELECT * FROM [{ResourceSchema.TableName}] WHERE {nameof(ResourceSchema.RunId)} = @0 AND {nameof(ResourceSchema.FoundPage)} = @1";
-            var resourcesData = await scope.Database.FetchAsync<ResourceSchema>(resourcesSqlQuery, latestRunId, page.Url);
-            if (resourcesData != null && resourcesData.Any())
-            {
-                result.Resources = resourcesData.Select(x => new ResourceDto(x)).ToList();
-            }
-
-            // Get images
-            string imagesSqlQuery = $@"SELECT * FROM [{ImageSchema.TableName}] WHERE {nameof(ImageSchema.RunId)} = @0 AND {nameof(ImageSchema.FoundPage)} = @1";
-            var imagesData = await scope.Database.FetchAsync<ImageSchema>(imagesSqlQuery, latestRunId, page.Url);
-            if (imagesData != null && imagesData.Any())
-            {
-                result.Images = imagesData.Select(x => new ImageDto(x)).ToList();
-            }
-
-            return result;
         }
 
         public async Task<List<PageAnalysisDto>> GetExportData()

@@ -36,7 +36,7 @@
                     <div slot="editor">{{vm.data.seoData.openGraphDescription}}</div>
                 </umb-control-group>
                 <umb-control-group label="Open Graph Image">
-                    <div slot="editor">{{vm.data.seoData.openGraphImage}}</div>
+                    <div slot="editor"><a href="{{vm.data.seoData.openGraphImage}}" target="_blank">{{vm.data.seoData.openGraphImage}}</a></div>
                 </umb-control-group>
             </uui-box>
 
@@ -62,8 +62,8 @@
                 <umb-control-group label="Internal Links">
                     <div slot="editor">{{vm.data.contentAnalysis.internalLinks}}</div>
                 </umb-control-group>
-                <umb-control-group label="Readability Score">
-                    <div slot="editor">{{vm.data.contentAnalysis.readabilityScore}}</div>
+                <umb-control-group label="Readability Score" description="Flesch Reading Ease Score. Scores around 100 mean the document is extremely easy to read, while scores around 0 mean that it is highly complex and difficult to understand.">
+                    <div slot="editor">{{Math.round(vm.data.contentAnalysis.readabilityScore)}}</div>
                 </umb-control-group>
                 <umb-control-group label="Keyword Density">
                     <div slot="editor">{{vm.data.contentAnalysis.keywordDensity}}</div>
@@ -98,9 +98,6 @@
             </uui-box>
 
             <uui-box headline="Accessibility" ng-if="vm.data.accessibilityData != null" style="margin-bottom: 16px">
-                <umb-control-group label="Accessibility Issues">
-                    <div slot="editor">{{vm.data.accessibilityData.accessibilityIssues}}</div>
-                </umb-control-group>
                 <umb-control-group label="ARIA Labels">
                     <div slot="editor">{{vm.data.accessibilityData.ariaLabelCount}}</div>
                 </umb-control-group>
@@ -134,9 +131,6 @@
                 <umb-control-group label="Has Valid HTML">
                     <div slot="editor">{{vm.data.technicalSeoData.hasValidHtml ? 'Yes' : 'No'}}</div>
                 </umb-control-group>
-                <umb-control-group label="HTML Validation Errors">
-                    <div slot="editor">{{vm.data.technicalSeoData.htmlValidationErrors}}</div>
-                </umb-control-group>
                 <umb-control-group label="Has Schema Markup">
                     <div slot="editor">{{vm.data.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}}</div>
                 </umb-control-group>
@@ -157,12 +151,6 @@
                 </umb-control-group>
                 <umb-control-group label="Content Score">
                     <div slot="editor">{{vm.data.contentQualityData.contentScore}}</div>
-                </umb-control-group>
-                <umb-control-group label="Content Gaps">
-                    <div slot="editor">{{vm.data.contentQualityData.contentGaps}}</div>
-                </umb-control-group>
-                <umb-control-group label="Content Strengths">
-                    <div slot="editor">{{vm.data.contentQualityData.contentStrengths}}</div>
                 </umb-control-group>
             </uui-box>
 

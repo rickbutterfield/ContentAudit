@@ -87,7 +87,7 @@ export class ContentAuditCoreWebVitalsTableCollectionViewElement extends UmbLitE
         const routeBuilder = this.#routeBuilder;
         if (!routeBuilder) throw new Error('Route builder not ready');
 
-        this._tableItems = pages.map((page) => {
+        this._tableItems = pages.filter(x => x.pageData.statusCode === 200).map((page) => {
             const modalEditPath =
                 routeBuilder({ entityType: page.entityType }) +
                 UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.unique });

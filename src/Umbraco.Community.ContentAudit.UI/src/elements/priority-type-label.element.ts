@@ -12,9 +12,9 @@ export class ContentAuditPriorityTypeLabel extends UmbElementMixin(LitElement) {
         if (this.type != 0) {
             const config = IssuePriorityConfigMap[this.type - 1];
             return html`
-                <uui-tag color=${config.color}>
-                    <uui-icon name="${config.icon}"></uui-icon>
-                    ${config.label}
+                <uui-tag color=${config?.color}>
+                    <uui-icon name="${config?.icon}"></uui-icon>
+                    ${config?.label}
                 </uui-tag>
             `;
         }

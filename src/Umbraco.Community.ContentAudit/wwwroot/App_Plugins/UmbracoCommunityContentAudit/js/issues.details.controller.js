@@ -10,7 +10,8 @@
         "editorService",
         "overlayService",
         "Umbraco.Community.ContentAudit.Resource",
-        function ($scope, $timeout, $location, $sce, $routeParams, navigationService, editorService, overlayService, contentAuditResource) {
+        "$interpolate",
+        function ($scope, $timeout, $location, $sce, $routeParams, navigationService, editorService, overlayService, contentAuditResource, $interpolate) {
 
             var vm = this;
             vm.data = {};
@@ -49,6 +50,26 @@
 
             vm.back = function () {
                 $location.path("audit/issues/overview");
+            }
+
+            vm.renderExposedProperty = function (page, property) {
+                const aliasParts = property.alias.split('.');
+                let value = page;
+                for (const part of aliasParts) {
+                    if (value && typeof value === 'object') {
+                        value = value[part];
+                    } else {
+                        break;
+                    }
+                }
+
+                if (!property.labelTemplate) {
+                    return value;
+                }
+                else {
+                    var val = $interpolate(property.labelTemplate);
+                    return val({ value });
+                }
             }
         }
     ]);
