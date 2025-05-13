@@ -3,7 +3,7 @@ import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspace.context";
 import { PageAnalysisDto } from "../../../../../api";
-import { css, html, repeat } from "@umbraco-cms/backoffice/external/lit";
+import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 
 @customElement('content-audit-all-pages-details-workspace-view')

@@ -71,7 +71,7 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 {
                     adminGroup.AddAllowedSection(Constants.SectionAlias);
 #if !NET9_0
-                    _userService.Save(adminGroup, new[] { Cms.Core.Constants.Security.SuperUserId });
+                    _userService.Save(adminGroup);
 #else
                     await _userGroupService.UpdateAsync(adminGroup, Cms.Core.Constants.Security.SuperUserKey);
 #endif
