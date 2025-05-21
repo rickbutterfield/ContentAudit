@@ -13,6 +13,7 @@
         function ($scope, $timeout, $location, $sce, $routeParams, navigationService, editorService, overlayService, contentAuditResource) {
 
             var vm = this;
+            vm.scoreClass = "";
             vm.renderStatusCodeLabel = contentAuditResource.renderStatusCodeLabel;
             vm.renderCarbonRatingLabel = contentAuditResource.renderCarbonRatingLabel;
 
@@ -25,16 +26,26 @@
             function init() {
                 if (!contentAuditResource.isGuid(detailsId)) {
                     contentAuditResource.getKey(detailsId).then(function (key) {
-                        contentAuditResource.getLatestPageAuditData(key).then(function (data) {
-                            vm.data = data;
-                        });
+                        contentAuditResource.getLatestPageAuditData(key).then(data => useData(data));
                     });
                 }
 
                 else {
-                    contentAuditResource.getLatestPageAuditData(detailsId).then(function (data) {
-                        vm.data = data;
-                    });
+                    contentAuditResource.getLatestPageAuditData(detailsId).then(data => useData(data));
+                }
+            }
+
+            function useData(data) {
+                vm.data = data;
+
+                vm.scoreClass = "score--danger";
+
+                if (vm.data.healthScore.healthScore >= 90) {
+                    vm.scoreClass = "score--success";
+                }
+
+                else if (vm.data.healthScore.healthScore >= 50) {
+                    vm.scoreClass = "score--warning";
                 }
             }
         }

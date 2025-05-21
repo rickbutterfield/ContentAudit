@@ -185,6 +185,7 @@ export type PageAnalysisDto = {
     resources: Array<(ResourceDto)>;
     images: Array<(ImageDto)>;
     issues: Array<(IssueDto)>;
+    healthScore: (HealthScoreDto);
     pageData: (PageDto);
     seoData: (SeoDto);
     contentAnalysis: (ContentAnalysisDto);

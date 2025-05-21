@@ -1,10 +1,8 @@
 ﻿using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
-using Umbraco.Community.ContentAudit.Repositories;
 using Umbraco.Community.ContentAudit.Schemas;
 using Umbraco.Extensions;
 
@@ -73,7 +71,7 @@ namespace Umbraco.Community.ContentAudit.Services
             if (pageData != null && pageData.Any())
             {
                 var filteredData = pageData.AsEnumerable();
-                
+
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filteredData = filteredData.Where(x => x.Url?.ToLower().Contains(filter.ToLower()) == true);
@@ -207,10 +205,13 @@ namespace Umbraco.Community.ContentAudit.Services
                 var page = latestData.FirstOrDefault(x => x.PageData.Unique == unique);
                 if (page != null)
                 {
+                    var pageIssues = _auditIssueCollection.Where(x => x is IAuditPageIssue);
+                    int totalIssues = pageIssues.Count();
+
                     result = page;
                     result.Issues = new();
 
-                    foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
+                    foreach (IAuditPageIssue issue in pageIssues)
                     {
                         var issueCheck = issue.CheckPages(new List<PageAnalysisDto>() { page });
 
@@ -226,6 +227,11 @@ namespace Umbraco.Community.ContentAudit.Services
                             }
                         }
                     }
+
+                    result.HealthScore = new()
+                    {
+                        HealthScore = ((double)(totalIssues - result.Issues.Count) / totalIssues) * 100.0,
+                    };
                 }
             }
 
