@@ -8,7 +8,7 @@ import { manifests as workspaceManifests } from './workspace/manifests';
 import { manifests as modalManifests } from './modals/manifest';
 import { manifests as localizationManifests } from './localization/manifests';
 import { manifests as documentManifests } from './documents/manifests';
-import { OpenAPI } from './api/index.ts';
+import { client } from './api/index.ts';
 import { ManifestGlobalContext } from '@umbraco-cms/backoffice/extension-registry';
 import { CONTENT_AUDIT_CONTEXT_ALIAS } from './exports.ts';
 
@@ -21,22 +21,24 @@ const globalContext: ManifestGlobalContext = {
 
 export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
 
-    extensionRegistry.registerMany([
-        globalContext,
-        ...sectionManifests,
-        ...workspaceManifests,
-        ...modalManifests,
-        ...localizationManifests,
-        ...documentManifests
-    ]);
-
     host.consumeContext(UMB_AUTH_CONTEXT, async (auth) => {
         if (!auth) return;
 
-        const umbOpenApi = auth.getOpenApiConfiguration();
-        OpenAPI.BASE = umbOpenApi.base;
-        OpenAPI.TOKEN = umbOpenApi.token;
-        OpenAPI.WITH_CREDENTIALS = umbOpenApi.withCredentials;
-        OpenAPI.CREDENTIALS = umbOpenApi.credentials;
+        const config = auth.getOpenApiConfiguration();
+
+        client.setConfig({
+            auth: () => auth.getLatestToken(),
+            baseUrl: config.base,
+            credentials: config.credentials,
+        });
+
+        extensionRegistry.registerMany([
+            globalContext,
+            ...sectionManifests,
+            ...workspaceManifests,
+            ...modalManifests,
+            ...localizationManifests,
+            ...documentManifests
+        ]);
     });
 }

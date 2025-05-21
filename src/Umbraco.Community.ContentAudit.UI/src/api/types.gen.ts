@@ -3,27 +3,27 @@
 export type AccessibilityDto = {
     id: number;
     runId: number;
-    url?: (string) | null;
-    accessibilityIssues?: Array<(string)> | null;
+    url?: string | null;
+    accessibilityIssues?: Array<string> | null;
     ariaLabelCount: number;
     ariaDescribedByCount: number;
     hasSkipToContent: boolean;
     hasProperHeadingStructure: boolean;
-    colorContrastIssues?: Array<(string)> | null;
+    colorContrastIssues?: Array<string> | null;
     createdDate: string;
 };
 
 export type AuditIssueProperty = {
-    name?: (string) | null;
-    alias?: (string) | null;
-    labelTemplate?: (string) | null;
-    elementName?: (string) | null;
+    name?: string | null;
+    alias?: string | null;
+    labelTemplate?: string | null;
+    elementName?: string | null;
 };
 
 export type ContentAnalysisDto = {
     id: number;
     runId: number;
-    url?: (string) | null;
+    url?: string | null;
     wordCount: number;
     paragraphCount: number;
     images: number;
@@ -33,10 +33,10 @@ export type ContentAnalysisDto = {
     internalLinks: number;
     readabilityScore: number;
     keywordDensity?: {
-        [key: string]: (number);
+        [key: string]: number;
     } | null;
-    missingAltTextImages?: (string) | null;
-    missingTitleImages?: (string) | null;
+    missingAltTextImages?: string | null;
+    missingTitleImages?: string | null;
 };
 
 export type ContentAuditSettings = {
@@ -51,18 +51,18 @@ export type ContentAuditSettings = {
 export type ContentQualityDto = {
     id: number;
     runId: number;
-    url?: (string) | null;
+    url?: string | null;
     hasDuplicateContent: boolean;
-    duplicateContentUrls?: Array<(string)> | null;
+    duplicateContentUrls?: Array<string> | null;
     hasThinContent: boolean;
     contentScore: number;
-    contentGaps?: Array<(string)> | null;
-    contentStrengths?: Array<(string)> | null;
+    contentGaps?: Array<string> | null;
+    contentStrengths?: Array<string> | null;
     createdDate: string;
 };
 
 export type CrawlDto = {
-    url?: (string) | null;
+    url?: string | null;
     external: boolean;
     asset: boolean;
     crawled: boolean;
@@ -72,7 +72,7 @@ export type CrawlDto = {
 
 export type EmissionsDto = {
     emissionsPerPageView: number;
-    carbonRating?: (string) | null;
+    carbonRating?: string | null;
 };
 
 export type HealthScoreDto = {
@@ -85,14 +85,14 @@ export type ImageDto = {
     entityType: string;
     id: number;
     runId: number;
-    url?: (string) | null;
+    url?: string | null;
     isExternal: boolean;
-    size?: (number) | null;
+    size?: number | null;
     statusCode: number;
-    contentType?: (string) | null;
-    altText?: (string) | null;
-    title?: (string) | null;
-    foundPage?: (string) | null;
+    contentType?: string | null;
+    altText?: string | null;
+    title?: string | null;
+    foundPage?: string | null;
     unique: string;
     createdDate: string;
     isBackground: boolean;
@@ -106,11 +106,11 @@ export type IssueDto = {
     category: string;
     type: IssueType;
     priority: IssuePriority;
-    numberOfUrls?: (number) | null;
+    numberOfUrls?: number | null;
     percentOfTotal: number;
-    pages?: Array<(PageAnalysisDto)> | null;
-    images?: Array<(ImageDto)> | null;
-    exposedProperties?: Array<(AuditIssueProperty)> | null;
+    pages?: Array<PageAnalysisDto> | null;
+    images?: Array<ImageDto> | null;
+    exposedProperties?: Array<AuditIssueProperty> | null;
     priorityScore: number;
 };
 
@@ -131,21 +131,21 @@ export type LinkDto = {
     entityType: string;
     id: number;
     runId: number;
-    url?: (string) | null;
+    url?: string | null;
     isExternal: boolean;
-    foundPage?: (string) | null;
+    foundPage?: string | null;
     statusCode: number;
-    contentType?: (string) | null;
+    contentType?: string | null;
     createdDate: string;
 };
 
 export type LinkGroupDto = {
     unique: string;
     entityType: string;
-    url?: (string) | null;
-    statusCode?: (number) | null;
-    contentType?: (string) | null;
-    links?: Array<(LinkDto)> | null;
+    url?: string | null;
+    statusCode?: number | null;
+    contentType?: string | null;
+    links?: Array<LinkDto> | null;
 };
 
 export type MetricDto = {
@@ -170,81 +170,82 @@ export enum MetricRating {
 }
 
 export type OverviewDto = {
-    runDate?: (string) | null;
-    total?: (number) | null;
-    totalInternal?: (number) | null;
-    totalExternal?: (number) | null;
-    totalAssets?: (number) | null;
-    totalBlocked?: (number) | null;
+    runDate?: string | null;
+    total?: number | null;
+    totalInternal?: number | null;
+    totalExternal?: number | null;
+    totalAssets?: number | null;
+    totalBlocked?: number | null;
 };
 
 export type PageAnalysisDto = {
     unique: string;
     entityType: string;
-    links: Array<(LinkDto)>;
-    resources: Array<(ResourceDto)>;
-    images: Array<(ImageDto)>;
-    issues: Array<(IssueDto)>;
-    pageData: (PageDto);
-    seoData: (SeoDto);
-    contentAnalysis: (ContentAnalysisDto);
-    performanceData: (PerformanceDto);
-    accessibilityData: (AccessibilityDto);
-    technicalSeoData: (TechnicalSeoDto);
-    socialMediaData: (SocialMediaDto);
-    contentQualityData: (ContentQualityDto);
-    emissionsData: (EmissionsDto);
-};
-
-export type PagedImageDtoModel = {
-    total: number;
-    items: Array<(ImageDto)>;
-};
-
-export type PagedIssueDtoModel = {
-    total: number;
-    items: Array<(IssueDto)>;
-};
-
-export type PagedLinkGroupDtoModel = {
-    total: number;
-    items: Array<(LinkGroupDto)>;
-};
-
-export type PagedPageAnalysisDtoModel = {
-    total: number;
-    items: Array<(PageAnalysisDto)>;
-};
-
-export type PagedPageDtoModel = {
-    total: number;
-    items: Array<(PageDto)>;
+    links: Array<LinkDto>;
+    resources: Array<ResourceDto>;
+    images: Array<ImageDto>;
+    issues: Array<IssueDto>;
+    healthScore: HealthScoreDto;
+    pageData: PageDto;
+    seoData: SeoDto;
+    contentAnalysis: ContentAnalysisDto;
+    performanceData: PerformanceDto;
+    accessibilityData: AccessibilityDto;
+    technicalSeoData: TechnicalSeoDto;
+    socialMediaData: SocialMediaDto;
+    contentQualityData: ContentQualityDto;
+    emissionsData: EmissionsDto;
 };
 
 export type PageDto = {
     entityType: string;
     id: number;
     runId: number;
-    url?: (string) | null;
+    url?: string | null;
     redirect: boolean;
-    redirectUrl?: (string) | null;
+    redirectUrl?: string | null;
     unique: string;
     statusCode: number;
+};
+
+export type PagedImageDtoModel = {
+    total: number;
+    items: Array<ImageDto>;
+};
+
+export type PagedIssueDtoModel = {
+    total: number;
+    items: Array<IssueDto>;
+};
+
+export type PagedLinkGroupDtoModel = {
+    total: number;
+    items: Array<LinkGroupDto>;
+};
+
+export type PagedPageAnalysisDtoModel = {
+    total: number;
+    items: Array<PageAnalysisDto>;
+};
+
+export type PagedPageDtoModel = {
+    total: number;
+    items: Array<PageDto>;
 };
 
 export type PerformanceDto = {
     id: number;
     runId: number;
-    url?: (string) | null;
-    pageLoadTime?: (number) | null;
-    cumulativeLayoutShift?: ((MetricDto) | null);
-    firstContentfulPaint?: ((MetricDto) | null);
-    largestContentfulPaint?: ((MetricDto) | null);
-    timeToInteractive?: ((MetricDto) | null);
-    timeToFirstByte?: ((MetricDto) | null);
-    totalRequests?: (number) | null;
-    totalBytes?: (number) | null;
-    resourceTimings?: Array<(ResourceTimingDto)> | null;
+    url?: string | null;
+    pageLoadTime?: number | null;
+    cumulativeLayoutShift?: MetricDto | null;
+    firstContentfulPaint?: MetricDto | null;
+    largestContentfulPaint?: MetricDto | null;
+    timeToInteractive?: MetricDto | null;
+    timeToFirstByte?: MetricDto | null;
+    totalRequests?: number | null;
+    totalBytes?: number | null;
+    resourceTimings?: Array<ResourceTimingDto> | null;
     createdDate: string;
 };
 
@@ -252,156 +253,350 @@ export type ResourceDto = {
     entityType: string;
     id: number;
     runId: number;
-    url?: (string) | null;
+    url?: string | null;
     isExternal: boolean;
-    size?: (number) | null;
+    size?: number | null;
     statusCode: number;
-    contentType?: (string) | null;
-    foundPage?: (string) | null;
+    contentType?: string | null;
+    foundPage?: string | null;
     unique: string;
     createdDate: string;
 };
 
 export type ResourceTimingDto = {
-    url?: (string) | null;
-    resourceType?: (string) | null;
-    duration?: (number) | null;
-    startTime?: (number) | null;
-    size?: (number) | null;
+    url?: string | null;
+    resourceType?: string | null;
+    duration?: number | null;
+    startTime?: number | null;
+    size?: number | null;
 };
 
 export type SeoDto = {
     runId: number;
-    url?: (string) | null;
-    title?: (string) | null;
-    metaDescription?: (string) | null;
-    canonicalUrl?: (string) | null;
-    h1?: (string) | null;
-    h2s?: Array<(string)> | null;
-    h3s?: Array<(string)> | null;
+    url?: string | null;
+    title?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
+    h1?: string | null;
+    h2s?: Array<string> | null;
+    h3s?: Array<string> | null;
     hasNoIndex: boolean;
     hasNoFollow: boolean;
     isOrphaned: boolean;
-    openGraphTitle?: (string) | null;
-    openGraphDescription?: (string) | null;
-    openGraphImage?: (string) | null;
-    twitterCard?: (string) | null;
-    twitterTitle?: (string) | null;
-    twitterDescription?: (string) | null;
-    twitterImage?: (string) | null;
+    openGraphTitle?: string | null;
+    openGraphDescription?: string | null;
+    openGraphImage?: string | null;
+    twitterCard?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
+    twitterImage?: string | null;
     createdDate: string;
 };
 
 export type SocialMediaDto = {
     id: number;
     runId: number;
-    url?: (string) | null;
-    socialShareButtons?: Array<(string)> | null;
+    url?: string | null;
+    socialShareButtons?: Array<string> | null;
     hasFacebookPixel: boolean;
     hasTwitterPixel: boolean;
     hasLinkedInPixel: boolean;
-    socialMediaLinks?: Array<(string)> | null;
+    socialMediaLinks?: Array<string> | null;
     createdDate: string;
 };
 
 export type TechnicalSeoDto = {
     id: number;
     runId: number;
-    url?: (string) | null;
-    contentType?: (string) | null;
-    charset?: (string) | null;
+    url?: string | null;
+    contentType?: string | null;
+    charset?: string | null;
     hasGzipCompression: boolean;
     hasBrowserCaching: boolean;
     hasHttps: boolean;
     hasValidHtml: boolean;
-    htmlValidationErrors?: Array<(string)> | null;
+    htmlValidationErrors?: Array<string> | null;
     hasSchemaMarkup: boolean;
-    schemaType?: (string) | null;
+    schemaType?: string | null;
     createdDate: string;
 };
 
 export type GetAllImagesData = {
-    filter?: string;
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/all-images';
 };
 
-export type GetAllImagesResponse = ((PagedImageDtoModel));
+export type GetAllImagesResponses = {
+    /**
+     * OK
+     */
+    200: PagedImageDtoModel;
+};
+
+export type GetAllImagesResponse = GetAllImagesResponses[keyof GetAllImagesResponses];
 
 export type GetAllIssuesData = {
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+    };
+    url: '/umbraco/content-audit/api/v1/all-issues';
 };
 
-export type GetAllIssuesResponse = ((PagedIssueDtoModel));
+export type GetAllIssuesResponses = {
+    /**
+     * OK
+     */
+    200: PagedIssueDtoModel;
+};
+
+export type GetAllIssuesResponse = GetAllIssuesResponses[keyof GetAllIssuesResponses];
 
 export type GetDuplicateContentUrlsData = {
-    filter?: string;
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/duplicate-content';
 };
 
-export type GetDuplicateContentUrlsResponse = ((PagedPageDtoModel));
+export type GetDuplicateContentUrlsResponses = {
+    /**
+     * OK
+     */
+    200: PagedPageDtoModel;
+};
 
-export type GetExportDataResponse = (((Blob | File)));
+export type GetDuplicateContentUrlsResponse = GetDuplicateContentUrlsResponses[keyof GetDuplicateContentUrlsResponses];
+
+export type GetExportDataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/api/v1/export';
+};
+
+export type GetExportDataResponses = {
+    /**
+     * OK
+     */
+    200: Blob | File;
+};
+
+export type GetExportDataResponse = GetExportDataResponses[keyof GetExportDataResponses];
 
 export type GetExternalLinksData = {
-    filter?: string;
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/external-links';
 };
 
-export type GetExternalLinksResponse = ((PagedLinkGroupDtoModel));
+export type GetExternalLinksResponses = {
+    /**
+     * OK
+     */
+    200: PagedLinkGroupDtoModel;
+};
 
-export type GetHealthScoreResponse = ((HealthScoreDto));
+export type GetExternalLinksResponse = GetExternalLinksResponses[keyof GetExternalLinksResponses];
+
+export type GetHealthScoreData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/api/v1/health-score';
+};
+
+export type GetHealthScoreResponses = {
+    /**
+     * OK
+     */
+    200: HealthScoreDto;
+};
+
+export type GetHealthScoreResponse = GetHealthScoreResponses[keyof GetHealthScoreResponses];
 
 export type GetInteralLinksData = {
-    filter?: string;
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/internal-links';
 };
 
-export type GetInteralLinksResponse = ((PagedLinkGroupDtoModel));
+export type GetInteralLinksResponses = {
+    /**
+     * OK
+     */
+    200: PagedLinkGroupDtoModel;
+};
+
+export type GetInteralLinksResponse = GetInteralLinksResponses[keyof GetInteralLinksResponses];
 
 export type GetIssueData = {
-    issueGuid?: string;
+    body?: never;
+    path?: never;
+    query?: {
+        issueGuid?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/issue';
 };
 
-export type GetIssueResponse = ((IssueDto));
+export type GetIssueResponses = {
+    /**
+     * OK
+     */
+    200: IssueDto;
+};
 
-export type GetLatestAuditOverviewResponse = ((OverviewDto));
+export type GetIssueResponse = GetIssueResponses[keyof GetIssueResponses];
+
+export type GetLatestAuditOverviewData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/api/v1/latest-audit';
+};
+
+export type GetLatestAuditOverviewResponses = {
+    /**
+     * OK
+     */
+    200: OverviewDto;
+};
+
+export type GetLatestAuditOverviewResponse = GetLatestAuditOverviewResponses[keyof GetLatestAuditOverviewResponses];
 
 export type GetLatestAuditDataData = {
-    filter?: string;
-    skip?: number;
-    statusCode?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+        statusCode?: number;
+    };
+    url: '/umbraco/content-audit/api/v1/latest-data';
 };
 
-export type GetLatestAuditDataResponse = ((PagedPageAnalysisDtoModel));
+export type GetLatestAuditDataResponses = {
+    /**
+     * OK
+     */
+    200: PagedPageAnalysisDtoModel;
+};
+
+export type GetLatestAuditDataResponse = GetLatestAuditDataResponses[keyof GetLatestAuditDataResponses];
 
 export type GetLatestPageAuditDataData = {
-    unique?: string;
+    body?: never;
+    path?: never;
+    query?: {
+        unique?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/latest-page-data';
 };
 
-export type GetLatestPageAuditDataResponse = ((PageAnalysisDto));
+export type GetLatestPageAuditDataResponses = {
+    /**
+     * OK
+     */
+    200: PageAnalysisDto;
+};
+
+export type GetLatestPageAuditDataResponse = GetLatestPageAuditDataResponses[keyof GetLatestPageAuditDataResponses];
 
 export type GetPagesWithMissingMetadataData = {
-    filter?: string;
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/missing-metadata';
 };
 
-export type GetPagesWithMissingMetadataResponse = ((PagedPageAnalysisDtoModel));
+export type GetPagesWithMissingMetadataResponses = {
+    /**
+     * OK
+     */
+    200: PagedPageAnalysisDtoModel;
+};
+
+export type GetPagesWithMissingMetadataResponse = GetPagesWithMissingMetadataResponses[keyof GetPagesWithMissingMetadataResponses];
 
 export type GetOrphanedPagesData = {
-    filter?: string;
-    skip?: number;
-    take?: number;
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/api/v1/orphaned-pages';
 };
 
-export type GetOrphanedPagesResponse = ((PagedPageDtoModel));
+export type GetOrphanedPagesResponses = {
+    /**
+     * OK
+     */
+    200: PagedPageDtoModel;
+};
 
-export type StartCrawlResponse = (Array<(CrawlDto)>);
+export type GetOrphanedPagesResponse = GetOrphanedPagesResponses[keyof GetOrphanedPagesResponses];
 
-export type GetSettingsResponse = ((ContentAuditSettings));
+export type StartCrawlData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/api/v1/start-crawl';
+};
+
+export type StartCrawlResponses = {
+    /**
+     * OK
+     */
+    200: Array<CrawlDto>;
+};
+
+export type StartCrawlResponse = StartCrawlResponses[keyof StartCrawlResponses];
+
+export type GetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/api/v1/get-settings';
+};
+
+export type GetSettingsResponses = {
+    /**
+     * OK
+     */
+    200: ContentAuditSettings;
+};
+
+export type GetSettingsResponse = GetSettingsResponses[keyof GetSettingsResponses];
+
+export type ClientOptions = {
+    baseUrl: 'http://localhost:26293' | (string & {});
+};

@@ -1,7 +1,6 @@
 ﻿import { defineConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
-    client: 'legacy/fetch',
     debug: true,
     input: 'http://localhost:26293/umbraco/swagger/content-audit/swagger.json',
     output: {
@@ -10,6 +9,12 @@ export default defineConfig({
         lint: 'eslint',
     },
     plugins: [
+        {
+            name: '@hey-api/client-fetch',
+            //bundle: false,
+            exportFromIndex: true,
+            throwOnError: true,
+        },
         {
             name: '@hey-api/typescript',
             enums: 'typescript'

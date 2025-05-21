@@ -39,15 +39,17 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         this.consumeContext(CONTENT_AUDIT_CONTEXT_TOKEN, (context) => {
             this.#context = context;
 
-            this.observe(context.latestAuditOverview, (latestAuditOverview) => {
+            this.observe(context?.latestAuditOverview, (latestAuditOverview) => {
                 this._latestAuditOverview = latestAuditOverview;
             });
 
-            this.observe(context.topIssues, (topIssues) => {
-                this._topIssues = topIssues.filter(x => x.numberOfUrls != 0)
+            this.observe(context?.topIssues, (topIssues) => {
+                if (topIssues) {
+                    this._topIssues = topIssues.filter(x => x.numberOfUrls != 0);
+                }
             });
 
-            this.observe(context.healthScore, (healthScore) => {
+            this.observe(context?.healthScore, (healthScore) => {
                 this._healthScore = healthScore;
                 if (this._healthScore != undefined) {
                     this._pagesWithoutErrors = this._healthScore.totalPages - this._healthScore.pagesWithErrors;

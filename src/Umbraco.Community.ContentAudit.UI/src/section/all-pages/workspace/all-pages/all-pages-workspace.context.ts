@@ -5,11 +5,10 @@ import { UmbWorkspaceRouteManager } from "@umbraco-cms/backoffice/workspace";
 import ContentAuditAllPagesWorkspaceEditorElement from "./all-pages-workspace-editor.element";
 import ContentAuditAllPagesDetailRepository from "../../repository/detail/all-pages-detail.repository";
 import { UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
-import { PageAnalysisDto } from "../../../../api";
+import { HealthScoreDto, PageAnalysisDto } from "../../../../api";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_ALIAS } from "../constants";
 
-export class ContentAuditAllPagesWorkspaceContext
-	extends UmbContextBase<ContentAuditAllPagesWorkspaceContext> {
+export class ContentAuditAllPagesWorkspaceContext extends UmbContextBase {
 
 	public readonly workspaceAlias = CONTENT_AUDIT_ALL_PAGES_WORKSPACE_ALIAS;
 	public readonly repository = new ContentAuditAllPagesDetailRepository(this);

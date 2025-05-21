@@ -1,7 +1,7 @@
 ﻿import { UmbCollectionDataSource } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { AuditService, PageAnalysisDto } from "../../../../api";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 import { ContentAuditCarbonRatingCollectionFilterModel } from "../types";
 
 export class ContentAuditCarbonRatingCollectionDataSource implements UmbCollectionDataSource<PageAnalysisDto> {
@@ -12,7 +12,7 @@ export class ContentAuditCarbonRatingCollectionDataSource implements UmbCollecti
     }
 
 	async getCollection(filter: ContentAuditCarbonRatingCollectionFilterModel) {
-		const { data, error } = await tryExecuteAndNotify(this.#host, AuditService.getLatestAuditData(filter));
+		const { data, error } = await tryExecute(this.#host, AuditService.getLatestAuditData({ query: filter }));
 
 		if (error) {
 			return { error };

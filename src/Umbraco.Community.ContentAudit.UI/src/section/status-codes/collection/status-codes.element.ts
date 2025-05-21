@@ -16,7 +16,7 @@ export class ContentAuditStatusCodesCollectionElement extends UmbCollectionDefau
 		this.consumeContext(UMB_COLLECTION_CONTEXT, (collectionContext) => {
 			this.#collectionContext = collectionContext;
 
-			this.observe(this.#collectionContext.items, (items) => {
+			this.observe(this.#collectionContext?.items, (items) => {
 				if (items != null && items?.length !== 0) {
 					const statusCodes = [...new Set(items.map((x) => x.statusCode))];
 					const options = statusCodes.sort().map((x) => ({ name: x?.toString(), value: x?.toString() }));

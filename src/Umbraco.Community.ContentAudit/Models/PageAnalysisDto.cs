@@ -10,6 +10,7 @@ namespace Umbraco.Community.ContentAudit.Models
 
         public List<IssueDto> Issues { get; set; } = new List<IssueDto>();
 
+        public HealthScoreDto HealthScore { get; set; } = new();
         public PageDto PageData { get; set; } = new();
         public SeoDto SeoData { get; set; } = new();
         public ContentAnalysisDto ContentAnalysis { get; set; } = new();

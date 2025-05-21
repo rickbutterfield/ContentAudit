@@ -37,7 +37,7 @@ export class ContentAuditWorkspaceElement extends UmbElementMixin(LitElement) {
             this.#workspaceContext = context;
 
             this.observe(
-                this.#workspaceContext.unique,
+                this.#workspaceContext?.unique,
                 (unique) => {
                     this._documentUnique = unique!;
 
@@ -50,7 +50,7 @@ export class ContentAuditWorkspaceElement extends UmbElementMixin(LitElement) {
 
         this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
             this.#contentAuditWorkspaceContext = instance;
-            this.observe(this.#contentAuditWorkspaceContext.data, (data) => {
+            this.observe(this.#contentAuditWorkspaceContext?.data, (data) => {
                 this._data = data;
 
                 if (this._data != null) {

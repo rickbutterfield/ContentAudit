@@ -1,7 +1,7 @@
 ﻿import { UmbReadDetailDataSource } from "@umbraco-cms/backoffice/repository";
 import { AuditService, IssueDto } from "../../../../api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditIssuesServerDataSource implements UmbReadDetailDataSource<IssueDto> {
     #host: UmbControllerHost;
@@ -13,9 +13,9 @@ export class ContentAuditIssuesServerDataSource implements UmbReadDetailDataSour
 	async read(unique: string) {
 		if (!unique) throw new Error('Unique is missing');
 
-		const { data, error } = await tryExecuteAndNotify(
+		const { data, error } = await tryExecute(
 			this.#host,
-			AuditService.getIssue({ issueGuid: unique })
+			AuditService.getIssue({ query: { issueGuid: unique } })
 		);
 
 		if (error || !data) {

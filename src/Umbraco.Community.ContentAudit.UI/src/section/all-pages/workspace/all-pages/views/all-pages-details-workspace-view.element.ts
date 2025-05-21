@@ -9,25 +9,25 @@ import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 @customElement('content-audit-all-pages-details-workspace-view')
 export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
     @state()
-	_data?: PageAnalysisDto;
+    _data?: PageAnalysisDto;
 
-	@state()
-	_documentUnique: string = '';
+    @state()
+    _documentUnique: string = '';
 
     #workspaceContext?: typeof CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT.TYPE;
 
-	constructor() {
-		super();
+    constructor() {
+        super();
 
-		this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
-			this.#workspaceContext = instance;
-			this.#observeCollectionItems();
-		});
-	}
+        this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
+            this.#workspaceContext = instance;
+            this.#observeCollectionItems();
+        });
+    }
 
     #observeCollectionItems() {
         if (!this.#workspaceContext) return;
-		this.observe(this.#workspaceContext.data, (data) => {
+        this.observe(this.#workspaceContext.data, (data) => {
             this._data = data;
         }, 'umbCollectionItemsObserver');
     }
@@ -111,13 +111,13 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 								<uui-table-head-cell>Density</uui-table-head-cell>
 							</uui-table-head>
 							${Object.entries(this._data?.contentAnalysis.keywordDensity!).map((value) => {
-								return html`
+            return html`
 									<uui-table-row>
 										<uui-table-cell>${value[0]}</uui-table-cell>
 										<uui-table-cell>${value[1]}%</uui-table-cell>
 									</uui-table-row>	
 								`
-							})}
+        })}
 							</uui-table>
 						</div>
 					</umb-property-layout>
@@ -222,8 +222,40 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
     }
 
     #renderSidebar() {
+        let scoreClass = "score--danger";
+
+        if (this._data?.healthScore) {
+            if (this._data?.healthScore.healthScore >= 90) {
+                scoreClass = "score--success";
+            }
+
+            else if (this._data?.healthScore.healthScore >= 50) {
+                scoreClass = "score--warning";
+            }
+        }
+
         return html`
 			<div>
+			${this._data?.healthScore ? html`
+				<uui-box headline="Page health">
+					<div class="score">
+						<svg viewBox="0 0 36 36" class="score__inner ${scoreClass}">
+							<path class="score__bg"
+								d="M18 2.0845
+								a 15.9155 15.9155 0 0 1 0 31.831
+								a 15.9155 15.9155 0 0 1 0 -31.831"
+							/>
+							<path class="score__fill"
+								stroke-dasharray="${this._data?.healthScore?.healthScore}, 100"
+								d="M18 2.0845
+								a 15.9155 15.9155 0 0 1 0 31.831
+								a 15.9155 15.9155 0 0 1 0 -31.831"
+							/>
+						</svg>
+						<p class="score__text">${this._data?.healthScore?.healthScore.toFixed(0)} / 100</p>
+					</div>
+				</uui-box>
+			` : ``}
 			${this._data?.pageData ? html`
 				<uui-box headline="Page">
 					<umb-property-layout label="URL" orientation="vertical">
@@ -265,6 +297,65 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 			uui-box {
 				margin-bottom: var(--uui-size-layout-1);
 			}
+
+			.score {
+    text-align: center;
+    position: relative;
+}
+
+.score__inner {
+    width: 200px;
+    height: 200px;
+}
+
+.score__bg {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 1.75;
+}
+
+.score__fill {
+    fill: none;
+    stroke: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    animation: progress 1000ms ease-out forwards;
+    stroke: #000;
+}
+
+.score--danger .score__fill {
+    stroke: var(--uui-color-danger, #d42054);
+}
+
+.score--warning .score__fill {
+    stroke: var(--uui-color-warning, #fbd142);
+}
+
+.score--success .score__fill {
+    stroke: var(--uui-color-positive);
+}
+
+.score__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    z-index: 1;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
 		`
     ]
 }

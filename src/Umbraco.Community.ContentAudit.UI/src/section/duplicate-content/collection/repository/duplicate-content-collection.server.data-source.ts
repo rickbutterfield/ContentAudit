@@ -1,7 +1,7 @@
 ﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { AuditService, PageDto } from "../../../../api";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditDuplicateContentCollectionDataSource implements UmbCollectionDataSource<PageDto> {
     #host: UmbControllerHost;
@@ -11,7 +11,7 @@ export class ContentAuditDuplicateContentCollectionDataSource implements UmbColl
     }
 
 	async getCollection(filter: UmbCollectionFilterModel) {
-		const { data, error } = await tryExecuteAndNotify(this.#host, AuditService.getDuplicateContentUrls(filter));
+		const { data, error } = await tryExecute(this.#host, AuditService.getDuplicateContentUrls({ query: filter }));
 
 		if (error) {
 			return { error };
