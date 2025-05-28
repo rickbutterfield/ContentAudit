@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Community.Templates.Clean" Version="6.0.0-rc2" />
+		<PackageReference Include="Clean" Version="5.2.0" />
 		<PackageReference Include="Umbraco.Cms" Version="16.0.0-rc3" />
 		<PackageReference Include="Umbraco.Cms.Core" Version="16.0.0-rc3" />
 		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="16.0.0-rc3" />
