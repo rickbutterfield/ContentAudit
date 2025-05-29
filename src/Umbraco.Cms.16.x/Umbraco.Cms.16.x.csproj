@@ -8,9 +8,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Clean" Version="5.2.0" />
-		<PackageReference Include="Umbraco.Cms" Version="16.0.0-rc3" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="16.0.0-rc3" />
-		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="16.0.0-rc3" />
+		<PackageReference Include="Umbraco.Cms" Version="16.0.0-rc4" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="16.0.0-rc4" />
+		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="16.0.0-rc4" />
 		<PackageReference Include="uSync" Version="16.0.0-rc2" />
 	</ItemGroup>
 
