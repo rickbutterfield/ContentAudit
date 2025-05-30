@@ -121,55 +121,55 @@ export class ContentAuditWorkspaceElement extends UmbElementMixin(LitElement) {
     }
 
     override render() {
-        return html`
-            <umb-body-layout main-no-padding header-fit-height>
-                ${this._routes.length !== 0 ?
-                html`
-                    <uui-tab-group slot="header">
-                        <uui-tab
-					        label="Details"
-					        .active=${this._routerPath + '/details' === this._activePath}
-					        .href=${this._routerPath + '/details'}></uui-tab>
+        if (this._routes.length !== 0) {
+            return html`
+            <umb-body-layout header-fit-height main-no-padding>
+                <uui-tab-group slot="header">
+                    <uui-tab
+					    label="Details"
+					    .active=${this._routerPath + '/details' === this._activePath}
+					    .href=${this._routerPath + '/details'}></uui-tab>
 
-                        <uui-tab
-                            label="Links"
-                            .active=${this._routerPath + '/links' === this._activePath}
-                            .href=${this._routerPath + '/links'}></uui-tab>
+                    <uui-tab
+                        label="Links"
+                        .active=${this._routerPath + '/links' === this._activePath}
+                        .href=${this._routerPath + '/links'}></uui-tab>
 
-                        <uui-tab
-                            label="Images"
-                            .active=${this._routerPath + '/images' === this._activePath}
-                            .href=${this._routerPath + '/images'}></uui-tab>
+                    <uui-tab
+                        label="Images"
+                        .active=${this._routerPath + '/images' === this._activePath}
+                        .href=${this._routerPath + '/images'}></uui-tab>
 
-                        <uui-tab
-                            label="Resources"
-                            .active=${this._routerPath + '/resources' === this._activePath}
-                            .href=${this._routerPath + '/resources'}></uui-tab>
+                    <uui-tab
+                        label="Resources"
+                        .active=${this._routerPath + '/resources' === this._activePath}
+                        .href=${this._routerPath + '/resources'}></uui-tab>
 
-                        <uui-tab
-                            label="Issues"
-                            .active=${this._routerPath + '/issues' === this._activePath}
-                            .href=${this._routerPath + '/issues'}></uui-tab>
-                    </uui-tab-group>
+                    <uui-tab
+                        label="Issues"
+                        .active=${this._routerPath + '/issues' === this._activePath}
+                        .href=${this._routerPath + '/issues'}></uui-tab>
+                </uui-tab-group>
 
-                    <umb-router-slot
-					    inherit-addendum
-					    .routes=${this._routes}
-					    @init=${(event: UmbRouterSlotInitEvent) => {
+                <umb-router-slot
+				    inherit-addendum
+				    .routes=${this._routes}
+				    @init=${(event: UmbRouterSlotInitEvent) => {
                     this._routerPath = event.target.absoluteRouterPath;
                 }}
-					    @change=${(event: UmbRouterSlotChangeEvent) => {
+				    @change=${(event: UmbRouterSlotChangeEvent) => {
                     this._activePath = event.target.absoluteActiveViewPath || '';
                 }}>
-				    </umb-router-slot>`
-            : html`
+			    </umb-router-slot>
+            </umb-body-layout>`
+        }
+
+        else return html`
+            <umb-body-layout header-fit-height>
                 <uui-box>
                     Run a site audit to see data here
                 </uui-box>
-                `
-            }
-            </umb-body-layout>
-        `
+            </umb-body-layout>`
     }
 }
 

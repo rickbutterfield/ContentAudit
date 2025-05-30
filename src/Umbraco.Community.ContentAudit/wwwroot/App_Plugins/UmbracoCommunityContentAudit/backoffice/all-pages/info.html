@@ -140,6 +140,20 @@
                 <umb-control-group label="Has Valid HTML">
                     <div slot="editor">{{vm.data.technicalSeoData.hasValidHtml ? 'Yes' : 'No'}}</div>
                 </umb-control-group>
+                <umb-control-group label="HTML Validation Errors">
+                    <div slot="editor">
+                        <uui-table>
+                            <uui-table-head>
+                                <uui-table-head-cell>Message</uui-table-head-cell>
+                                <uui-table-head-cell>Type</uui-table-head-cell>
+                            </uui-table-head>
+                            <uui-table-row ng-repeat="(key, value) in vm.data.technicalSeoData.htmlValidationErrors">
+                                <uui-table-cell>{{value.message}}</uui-table-cell>
+                                <uui-table-cell>{{value.type}}</uui-table-cell>
+                            </uui-table-row>
+                        </uui-table>
+                    </div>
+                </umb-control-group>
                 <umb-control-group label="Has Schema Markup">
                     <div slot="editor">{{vm.data.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}}</div>
                 </umb-control-group>
