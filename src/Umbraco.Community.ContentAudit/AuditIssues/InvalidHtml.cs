@@ -18,11 +18,11 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IssuePriority Priority => IssuePriority.Low;
 
-        public IEnumerable<AuditIssueProperty> ExposedProperties => default;
+        public IEnumerable<AuditIssueProperty> ExposedProperties => new List<AuditIssueProperty>();
 
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
-            return pages.Where(x => x.PageData.StatusCode == 200 && x.TechnicalSeoData != null && x.TechnicalSeoData.HasValidHtml == false);
+            return pages.Where(x => x.PageData.StatusCode == 200 && x.TechnicalSeoData != null && !px.TechnicalSeoData.HasValidHtml);
         }
     }
 }

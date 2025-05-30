@@ -5,7 +5,7 @@ using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
-    public class ValidationService : IValidationService
+    public class ValidationService : IValidationService, IDisposable
     {
         private readonly HttpClient _httpClient;
         private const string ValidatorUrl = "https://validator.w3.org/nu/";
