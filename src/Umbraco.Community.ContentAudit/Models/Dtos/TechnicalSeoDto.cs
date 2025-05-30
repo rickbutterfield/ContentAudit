@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Umbraco.Community.ContentAudit.Models.Validation;
 using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Models.Dtos
@@ -18,7 +19,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             HasBrowserCaching = schema.HasBrowserCaching;
             HasHttps = schema.HasHttps;
             HasValidHtml = schema.HasValidHtml;
-            HtmlValidationErrors = JsonSerializer.Deserialize<List<string>>(schema.HtmlValidationErrors);
+            HtmlValidationErrors = JsonSerializer.Deserialize<List<ValidationMessage>>(schema.HtmlValidationErrors);
             HasSchemaMarkup = schema.HasSchemaMarkup;
             SchemaType = schema.SchemaType;
             CreatedDate = schema.CreatedDate;
@@ -33,7 +34,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public bool HasBrowserCaching { get; set; }
         public bool HasHttps { get; set; }
         public bool HasValidHtml { get; set; }
-        public List<string>? HtmlValidationErrors { get; set; }
+        public List<ValidationMessage>? HtmlValidationErrors { get; set; }
         public bool HasSchemaMarkup { get; set; }
         public string? SchemaType { get; set; }
         public DateTime CreatedDate { get; set; }

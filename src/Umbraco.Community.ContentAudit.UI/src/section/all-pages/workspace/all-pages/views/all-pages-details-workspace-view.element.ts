@@ -2,32 +2,32 @@
 import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspace.context";
-import { PageAnalysisDto } from "../../../../../api";
+import { PageAnalysisDto, ValidationMessage } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 
 @customElement('content-audit-all-pages-details-workspace-view')
 export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
     @state()
-	_data?: PageAnalysisDto;
+    _data?: PageAnalysisDto;
 
-	@state()
-	_documentUnique: string = '';
+    @state()
+    _documentUnique: string = '';
 
     #workspaceContext?: typeof CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT.TYPE;
 
-	constructor() {
-		super();
+    constructor() {
+        super();
 
-		this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
-			this.#workspaceContext = instance;
-			this.#observeCollectionItems();
-		});
-	}
+        this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
+            this.#workspaceContext = instance;
+            this.#observeCollectionItems();
+        });
+    }
 
     #observeCollectionItems() {
         if (!this.#workspaceContext) return;
-		this.observe(this.#workspaceContext.data, (data) => {
+        this.observe(this.#workspaceContext.data, (data) => {
             this._data = data;
         }, 'umbCollectionItemsObserver');
     }
@@ -111,13 +111,13 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 								<uui-table-head-cell>Density</uui-table-head-cell>
 							</uui-table-head>
 							${Object.entries(this._data?.contentAnalysis.keywordDensity!).map((value) => {
-								return html`
+            return html`
 									<uui-table-row>
 										<uui-table-cell>${value[0]}</uui-table-cell>
 										<uui-table-cell>${value[1]}%</uui-table-cell>
 									</uui-table-row>	
 								`
-							})}
+        })}
 							</uui-table>
 						</div>
 					</umb-property-layout>
@@ -183,6 +183,25 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					</umb-property-layout>
 					<umb-property-layout label="Has Valid HTML">
 						<div slot="editor">${this._data?.technicalSeoData.hasValidHtml ? 'Yes' : 'No'}</div>
+					</umb-property-layout>
+					<umb-property-layout label="HTML Validation Errors">
+						<div slot="editor">
+							<uui-table>
+								<uui-table-head>
+									<uui-table-head-cell>Message</uui-table-head-cell>
+									<uui-table-head-cell>Type</uui-table-head-cell>
+								</uui-table-head>
+								${Object.entries(this._data?.technicalSeoData.htmlValidationErrors!).map((value) => {
+									let message: ValidationMessage = value[1];
+									return html`
+										<uui-table-row>
+											<uui-table-cell>${message?.message}</uui-table-cell>
+											<uui-table-cell>${message?.type}</uui-table-cell>
+										</uui-table-row>	
+									`
+								})}
+								</uui-table>
+						</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Schema Markup">
 						<div slot="editor">${this._data?.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}</div>

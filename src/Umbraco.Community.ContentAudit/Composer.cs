@@ -40,6 +40,7 @@ namespace Umbraco.Community.ContentAudit
             builder.Services.AddScoped<ICrawlService, CrawlService>();
             builder.Services.AddScoped<IAuditService, AuditService>();
             builder.Services.AddScoped<IEmissionsService, EmissionsService>();
+            builder.Services.AddScoped<IValidationService, ValidationService>();
 
             // Register Playwright as a singleton
             builder.Services.AddSingleton<IPlaywright>(_ => Playwright.CreateAsync().GetAwaiter().GetResult());

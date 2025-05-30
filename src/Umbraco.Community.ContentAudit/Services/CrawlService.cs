@@ -7,6 +7,8 @@ using Umbraco.Community.ContentAudit.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
+using Umbraco.Community.ContentAudit.Models.Validation;
+using Umbraco.Community.ContentAudit.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
@@ -15,15 +17,19 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ILogger<CrawlService> _logger;
         private readonly IPlaywright _playwright;
         private readonly IBrowser _browser;
+        private readonly IValidationService _validationService;
         private bool _disposed;
         private Uri? _baseUri;
 
         public CrawlService(
             ILogger<CrawlService> logger,
-            IPlaywright playwright)
+            IPlaywright playwright,
+            IValidationService validationService)
         {
             _logger = logger;
             _playwright = playwright;
+            _validationService = validationService;
+
             _browser = _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
                 Headless = true
@@ -370,6 +376,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     try
                     {
+                        var validHtml = await ValidateHtml(page);
                         pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
                         {
                             Url = url,
@@ -379,8 +386,8 @@ namespace Umbraco.Community.ContentAudit.Services
                             HasGzipCompression = response.Headers.ContainsKey("content-encoding") && response.Headers["content-encoding"].Contains("gzip"),
                             HasBrowserCaching = response.Headers.ContainsKey("cache-control") && response.Headers["cache-control"].Contains("max-age"),
                             HasHttps = url.StartsWith("https://"),
-                            HasValidHtml = await ValidateHtml(page),
-                            HtmlValidationErrors = await GetHtmlValidationErrors(page)
+                            HasValidHtml = validHtml?.IsValid() == true,
+                            HtmlValidationErrors = validHtml?.GetErrors().ToList() ?? new List<ValidationMessage>(),
                         };
                     }
                     catch (Exception ex)
@@ -649,18 +656,10 @@ namespace Umbraco.Community.ContentAudit.Services
             return new List<string>();
         }
 
-        private async Task<bool> ValidateHtml(IPage page)
+        private async Task<ValidationResult?> ValidateHtml(IPage page)
         {
-            // This is a simplified implementation
-            // In a real implementation, you would use a proper HTML validator
-            return true;
-        }
-
-        private async Task<List<string>> GetHtmlValidationErrors(IPage page)
-        {
-            // This is a simplified implementation
-            // In a real implementation, you would use a proper HTML validator
-            return new List<string>();
+            var content = await page.ContentAsync();
+            return await _validationService.ValidateHtmlAsync(content);
         }
 
         private async Task<string?> GetSchemaType(IPage page)
