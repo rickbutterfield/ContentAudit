@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<VersionPrefix>2.0.0</VersionPrefix>
-		<VersionSuffix>beta</VersionSuffix>
+		<VersionSuffix>alpha</VersionSuffix>
 		<Authors>Rick Butterfield</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
 
@@ -32,13 +32,13 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="CsvHelper" Version="33.0.1" />
-		<PackageReference Include="Microsoft.Playwright" Version="1.52.0" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="[16.0.0-rc4, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[16.0.0-rc4, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[16.0.0-rc4, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[16.0.0-rc4, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[16.0.0-rc4, 17.0.0)" />
+		<PackageReference Include="CsvHelper" Version="33.1.0" />
+		<PackageReference Include="Microsoft.Playwright" Version="1.53.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[16.0.0, 17.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[16.0.0, 17.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[16.0.0, 17.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[16.0.0, 17.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[16.0.0, 17.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
