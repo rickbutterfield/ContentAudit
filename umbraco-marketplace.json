@@ -2,7 +2,7 @@
 	"$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
 	"AuthorDetails": {
 		"Name": "Rick Butterfield",
-		"Description": "2× Umbraco MVP & full stack lead software engineer from the UK.",
+		"Description": "Senior Developer (DXP) at Umbraco",
 		"Url": "https://rickbutterfield.dev",
 		"ImageUrl": "https://github.com/rickbutterfield.png"
 	},
@@ -28,3 +28,4 @@
 	],
   "Title": "ContentAudit"
 }
+
