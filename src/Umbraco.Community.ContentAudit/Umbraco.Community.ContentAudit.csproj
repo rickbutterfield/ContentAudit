@@ -33,7 +33,7 @@
 	
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
-		<PackageReference Include="Microsoft.Playwright" Version="1.51.0" />
+		<PackageReference Include="Microsoft.Playwright" Version="1.56.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
