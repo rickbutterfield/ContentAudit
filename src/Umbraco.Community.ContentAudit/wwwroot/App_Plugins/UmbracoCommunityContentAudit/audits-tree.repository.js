@@ -23,13 +23,13 @@ const o = () => r.root({}), d = (e) => e.parent.unique === null ? o() : r.childr
       entityType: i
     },
     name: e.name,
-    icon: "icon-scan",
+    icon: "icon-dashboard",
     entityType: a,
     isFolder: e.isFolder,
     hasChildren: e.hasChildren
   };
 };
-class m extends n {
+class f extends n {
   constructor(t) {
     super(t, u);
   }
@@ -40,12 +40,13 @@ class m extends n {
       entityType: "audits-root",
       name: "Audits",
       hasChildren: t ? t.total > 0 : !1,
-      isFolder: !0
+      icon: "icon-scan",
+      isFolder: !1
     } };
   }
 }
 export {
-  m as AuditAuditsTreeRepository,
-  m as api
+  f as AuditAuditsTreeRepository,
+  f as api
 };
 //# sourceMappingURL=audits-tree.repository.js.map

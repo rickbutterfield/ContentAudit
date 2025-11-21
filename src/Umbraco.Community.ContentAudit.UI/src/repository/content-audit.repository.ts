@@ -33,4 +33,8 @@ export class ContentAuditRepository extends UmbControllerBase {
     async getSettings() {
         return this.#settingsDataSource.getSettings();
     }
+
+    async getAuditOverviews() {
+        return this.#auditDataSource.getAuditOverviews();
+    }
 }

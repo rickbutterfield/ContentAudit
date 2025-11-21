@@ -21,6 +21,9 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     _latestAuditOverview?: OverviewDto;
 
     @state()
+    _auditOverviews: Array<OverviewDto> = [];
+
+    @state()
     _topIssues: Array<IssueDto> = [];
 
     @state()
@@ -41,6 +44,10 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
             this.observe(context?.latestAuditOverview, (latestAuditOverview) => {
                 this._latestAuditOverview = latestAuditOverview;
+            });
+
+            this.observe(context?.auditOverviews, (auditOverviews) => {
+                this._auditOverviews = auditOverviews || [];
             });
 
             this.observe(context?.topIssues, (topIssues) => {
@@ -66,6 +73,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
     #init() {
         this.#context?.getLatestAuditOverview();
+        this.#context?.getAuditOverviews();
         this.#context?.getTopIssues();
         this.#context?.getHealthScore();
     }
@@ -248,6 +256,80 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         }
     }
 
+    #renderAuditHistory() {
+        if (this._auditOverviews.length === 0) return nothing;
+
+        // Get the most recent 5 audits
+        const recentAudits = this._auditOverviews.slice(0, 5).reverse();
+        
+        // Calculate max value for scaling
+        const maxTotal = Math.max(...recentAudits.map(a => a.total || 0));
+        const chartHeight = 150;
+        const chartWidth = 100; // percentage
+
+        // Calculate points for the line
+        const points = recentAudits.map((audit, index) => {
+            const x = (index / (recentAudits.length - 1)) * chartWidth;
+            const y = chartHeight - ((audit.total || 0) / maxTotal) * chartHeight;
+            return `${x},${y}`;
+        }).join(' ');
+
+        return html`
+            <uui-box headline="Audit History" class="span-3">
+                <div class="chart-container">
+                    <svg class="chart" viewBox="0 0 100 ${chartHeight}" preserveAspectRatio="none">
+                        <!-- Grid lines -->
+                        ${[0, 25, 50, 75, 100].map(percent => html`
+                            <line 
+                                x1="0" 
+                                y1="${(percent / 100) * chartHeight}" 
+                                x2="100" 
+                                y2="${(percent / 100) * chartHeight}" 
+                                class="chart-grid-line"
+                            />
+                        `)}
+                        
+                        <!-- Line chart -->
+                        <polyline
+                            points="${points}"
+                            class="chart-line"
+                            fill="none"
+                            stroke="var(--uui-color-interactive)"
+                            stroke-width="0.5"
+                        />
+                        
+                        <!-- Data points -->
+                        ${recentAudits.map((audit, index) => {
+                            const x = (index / (recentAudits.length - 1)) * chartWidth;
+                            const y = chartHeight - ((audit.total || 0) / maxTotal) * chartHeight;
+                            return html`
+                                <circle
+                                    cx="${x}"
+                                    cy="${y}"
+                                    r="1"
+                                    class="chart-point"
+                                    fill="var(--uui-color-interactive)"
+                                />
+                            `;
+                        })}
+                    </svg>
+                    
+                    <!-- Labels -->
+                    <div class="chart-labels">
+                        ${recentAudits.map(audit => html`
+                            <div class="chart-label">
+                                <div class="chart-label-date">
+                                    ${audit.runDate ? this.localize.date(audit.runDate, { dateStyle: 'short' }) : 'N/A'}
+                                </div>
+                                <div class="chart-label-value">${audit.total || 0} pages</div>
+                            </div>
+                        `)}
+                    </div>
+                </div>
+            </uui-box>
+        `;
+    }
+
     _renderScanData() {
         if (this.crawlData.length !== 0) {
             const total = this.crawlData.length;
@@ -281,7 +363,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
                     </div>
-                    <content-audit-issues-table-collection-view .data=${this._topIssues}></content-audit-issues-table-collection-view>
+                    <content-audit-issues-table-collection-view .data=${this._topIssues} hide-summary></content-audit-issues-table-collection-view>
                 </uui-box>
             `
         }
@@ -292,7 +374,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             <div id="main">
                 ${this.#renderLatestAudit()}
                 ${this.#renderHealthScore()}
-                
+                ${this.#renderAuditHistory()}
                 ${this.#renderTopIssues()}
             </div>
         `
@@ -376,6 +458,62 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 0% {
                     stroke-dasharray: 0 100;
                 }
+            }
+
+            /* Chart styles */
+            .chart-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--uui-size-space-4);
+            }
+
+            .chart {
+                width: 100%;
+                height: 150px;
+                border: 1px solid var(--uui-color-border);
+                border-radius: var(--uui-border-radius);
+                padding: var(--uui-size-space-3);
+                background: var(--uui-color-surface);
+            }
+
+            .chart-grid-line {
+                stroke: var(--uui-color-border);
+                stroke-width: 0.1;
+                stroke-dasharray: 1, 1;
+            }
+
+            .chart-line {
+                stroke-width: 0.5;
+            }
+
+            .chart-point {
+                cursor: pointer;
+            }
+
+            .chart-point:hover {
+                r: 1.5;
+            }
+
+            .chart-labels {
+                display: flex;
+                justify-content: space-between;
+                gap: var(--uui-size-space-2);
+            }
+
+            .chart-label {
+                flex: 1;
+                text-align: center;
+                font-size: 0.75rem;
+            }
+
+            .chart-label-date {
+                font-weight: 600;
+                color: var(--uui-color-text);
+                margin-bottom: var(--uui-size-space-1);
+            }
+
+            .chart-label-value {
+                color: var(--uui-color-text-alt);
             }
         `
     ]

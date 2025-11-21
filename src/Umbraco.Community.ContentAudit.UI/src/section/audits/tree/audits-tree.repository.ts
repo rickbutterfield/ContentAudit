@@ -21,7 +21,8 @@ export class AuditAuditsTreeRepository
             entityType: 'audits-root',
             name: 'Audits',
             hasChildren,
-            isFolder: true
+            icon: 'icon-scan',
+            isFolder: false
         }
 
         return { data };

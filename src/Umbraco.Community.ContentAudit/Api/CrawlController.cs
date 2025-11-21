@@ -9,6 +9,9 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Api
 {
+    /// <summary>
+    /// Management API controller for initiating and monitoring audit crawl operations.
+    /// </summary>
     [ApiVersion("1.0")]
     [ApiExplorerSettings(GroupName = "Crawl")]
     [Authorize(Policy = AuthorizationPolicies.SectionAccessContentAudit)]
@@ -17,9 +20,23 @@ namespace Umbraco.Community.ContentAudit.Api
     {
         private readonly IAuditService _auditService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CrawlController"/> class.
+        /// </summary>
+        /// <param name="auditService">The audit service for performing crawl operations.</param>
         public CrawlController(IAuditService auditService)
             => _auditService = auditService;
 
+        /// <summary>
+        /// Starts a new audit crawl and streams progress updates via Server-Sent Events (SSE).
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token to stop the crawl operation.</param>
+        /// <returns>A server-sent events stream of <see cref="CrawlDto"/> containing real-time crawl progress.</returns>
+        /// <remarks>
+        /// This endpoint uses Server-Sent Events to provide real-time updates about the crawl progress.
+        /// Each event contains information about a URL being crawled, including whether it was successfully
+        /// crawled, blocked, or is external/internal to the site.
+        /// </remarks>
         [HttpGet]
         [Produces("text/event-stream")]
         [ProducesResponseType(typeof(CrawlDto), 200)]
@@ -28,37 +45,6 @@ namespace Umbraco.Community.ContentAudit.Api
             string absoluteRootUrl = $"{Request.Scheme}://{Request.Host}";
 
             return TypedResults.ServerSentEvents(_auditService.StartCrawl(absoluteRootUrl, cancellationToken), "crawl");
-
-            //Response.ContentType = "text/event-stream";
-            //Response.StatusCode = 200;
-
-
-            //List<CrawlDto> dtos = new();
-            //try
-            //{
-            //    await foreach (var page in _auditService.StartCrawl(absoluteRootUrl, cancellationToken))
-            //    {
-            //        dtos.Add(page);
-            //        var json = JsonSerializer.Serialize(page);
-
-            //        await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
-            //        await Response.Body.FlushAsync(cancellationToken);
-            //    }
-
-            //    await Response.WriteAsync("event: end\n\n", cancellationToken);
-            //    await Response.Body.FlushAsync(cancellationToken);
-            //}
-            //catch (OperationCanceledException)
-            //{
-            //    await Response.WriteAsync("event: cancel\n\n", cancellationToken);
-            //    await Response.Body.FlushAsync(cancellationToken);
-            //}
-            //finally
-            //{
-            //    await Response.CompleteAsync();
-            //}
-
-            //return dtos;
         }
     }
 }

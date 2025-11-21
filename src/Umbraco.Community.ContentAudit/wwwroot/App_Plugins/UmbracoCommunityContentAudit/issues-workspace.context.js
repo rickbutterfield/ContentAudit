@@ -9,8 +9,8 @@ import { UMB_WORKSPACE_PATH_PATTERN as A, UmbWorkspaceRouteManager as y } from "
 import { html as O, state as S, customElement as w } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement as U } from "@umbraco-cms/backoffice/lit-element";
 import { ContentAuditIssuesDetailRepository as P } from "./issues-detail.repository.js";
-import { UmbObjectState as b } from "@umbraco-cms/backoffice/observable-api";
-import { e as g } from "./index.js";
+import { UmbObjectState as g } from "@umbraco-cms/backoffice/observable-api";
+import { g as b } from "./index.js";
 var I = Object.defineProperty, N = Object.getOwnPropertyDescriptor, v = (t) => {
   throw TypeError(t);
 }, l = (t, e, s, r) => {
@@ -54,7 +54,7 @@ class F extends f {
   constructor(s) {
     super(s, T);
     c(this, i);
-    this.workspaceAlias = g, this.repository = new P(this), m(this, i, new b(void 0)), this.data = a(this, i).asObservable(), this.unique = a(this, i).asObservablePart((r) => r == null ? void 0 : r.unique), this.routes = new y(this), this.routes.setRoutes([
+    this.workspaceAlias = b, this.repository = new P(this), m(this, i, new g(void 0)), this.data = a(this, i).asObservable(), this.unique = a(this, i).asObservablePart((r) => r == null ? void 0 : r.unique), this.routes = new y(this), this.routes.setRoutes([
       {
         path: "edit/:unique",
         component: u,

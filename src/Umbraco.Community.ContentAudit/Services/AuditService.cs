@@ -1,8 +1,6 @@
 ﻿using Examine;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.BouncyCastle.Asn1;
-using Polly.Caching;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
@@ -13,6 +11,7 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -56,8 +55,8 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ICrawlService _crawlService;
         private readonly ILogger<AuditService> _logger;
         private readonly IAppPolicyCache _runtimeCache;
-        private readonly GlobalSettings _globalSettings;
         private readonly WebRoutingSettings _webRoutingSettings;
+        private readonly AuditIssueCollection _auditIssueCollection;
 
         private readonly Channel<CrawlDto> _crawlResultsChannel;
         private readonly SemaphoreSlim _crawlSemaphore;
@@ -69,7 +68,6 @@ namespace Umbraco.Community.ContentAudit.Services
         public AuditService(
             IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
             IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
-            IOptionsMonitor<GlobalSettings> globalSettings,
             IOptionsMonitor<WebRoutingSettings> webRoutingSettings,
             IScopeProvider scopeProvider,
             IExamineManager examineManager,
@@ -77,6 +75,7 @@ namespace Umbraco.Community.ContentAudit.Services
             ISitemapService sitemapService,
             IRobotsService robotsService,
             ICrawlService pageScanningService,
+            AuditIssueCollection auditIssueCollection,
             ILogger<AuditService> logger,
             HttpClient httpClient,
             AppCaches appCaches)
@@ -87,9 +86,9 @@ namespace Umbraco.Community.ContentAudit.Services
             _sitemapService = sitemapService;
             _robotsService = robotsService;
             _crawlService = pageScanningService;
+            _auditIssueCollection = auditIssueCollection;
             _logger = logger;
             _runtimeCache = appCaches.RuntimeCache;
-            _globalSettings = globalSettings.CurrentValue;
             _webRoutingSettings = webRoutingSettings.CurrentValue;
 
             _contentAuditSettings = contentAuditSettings.CurrentValue;
@@ -513,6 +512,9 @@ namespace Umbraco.Community.ContentAudit.Services
 
             var totalUrls = pagesCrawledCount + externalLinkCount + assetUrlsCount + disallowedUrlsCount;
 
+            // Calculate health score before saving
+            double healthScore = await CalculateHealthScore();
+
             var overview = new OverviewSchema
             {
                 Key = Guid.NewGuid(),
@@ -521,7 +523,8 @@ namespace Umbraco.Community.ContentAudit.Services
                 TotalInternal = pagesCrawledCount,
                 TotalExternal = externalLinkCount,
                 TotalAssets = assetUrlsCount,
-                TotalBlocked = disallowedUrlsCount
+                TotalBlocked = disallowedUrlsCount,
+                HealthScore = healthScore
             };
 
             var runData = await scope.Database.InsertAsync(overview);
@@ -599,6 +602,61 @@ namespace Umbraco.Community.ContentAudit.Services
             scope.Complete();
 
             _runtimeCache.Clear(Constants.Cache.Key);
+        }
+
+        private async Task<double> CalculateHealthScore()
+        {
+            if (!_pageDtos.Any())
+                return 0;
+
+            // Build PageAnalysisDto objects from our collected data
+            var pageAnalysisList = new List<PageAnalysisDto>();
+            
+            foreach (var page in _pageDtos)
+            {
+                var pageAnalysis = new PageAnalysisDto
+                {
+                    PageData = page,
+                    SeoData = _seoDtos.FirstOrDefault(s => s.Url == page.Url),
+                    ContentAnalysis = _contentAnalysisDtos.FirstOrDefault(c => c.Url == page.Url),
+                    PerformanceData = _performanceDtos.FirstOrDefault(p => p.Url == page.Url),
+                    AccessibilityData = _accessibilityDtos.FirstOrDefault(a => a.Url == page.Url),
+                    TechnicalSeoData = _technicalSeoDtos.FirstOrDefault(t => t.Url == page.Url),
+                    SocialMediaData = _socialMediaDtos.FirstOrDefault(s => s.Url == page.Url),
+                    ContentQualityData = _contentQualityDtos.FirstOrDefault(c => c.Url == page.Url),
+                    Links = _linkDtos.Where(l => l.FoundPage == page.Url).ToList(),
+                    Resources = _resourceDtos.Where(r => r.FoundPage == page.Url).ToList(),
+                    Images = _imageDtos.Where(i => i.FoundPage == page.Url).ToList()
+                };
+                
+                pageAnalysisList.Add(pageAnalysis);
+            }
+
+            int pagesWithErrors = 0;
+            int totalPages = pageAnalysisList.Count;
+
+            foreach (var page in pageAnalysisList)
+            {
+                bool pageHasError = false;
+
+                foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
+                {
+                    var issueCheck = issue.CheckPages(new List<PageAnalysisDto>() { page });
+                    if (issueCheck?.Count() == 1)
+                    {
+                        pageHasError = true;
+                        break;
+                    }
+                }
+
+                if (pageHasError)
+                {
+                    pagesWithErrors++;
+                }
+            }
+
+            double healthScore = ((double)(totalPages - pagesWithErrors) / totalPages) * 100.0;
+            return healthScore;
         }
 
         private async Task GetSitemap()

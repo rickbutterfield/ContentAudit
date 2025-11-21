@@ -1,0 +1,1 @@
+export const CONTENT_AUDIT_AUDITS_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditAuditsCollection";

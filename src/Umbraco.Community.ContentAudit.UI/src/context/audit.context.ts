@@ -19,6 +19,9 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#latestAuditOverview = new UmbObjectState<OverviewDto | undefined>(undefined);
 	public readonly latestAuditOverview = this.#latestAuditOverview.asObservable();
 
+	#auditOverviews = new UmbArrayState<OverviewDto>([], (x) => x.key);
+	public readonly auditOverviews = this.#auditOverviews.asObservable();
+
 	#pagesWithMissingMetadata = new UmbArrayState<PageAnalysisDto>([], (x) => x.unique);
 	public readonly pagesWithMissingMetadata = this.#pagesWithMissingMetadata.asObservable();
 
@@ -47,6 +50,20 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		}
 	}
 
+	async getAuditOverviews() {
+		const { data } = await this.#repository.getAuditOverviews();
+
+		if (data && data.items) {
+			// Sort by run date descending to get most recent first
+			const sortedAudits = data.items.sort((a, b) => {
+				const dateA = a.runDate ? new Date(a.runDate).getTime() : 0;
+				const dateB = b.runDate ? new Date(b.runDate).getTime() : 0;
+				return dateB - dateA;
+			});
+			this.#auditOverviews.setValue(sortedAudits);
+		}
+	}
+
 	async getPagesWithMissingMetadata() {
 		const { data } = await this.#repository.getPagesWithMissingMetadata();
 
@@ -72,7 +89,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	}
 
 	async getSettings() {
-		const { data } = await this.#repository.getSettings();
+		const { data} = await this.#repository.getSettings();
 
 		if (data) {
 			this.#settings.setValue(data);

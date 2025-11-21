@@ -12,12 +12,6 @@ using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Repositories;
 using Umbraco.Community.ContentAudit.Services;
 
-#if NET8_0
-using Umbraco.Community.ContentAudit.Sections;
-using Umbraco.Community.ContentAudit.Dashboards;
-using Umbraco.Community.ContentAudit.ContentApps;
-#endif
-
 namespace Umbraco.Community.ContentAudit
 {
     public class Composer : IComposer
@@ -33,7 +27,7 @@ namespace Umbraco.Community.ContentAudit
                 throw new Exception($"Playwright exited with code {exitCode}");
             }
 
-            builder.AddNotificationHandler<UmbracoApplicationStartingNotification, RunAuditPageMigration>();
+            builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, RunAuditPageMigration>();
 
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
             builder.Services.AddScoped<IRobotsService, RobotsService>();

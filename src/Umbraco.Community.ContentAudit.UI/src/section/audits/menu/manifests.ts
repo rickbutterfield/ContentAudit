@@ -5,7 +5,7 @@ const menuItem: UmbExtensionManifest = {
     kind: 'tree',
     alias: 'Umb.MenuItem.ContentAudit.Audits',
     name: 'Audits Menu Item',
-    weight: 10000,
+    weight: 12000,
     meta: {
         label: 'Audits',
         icon: 'icon-browser-window',

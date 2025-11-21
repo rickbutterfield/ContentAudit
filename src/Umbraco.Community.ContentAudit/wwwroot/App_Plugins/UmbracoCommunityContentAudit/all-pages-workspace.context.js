@@ -10,7 +10,7 @@ import { html as y, css as P, state as O, customElement as w } from "@umbraco-cm
 import { UmbLitElement as U } from "@umbraco-cms/backoffice/lit-element";
 import { ContentAuditAllPagesDetailRepository as S } from "./all-pages-detail.repository.js";
 import { UmbObjectState as b } from "@umbraco-cms/backoffice/observable-api";
-import { d as N } from "./index.js";
+import { e as N } from "./index.js";
 import { UmbTextStyles as W } from "@umbraco-cms/backoffice/style";
 var k = Object.defineProperty, q = Object.getOwnPropertyDescriptor, m = (t) => {
   throw TypeError(t);

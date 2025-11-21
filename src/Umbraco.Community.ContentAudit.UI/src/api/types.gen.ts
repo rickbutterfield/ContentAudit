@@ -189,6 +189,8 @@ export enum MetricRating {
 export type OverviewDto = {
     id: number;
     key: string;
+    readonly unique: string;
+    readonly entityType: string;
     runDate?: string | null;
     total?: number | null;
     totalInternal?: number | null;
@@ -245,6 +247,11 @@ export type PagedIssueDtoModel = {
 export type PagedLinkGroupDtoModel = {
     total: number;
     items: Array<LinkGroupDto>;
+};
+
+export type PagedOverviewDtoModel = {
+    total: number;
+    items: Array<OverviewDto>;
 };
 
 export type PagedPageAnalysisDtoModel = {
@@ -348,6 +355,36 @@ export type TechnicalSeoDto = {
     schemaType?: string | null;
     createdDate: string;
 };
+
+export type OverviewDtoWritable = {
+    id: number;
+    key: string;
+    runDate?: string | null;
+    total?: number | null;
+    totalInternal?: number | null;
+    totalExternal?: number | null;
+    totalAssets?: number | null;
+    totalBlocked?: number | null;
+};
+
+export type GetCollectionData = {
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+    };
+    url: '/umbraco/content-audit/management/api/v1/audit';
+};
+
+export type GetCollectionResponses = {
+    /**
+     * OK
+     */
+    200: PagedOverviewDtoModel;
+};
+
+export type GetCollectionResponse = GetCollectionResponses[keyof GetCollectionResponses];
 
 export type GetAllImagesData = {
     body?: never;

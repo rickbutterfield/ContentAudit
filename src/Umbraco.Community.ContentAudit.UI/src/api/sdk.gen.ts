@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ChildrenData, ChildrenResponses, GetAllImagesData, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponses, GetExportDataData, GetExportDataResponses, GetExternalLinksData, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreResponses, GetInteralLinksData, GetInteralLinksResponses, GetIssueData, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataResponses, GetLatestAuditOverviewData, GetLatestAuditOverviewResponses, GetLatestPageAuditDataData, GetLatestPageAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsResponses, RootData, RootResponses, StartCrawlData, StartCrawlResponses } from './types.gen';
+import type { ChildrenData, ChildrenResponses, GetAllImagesData, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesResponses, GetCollectionData, GetCollectionResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponses, GetExportDataData, GetExportDataResponses, GetExternalLinksData, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreResponses, GetInteralLinksData, GetInteralLinksResponses, GetIssueData, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataResponses, GetLatestAuditOverviewData, GetLatestAuditOverviewResponses, GetLatestPageAuditDataData, GetLatestPageAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsResponses, RootData, RootResponses, StartCrawlData, StartCrawlResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -19,6 +19,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 export class AuditService {
+    public static getCollection<ThrowOnError extends boolean = true>(options?: Options<GetCollectionData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCollectionResponses, unknown, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/audit',
+            ...options
+        });
+    }
+    
     public static getAllImages<ThrowOnError extends boolean = true>(options?: Options<GetAllImagesData, ThrowOnError>) {
         return (options?.client ?? client).get<GetAllImagesResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/all-images',

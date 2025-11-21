@@ -44,7 +44,7 @@ const mapper = (item: AuditTreeItemResponseModel): AuditAuditsTreeItemModel => {
             entityType: AUDIT_AUDITS_ROOT_ENTITY_TYPE,
         },
         name: item.name,
-        icon: 'icon-scan',
+        icon: 'icon-dashboard',
         entityType: AUDIT_AUDITS_ENTITY_TYPE,
         isFolder: item.isFolder,
         hasChildren: item.hasChildren,
