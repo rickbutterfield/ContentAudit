@@ -59,6 +59,12 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
             }
 
+            if (string.IsNullOrEmpty(sitemapUrl))
+            {
+                Console.WriteLine("No sitemap URL configured or discovered. Defaulting to base URL crawling.");
+                return new List<string> { baseUrl };
+            }
+
             try
             {
                 string sitemapContent = await _httpClient.GetStringAsync(sitemapUrl);
