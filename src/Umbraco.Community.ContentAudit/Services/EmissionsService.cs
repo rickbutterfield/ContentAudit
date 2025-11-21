@@ -3,15 +3,15 @@ using Umbraco.Community.ContentAudit.Models.Emissions;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
+    /// <inheritdoc />
     public class EmissionsService : IEmissionsService
     {
+        /// <summary>
+        /// Initializes a new instance of the EmissionsService
+        /// </summary>
         public EmissionsService() { }
 
-        /// <summary>
-        /// Calculate the operational energy of data transfer for each system segment
-        /// </summary>
-        /// <param name="bytes">Number of bytes</param>
-        /// <returns>Energy per segment</returns>
+        /// <inheritdoc />
         public EnergyPerSegment OperationalEnergyPerSegment(double bytes)
         {
             double transferedBytesToGb = bytes / 1_000_000_000;
@@ -27,11 +27,7 @@ namespace Umbraco.Community.ContentAudit.Services
             };
         }
 
-        /// <summary>
-        /// Calculate the operational emissions of data transfer for each system segment
-        /// </summary>
-        /// <param name="bytes">Number of bytes</param>
-        /// <returns>Emissions per segment</returns>
+        /// <inheritdoc />
         public EnergyPerSegment OperationalEmissions(double bytes)
         {
             var energyPerSegment = OperationalEnergyPerSegment(bytes);
@@ -52,11 +48,7 @@ namespace Umbraco.Community.ContentAudit.Services
             };
         }
 
-        /// <summary>
-        /// Calculate the embodied energy of data transfer for each system segment
-        /// </summary>
-        /// <param name="bytes">Number of bytes</param>
-        /// <returns>Energy per segment</returns>
+        /// <inheritdoc />
         public EnergyPerSegment EmbodiedEnergyPerSegment(double bytes)
         {
             double transferedBytesToGb = (double)bytes / 1_000_000_000;
@@ -72,11 +64,7 @@ namespace Umbraco.Community.ContentAudit.Services
             };
         }
 
-        /// <summary>
-        /// Calculate the embodied emissions of data transfer for each system segment
-        /// </summary>
-        /// <param name="bytes">Number of bytes</param>
-        /// <returns>Emissions per segment</returns>
+        /// <inheritdoc />
         public EnergyPerSegment EmbodiedEmissions(double bytes)
         {
             var energyPerSegment = EmbodiedEnergyPerSegment(bytes);
@@ -152,14 +140,7 @@ namespace Umbraco.Community.ContentAudit.Services
             };
         }
 
-        /// <summary>
-        /// Calculate CO2e emissions per byte
-        /// </summary>
-        /// <param name="bytes">Number of bytes</param>
-        /// <param name="green">Whether green hosting is used</param>
-        /// <param name="segmented">Whether to return detailed segment information</param>
-        /// <param name="ratingResults">Whether to include rating information</param>
-        /// <returns>Emissions result</returns>
+        /// <inheritdoc />
         public EmissionResult PerByte(
             double bytes,
             bool green = false,
@@ -217,14 +198,7 @@ namespace Umbraco.Community.ContentAudit.Services
             };
         }
 
-        /// <summary>
-        /// Calculate CO2e emissions per visit
-        /// </summary>
-        /// <param name="bytes">Number of bytes</param>
-        /// <param name="green">Whether green hosting is used</param>
-        /// <param name="segmented">Whether to return detailed segment information</param>
-        /// <param name="ratingResults">Whether to include rating information</param>
-        /// <returns>Emissions result</returns>
+        /// <inheritdoc />
         public EmissionResult PerVisit(
             double bytes,
             bool green = false,
@@ -299,18 +273,13 @@ namespace Umbraco.Community.ContentAudit.Services
             };
         }
 
-        /// <summary>
-        /// Determines the rating of a website's sustainability based on its CO2 emissions.
-        /// </summary>
-        /// <param name="co2e">The CO2 emissions of the website in grams.</param>
-        /// <returns>The sustainability rating, ranging from "A+" (best) to "F" (worst).</returns>
+        /// <inheritdoc />
         public string RatingScale(double co2e) => OutputRating(co2e);
 
         /// <summary>
-        /// Helper method to determine the rating based on CO2e and version
+        /// Helper method to determine the rating based on CO2e
         /// </summary>
         /// <param name="co2e">CO2 emissions</param>
-        /// <param name="version">SWDM version</param>
         /// <returns>Rating from A+ to F</returns>
         private string OutputRating(double co2e)
         {

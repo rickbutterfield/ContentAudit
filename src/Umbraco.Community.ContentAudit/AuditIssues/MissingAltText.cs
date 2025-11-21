@@ -32,36 +32,43 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// <summary>
         /// Gets the unique identifier for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public Guid Id => new Guid("8368418c-b231-46b4-9fbb-642acf92436b");
 
         /// <summary>
         /// Gets the display name of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Name => "Missing alt text";
 
         /// <summary>
         /// Gets the description of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Description => "Pages with images that are missing alt text";
 
         /// <summary>
         /// Gets the category this audit issue belongs to.
         /// </summary>
+        /// <inheritdoc />
         public string Category => "Content";
 
         /// <summary>
         /// Gets the issue type classification.
         /// </summary>
+        /// <inheritdoc />
         public IssueType Type => IssueType.Issue;
 
         /// <summary>
         /// Gets the priority level of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IssuePriority Priority => IssuePriority.High;
 
         /// <summary>
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
         
         /// <summary>

@@ -22,6 +22,7 @@ using static Umbraco.Cms.Core.Constants;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
+    /// <inheritdoc />
     public class AuditService : IAuditService
     {
         private string _baseUrl;
@@ -62,9 +63,19 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly SemaphoreSlim _crawlSemaphore;
         private volatile bool _isDiscoveryComplete;
 
+        /// <summary>
+        /// Gets the content audit settings
+        /// </summary>
         public ContentAuditSettings _contentAuditSettings { get; private set; }
+        
+        /// <summary>
+        /// Gets the request handler settings
+        /// </summary>
         public RequestHandlerSettings _requestHandlerSettings { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the AuditService
+        /// </summary>
         public AuditService(
             IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
             IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
@@ -98,6 +109,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _crawlSemaphore = new SemaphoreSlim(_contentAuditSettings.MaxConcurrentCrawls);
         }
 
+        /// <inheritdoc />
         public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             _baseUrl = !string.IsNullOrEmpty(_contentAuditSettings.BaseUrl)

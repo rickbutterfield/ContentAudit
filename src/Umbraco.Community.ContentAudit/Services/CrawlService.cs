@@ -867,6 +867,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return strengths;
         }
 
+        /// <inheritdoc />
         public async Task<HeadResponseDto> GetHeadResponse(string url)
         {
             var result = new HeadResponseDto();
