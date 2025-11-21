@@ -13,7 +13,10 @@ export default defineConfig({
         sourcemap: true,
         rollupOptions: {
             external: [/^@umbraco/],
-            onwarn: () => { }
+            onwarn: () => { },
+            output: {
+                chunkFileNames: '[name].js',
+            }
         },
     }
 });

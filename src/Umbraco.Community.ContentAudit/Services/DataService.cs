@@ -490,5 +490,16 @@ namespace Umbraco.Community.ContentAudit.Services
         {
             return await GetLatestAuditData();
         }
+
+        public async Task<List<OverviewDto>> GetAuditOverviews()
+        {
+            var results = new List<OverviewDto>();
+            var audits = await _auditRepository.GetAllAuditOverviews();
+            if (audits != null && audits.Any())
+            {
+                results.AddRange(audits.Select(x => new OverviewDto(x)));
+            }
+            return results;
+        }
     }
 }

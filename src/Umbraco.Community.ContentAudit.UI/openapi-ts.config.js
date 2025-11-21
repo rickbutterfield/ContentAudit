@@ -2,14 +2,13 @@
 
 export default defineConfig({
     debug: true,
-    input: 'http://localhost:26293/umbraco/swagger/content-audit/swagger.json',
+	input: 'http://localhost:26291/umbraco/swagger/content-audit/swagger.json',
     output: {
         path: 'src/api',
     },
 	plugins: [
 		{
 			name: '@hey-api/client-fetch',
-			bundle: false,
 			exportFromIndex: true,
 			throwOnError: true,
 		},

@@ -20,25 +20,29 @@ const globalContext: ManifestGlobalContext = {
 }
 
 export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
+    extensionRegistry.registerMany([
+        globalContext,
+        ...sectionManifests,
+        ...workspaceManifests,
+        ...modalManifests,
+        ...localizationManifests,
+        ...documentManifests
+    ]);
 
-    host.consumeContext(UMB_AUTH_CONTEXT, async (auth) => {
-        if (!auth) return;
-
-        const config = auth.getOpenApiConfiguration();
+    host.consumeContext(UMB_AUTH_CONTEXT, async (authContext) => {
+        if (!authContext) return;
+        const config = authContext.getOpenApiConfiguration();
 
         client.setConfig({
-            auth: () => auth.getLatestToken(),
+            auth: config.token,
             baseUrl: config.base,
             credentials: config.credentials,
         });
 
-        extensionRegistry.registerMany([
-            globalContext,
-            ...sectionManifests,
-            ...workspaceManifests,
-            ...modalManifests,
-            ...localizationManifests,
-            ...documentManifests
-        ]);
+        client.interceptors.request.use(async (request, _options) => {
+            const token = await authContext.getLatestToken();
+            request.headers.set('Authorization', `Bearer ${token}`);
+            return request;
+        });
     });
 }

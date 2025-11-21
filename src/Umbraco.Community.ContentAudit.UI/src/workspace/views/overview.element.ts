@@ -1,6 +1,6 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
-import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
+import { IssueDto, OverviewDto, HealthScoreDto, CrawlService, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
@@ -83,8 +83,8 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         }
     }
 
-    startAudit() {
-        const eventSource = new EventSource('/umbraco/content-audit/api/v1/start-crawl');
+    async startAudit() {
+        const { stream } = await CrawlService.startCrawl();
 
         this.scanRunning = true;
         this.crawlData = [];
@@ -95,30 +95,27 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
         });
 
-        eventSource.onmessage = (event) => {
-            const data: CrawlDto = JSON.parse(event.data);
-            this.crawlData.push(data);
-            this.requestUpdate();
-        };
-
-        eventSource.onerror = (error) => {
-            if (eventSource.readyState === EventSource.CLOSED) {
-                console.log('EventSource connection closed by the server.');
-            } else {
-                console.error('EventSource encountered an error:', error);
+        try {
+            for await (const event of stream) {
+                this.crawlData.push(event);
+                this.requestUpdate();
             }
-            this.scanRunning = false;
-            this.#init();
 
+            // Completed normally
+            debugger;
             this.#notificationContext?.peek("default", {
-                data: {
-                    headline: 'Crawl completed',
-                    message: 'You can now view the results.',
-                }
+                data: { headline: 'Crawl completed', message: 'You can now view the results.' }
             });
-
-            eventSource.close();
-        };
+        } catch (err) {
+            debugger;
+            this.#notificationContext?.peek("danger", {
+                data: { headline: 'Crawl failed', message: (err as Error).message ?? 'Unknown error' }
+            });
+        } finally {
+            debugger;
+            this.scanRunning = false;
+            this.#init(); // refresh latest audit + scores
+        }
     }
 
     #renderScanBox() {

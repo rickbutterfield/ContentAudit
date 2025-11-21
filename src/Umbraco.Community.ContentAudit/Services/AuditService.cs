@@ -515,6 +515,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             var overview = new OverviewSchema
             {
+                Key = Guid.NewGuid(),
                 RunDate = DateTime.Now,
                 Total = totalUrls,
                 TotalInternal = pagesCrawledCount,

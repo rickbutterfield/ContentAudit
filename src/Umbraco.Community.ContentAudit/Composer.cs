@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
+using OpenIddict.Validation.AspNetCore;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Community.ContentAudit.Authorization;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -51,13 +53,16 @@ namespace Umbraco.Community.ContentAudit
                 .Bind(builder.Config.GetSection("ContentAudit"))
                 .ValidateDataAnnotations();
 
-#if NET9_0_OR_GREATER
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
-#else
-            builder.Sections().Append<AuditSection>();
-            builder.Dashboards().Add<ContentAuditDashboard>();
-            builder.ContentApps().Append<ContentAuditContentApp>();
-#endif
+
+            builder.Services.AddAuthorization(config =>
+            {
+                config.AddPolicy(AuthorizationPolicies.SectionAccessContentAudit, policy =>
+                {
+                    policy.AuthenticationSchemes.Add(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+                    policy.RequireClaim(Cms.Core.Constants.Security.AllowedApplicationsClaimType, Constants.SectionAlias);
+                });
+            });
         }
     }
 }

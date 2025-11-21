@@ -16,32 +16,20 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly IKeyValueService _keyValueService;
         private readonly IRuntimeState _runtimeState;
-#if !NET9_0
-        private readonly IUserService _userService;
-#else
         private readonly IUserGroupService _userGroupService;
-#endif
 
         public RunAuditPageMigration(
             ICoreScopeProvider coreScopeProvider,
             IMigrationPlanExecutor migrationPlanExecutor,
             IKeyValueService keyValueService,
-#if !NET9_0
-            IUserService userService,
-#else
             IUserGroupService userGroupService,
-#endif
             IRuntimeState runtimeState)
         {
             _migrationPlanExecutor = migrationPlanExecutor;
             _coreScopeProvider = coreScopeProvider;
             _keyValueService = keyValueService;
             _runtimeState = runtimeState;
-#if !NET9_0
-            _userService = userService;
-#else
             _userGroupService = userGroupService;
-#endif
         }
 
         public async void Handle(UmbracoApplicationStartingNotification notification)
@@ -60,21 +48,13 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 _coreScopeProvider,
                 _keyValueService);
 
-#if !NET9_0
-            var adminGroup = _userService.GetUserGroupByAlias(Cms.Core.Constants.Security.AdminGroupAlias);
-#else
             var adminGroup = await _userGroupService.GetAsync(Cms.Core.Constants.Security.AdminGroupAlias);
-#endif
             if (adminGroup != null)
             {
                 if (!adminGroup.AllowedSections.Contains(Constants.SectionAlias))
                 {
                     adminGroup.AddAllowedSection(Constants.SectionAlias);
-#if !NET9_0
-                    _userService.Save(adminGroup);
-#else
                     await _userGroupService.UpdateAsync(adminGroup, Cms.Core.Constants.Security.SuperUserKey);
-#endif
                 }
             }
         }

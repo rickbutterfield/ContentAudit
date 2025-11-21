@@ -9,6 +9,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         public OverviewDto(OverviewSchema schema)
         {
+            Id = schema.Id;
+            Key = schema.Key;
             RunDate = schema.RunDate;
             Total = schema.Total;
             TotalInternal = schema.TotalInternal;
@@ -16,6 +18,12 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             TotalAssets = schema.TotalAssets;
             TotalBlocked = schema.TotalBlocked;
         }
+
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("key")]
+        public Guid Key { get; set; }
 
         [JsonPropertyName("runDate")]
         public DateTime? RunDate { get; set; }
