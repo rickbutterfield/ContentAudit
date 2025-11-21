@@ -197,6 +197,7 @@ export type OverviewDto = {
     totalExternal?: number | null;
     totalAssets?: number | null;
     totalBlocked?: number | null;
+    healthScore: number;
 };
 
 export type PageAnalysisDto = {
@@ -350,10 +351,22 @@ export type TechnicalSeoDto = {
     hasBrowserCaching: boolean;
     hasHttps: boolean;
     hasValidHtml: boolean;
-    htmlValidationErrors?: Array<string> | null;
+    htmlValidationErrors?: Array<ValidationMessage> | null;
     hasSchemaMarkup: boolean;
     schemaType?: string | null;
     createdDate: string;
+};
+
+export type ValidationMessage = {
+    type?: string | null;
+    lastLine?: number | null;
+    lastColumn?: number | null;
+    firstLine?: number | null;
+    firstColumn?: number | null;
+    message?: string | null;
+    extract?: string | null;
+    hiliteStart?: number | null;
+    hiliteLength?: number | null;
 };
 
 export type OverviewDtoWritable = {
@@ -365,6 +378,7 @@ export type OverviewDtoWritable = {
     totalExternal?: number | null;
     totalAssets?: number | null;
     totalBlocked?: number | null;
+    healthScore: number;
 };
 
 export type GetCollectionData = {
