@@ -20,41 +20,49 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
     /// 
     /// This is classified as a medium-priority warning as it affects SEO performance and user experience.
     /// </remarks>
+    /// <inheritdoc />
     public class MetaDescriptionMissing : IAuditPageIssue
     {
         /// <summary>
         /// Gets the unique identifier for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public Guid Id => new Guid("8f2a0c38-d8c3-4de9-91c2-c7005aadbfb9");
 
         /// <summary>
         /// Gets the display name of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Name => "Description missing";
 
         /// <summary>
         /// Gets the description of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Description => "Pages where meta descriptions are missing";
 
         /// <summary>
         /// Gets the category this audit issue belongs to.
         /// </summary>
+        /// <inheritdoc />
         public string Category => "Metadata";
 
         /// <summary>
         /// Gets the issue type classification.
         /// </summary>
+        /// <inheritdoc />
         public IssueType Type => IssueType.Warning;
 
         /// <summary>
         /// Gets the priority level of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IssuePriority Priority => IssuePriority.Medium;
 
         /// <summary>
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
 
         /// <summary>
@@ -68,6 +76,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// - Page has SEO data available
         /// - Meta description is null or empty
         /// </remarks>
+        /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
             return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && string.IsNullOrEmpty(x.SeoData?.MetaDescription));

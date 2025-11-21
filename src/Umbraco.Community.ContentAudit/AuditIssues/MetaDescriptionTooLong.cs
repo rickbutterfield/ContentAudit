@@ -21,41 +21,49 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
     /// This is classified as a low-priority warning since the description is present but could be optimized.
     /// The recommended length of 160 characters is based on typical SERP display limits.
     /// </remarks>
+    /// <inheritdoc />
     public class MetaDescription : IAuditPageIssue
     {
         /// <summary>
         /// Gets the unique identifier for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public Guid Id => new Guid("2bd498ae-9c39-479f-a90b-b54ffeaf5675");
 
         /// <summary>
         /// Gets the display name of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Name => "Description too long";
 
         /// <summary>
         /// Gets the description of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Description => "Meta descriptions above the recommended limit";
 
         /// <summary>
         /// Gets the category this audit issue belongs to.
         /// </summary>
+        /// <inheritdoc />
         public string Category => "Metadata";
 
         /// <summary>
         /// Gets the issue type classification.
         /// </summary>
+        /// <inheritdoc />
         public IssueType Type => IssueType.Warning;
 
         /// <summary>
         /// Gets the priority level of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IssuePriority Priority => IssuePriority.Low;
 
         /// <summary>
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
 
         /// <summary>
@@ -71,6 +79,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// 
         /// The 160-character threshold is based on typical search engine display limits.
         /// </remarks>
+        /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
             return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && x.SeoData?.MetaDescription?.Length > 160);

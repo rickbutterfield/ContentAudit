@@ -32,41 +32,49 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
     /// This is classified as a high-priority issue because the absence of an H1 negatively impacts
     /// both SEO and accessibility compliance.
     /// </remarks>
+    /// <inheritdoc />
     public class MissingH1 : IAuditPageIssue
     {
         /// <summary>
         /// Gets the unique identifier for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public Guid Id => new Guid("23486f91-bb1a-40aa-80ea-ea730fc6b4c5");
 
         /// <summary>
         /// Gets the display name of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Name => "H1 Missing";
 
         /// <summary>
         /// Gets the description of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Description => "The page contains no H1";
 
         /// <summary>
         /// Gets the category this audit issue belongs to.
         /// </summary>
+        /// <inheritdoc />
         public string Category => "Content";
 
         /// <summary>
         /// Gets the issue type classification.
         /// </summary>
+        /// <inheritdoc />
         public IssueType Type => IssueType.Issue;
 
         /// <summary>
         /// Gets the priority level of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IssuePriority Priority => IssuePriority.High;
 
         /// <summary>
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
         
         /// <summary>
@@ -82,6 +90,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// 
         /// Pages with error status codes are excluded as they typically don't have proper content structure.
         /// </remarks>
+        /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
             return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && string.IsNullOrEmpty(x.SeoData.H1));
