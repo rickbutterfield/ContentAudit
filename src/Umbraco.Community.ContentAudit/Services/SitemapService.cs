@@ -12,18 +12,22 @@ namespace Umbraco.Community.ContentAudit.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ContentAuditSettings _contentAuditSettings;
+        private readonly IRobotsService _robotsService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SitemapService"/> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client for fetching sitemap content.</param>
         /// <param name="optionsMonitor">The options monitor for accessing Content Audit settings.</param>
+        /// <param name="robotsService">The robots service for discovering sitemap URLs from robots.txt.</param>
         public SitemapService(
             HttpClient httpClient,
-            IOptionsMonitor<ContentAuditSettings> optionsMonitor)
+            IOptionsMonitor<ContentAuditSettings> optionsMonitor,
+            IRobotsService robotsService)
         {
             _httpClient = httpClient;
             _contentAuditSettings = optionsMonitor.CurrentValue;
+            _robotsService = robotsService;
         }
 
         /// <summary>
@@ -33,7 +37,9 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <returns>A list of URLs extracted from the sitemap(s), or the base URL if no sitemap is found or parseable.</returns>
         /// <remarks>
         /// This method supports both regular sitemaps and sitemap index files. If a sitemap index is detected,
-        /// all nested sitemaps are fetched and parsed. If any error occurs or no URLs are found, the base URL is returned as a fallback.
+        /// all nested sitemaps are fetched and parsed. If the SitemapUrl is not configured in settings, 
+        /// the method will attempt to discover sitemap URLs from robots.txt. If any error occurs or no URLs are found, 
+        /// the base URL is returned as a fallback.
         /// </remarks>
         public async Task<List<string>> GetSitemapUrlAsync(string baseUrl)
         {
@@ -41,8 +47,16 @@ namespace Umbraco.Community.ContentAudit.Services
             
             if (!string.IsNullOrEmpty(_contentAuditSettings.SitemapUrl))
             {
-                // Add baseUrl to the sitemap URL if it's not an absolute URL
                 sitemapUrl = new Uri(new Uri(baseUrl), _contentAuditSettings.SitemapUrl).ToString();
+            }
+            else
+            {
+                var sitemapUrlsFromRobots = await _robotsService.GetSitemapUrlsAsync(baseUrl);
+                if (sitemapUrlsFromRobots.Any())
+                {
+                    sitemapUrl = sitemapUrlsFromRobots.First();
+                    Console.WriteLine($"Discovered sitemap URL from robots.txt: {sitemapUrl}");
+                }
             }
 
             try

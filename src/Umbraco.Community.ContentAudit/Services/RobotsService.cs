@@ -46,6 +46,33 @@ namespace Umbraco.Community.ContentAudit.Services
         }
 
         /// <summary>
+        /// Fetches and parses the robots.txt file from a given base URL to extract sitemap URLs.
+        /// </summary>
+        /// <param name="baseUrl">The base URL of the website to fetch robots.txt from.</param>
+        /// <returns>A list of sitemap URLs found in the robots.txt file.</returns>
+        /// <remarks>
+        /// If the robots.txt file cannot be fetched or parsed, an empty list is returned.
+        /// Processes "Sitemap:" directives according to Google's robots.txt specification.
+        /// </remarks>
+        public async Task<List<string>> GetSitemapUrlsAsync(string baseUrl)
+        {
+            var sitemapUrls = new List<string>();
+            string robotsUrl = $"{baseUrl.TrimEnd('/')}/robots.txt";
+
+            try
+            {
+                string robotsContent = await _httpClient.GetStringAsync(robotsUrl);
+                sitemapUrls.AddRange(ParseSitemapUrls(robotsContent));
+            }
+            catch
+            {
+                Console.WriteLine("Could not fetch or parse robots.txt for sitemap URLs.");
+            }
+
+            return sitemapUrls;
+        }
+
+        /// <summary>
         /// Parses the content of a robots.txt file to extract disallowed paths.
         /// </summary>
         /// <param name="content">The raw content of the robots.txt file.</param>
@@ -73,6 +100,35 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return disallowList;
+        }
+
+        /// <summary>
+        /// Parses the content of a robots.txt file to extract sitemap URLs.
+        /// </summary>
+        /// <param name="content">The raw content of the robots.txt file.</param>
+        /// <returns>A list of sitemap URLs found in the robots.txt file.</returns>
+        /// <remarks>
+        /// This method processes "Sitemap:" directives according to Google's robots.txt specification.
+        /// Sitemap URLs should be absolute URLs and are returned as-is.
+        /// </remarks>
+        private List<string> ParseSitemapUrls(string content)
+        {
+            var sitemapList = new List<string>();
+            var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("Sitemap:", StringComparison.OrdinalIgnoreCase))
+                {
+                    string url = line.Substring(8).Trim();
+                    if (!string.IsNullOrWhiteSpace(url))
+                    {
+                        sitemapList.Add(url);
+                    }
+                }
+            }
+
+            return sitemapList;
         }
     }
 }
