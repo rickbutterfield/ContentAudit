@@ -5,11 +5,19 @@ using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
+    /// <summary>
+    /// Service for fetching and parsing XML sitemaps to extract URLs for crawling.
+    /// </summary>
     public class SitemapService : ISitemapService
     {
         private readonly HttpClient _httpClient;
         private readonly ContentAuditSettings _contentAuditSettings;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SitemapService"/> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client for fetching sitemap content.</param>
+        /// <param name="optionsMonitor">The options monitor for accessing Content Audit settings.</param>
         public SitemapService(
             HttpClient httpClient,
             IOptionsMonitor<ContentAuditSettings> optionsMonitor)
@@ -18,6 +26,15 @@ namespace Umbraco.Community.ContentAudit.Services
             _contentAuditSettings = optionsMonitor.CurrentValue;
         }
 
+        /// <summary>
+        /// Fetches and parses a sitemap (or sitemap index) to extract all URLs.
+        /// </summary>
+        /// <param name="baseUrl">The base URL of the website.</param>
+        /// <returns>A list of URLs extracted from the sitemap(s), or the base URL if no sitemap is found or parseable.</returns>
+        /// <remarks>
+        /// This method supports both regular sitemaps and sitemap index files. If a sitemap index is detected,
+        /// all nested sitemaps are fetched and parsed. If any error occurs or no URLs are found, the base URL is returned as a fallback.
+        /// </remarks>
         public async Task<List<string>> GetSitemapUrlAsync(string baseUrl)
         {
             string sitemapUrl = string.Empty;
@@ -76,6 +93,11 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
+        /// <summary>
+        /// Determines whether the given XML content represents a sitemap index rather than a regular sitemap.
+        /// </summary>
+        /// <param name="content">The XML content to analyze.</param>
+        /// <returns><c>true</c> if the content is a sitemap index; otherwise, <c>false</c>.</returns>
         private bool IsSitemapIndex(string content)
         {
             try
@@ -89,6 +111,15 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
+        /// <summary>
+        /// Validates whether the given content is XML format.
+        /// </summary>
+        /// <param name="content">The content to validate.</param>
+        /// <returns><c>true</c> if the content appears to be XML; otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// This method performs a simple check by looking for XML declaration or opening tags,
+        /// and explicitly excludes HTML content.
+        /// </remarks>
         private bool IsXmlContent(string content)
         {
             content = content.TrimStart();
@@ -96,6 +127,15 @@ namespace Umbraco.Community.ContentAudit.Services
                    (content.StartsWith("<", StringComparison.OrdinalIgnoreCase) && !content.StartsWith("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Parses a regular sitemap XML to extract all URL locations.
+        /// </summary>
+        /// <param name="content">The sitemap XML content.</param>
+        /// <returns>A list of URLs extracted from the sitemap.</returns>
+        /// <remarks>
+        /// This method extracts &lt;loc&gt; elements from &lt;url&gt; elements in the sitemap.
+        /// If parsing fails, an empty list is returned and an error is logged to the console.
+        /// </remarks>
         private List<string> ParseSitemap(string content)
         {
             try
@@ -117,6 +157,15 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
+        /// <summary>
+        /// Processes a sitemap index XML to extract URLs of nested sitemaps.
+        /// </summary>
+        /// <param name="content">The sitemap index XML content.</param>
+        /// <returns>A list of URLs pointing to nested sitemaps.</returns>
+        /// <remarks>
+        /// This method extracts &lt;loc&gt; elements from &lt;sitemap&gt; elements in the sitemap index.
+        /// If processing fails, an empty list is returned and an error is logged to the console.
+        /// </remarks>
         private async Task<List<string>> ProcessSitemapIndex(string content)
         {
             var allUrls = new List<string>();

@@ -1,7 +1,7 @@
 ﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { AuditService, ImageDto } from "../../../../api";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditImagesAltTextCollectionDataSource implements UmbCollectionDataSource<ImageDto> {
 	#host: UmbControllerHost;
@@ -11,7 +11,7 @@ export class ContentAuditImagesAltTextCollectionDataSource implements UmbCollect
 	}
 
 	async getCollection(filter: UmbCollectionFilterModel) {
-		const { data, error } = await tryExecuteAndNotify(this.#host, AuditService.getAllImages(filter));
+		const { data, error } = await tryExecute(this.#host, AuditService.getAllImages({ query: filter }));
 
 		if (error) {
 			return { error };

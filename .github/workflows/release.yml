@@ -27,9 +27,7 @@ jobs:
           ${{ runner.os }}-dotnet-
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
+      uses: actions/setup-dotnet@v5
   
     - name: Build project
       run: dotnet build src\Umbraco.Community.ContentAudit\Umbraco.Community.ContentAudit.csproj --configuration Release

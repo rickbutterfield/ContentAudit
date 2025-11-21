@@ -1,7 +1,7 @@
 ﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { AuditService, LinkGroupDto } from "../../../../api";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditInboundLinksCollectionDataSource implements UmbCollectionDataSource<LinkGroupDto> {
 	#host: UmbControllerHost;
@@ -11,7 +11,7 @@ export class ContentAuditInboundLinksCollectionDataSource implements UmbCollecti
 	}
 
 	async getCollection(filter: UmbCollectionFilterModel) {
-		const { data, error } = await tryExecuteAndNotify(this.#host, AuditService.getInteralLinks(filter));
+		const { data, error } = await tryExecute(this.#host, AuditService.getInteralLinks({ query: filter }));
 
 		if (error) {
 			return { error };

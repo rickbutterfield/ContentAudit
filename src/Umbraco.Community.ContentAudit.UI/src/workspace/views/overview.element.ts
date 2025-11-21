@@ -1,6 +1,6 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
-import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
+import { IssueDto, OverviewDto, HealthScoreDto, CrawlService, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
@@ -21,6 +21,9 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     _latestAuditOverview?: OverviewDto;
 
     @state()
+    _auditOverviews: Array<OverviewDto> = [];
+
+    @state()
     _topIssues: Array<IssueDto> = [];
 
     @state()
@@ -39,15 +42,21 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         this.consumeContext(CONTENT_AUDIT_CONTEXT_TOKEN, (context) => {
             this.#context = context;
 
-            this.observe(context.latestAuditOverview, (latestAuditOverview) => {
+            this.observe(context?.latestAuditOverview, (latestAuditOverview) => {
                 this._latestAuditOverview = latestAuditOverview;
             });
 
-            this.observe(context.topIssues, (topIssues) => {
-                this._topIssues = topIssues.filter(x => x.numberOfUrls != 0)
+            this.observe(context?.auditOverviews, (auditOverviews) => {
+                this._auditOverviews = auditOverviews || [];
             });
 
-            this.observe(context.healthScore, (healthScore) => {
+            this.observe(context?.topIssues, (topIssues) => {
+                if (topIssues) {
+                    this._topIssues = topIssues.filter(x => x.numberOfUrls != 0);
+                }
+            });
+
+            this.observe(context?.healthScore, (healthScore) => {
                 this._healthScore = healthScore;
                 if (this._healthScore != undefined) {
                     this._pagesWithoutErrors = this._healthScore.totalPages - this._healthScore.pagesWithErrors;
@@ -64,6 +73,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
     #init() {
         this.#context?.getLatestAuditOverview();
+        this.#context?.getAuditOverviews();
         this.#context?.getTopIssues();
         this.#context?.getHealthScore();
     }
@@ -81,8 +91,8 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         }
     }
 
-    startAudit() {
-        const eventSource = new EventSource('/umbraco/content-audit/api/v1/start-crawl');
+    async startAudit() {
+        const { stream } = await CrawlService.startCrawl();
 
         this.scanRunning = true;
         this.crawlData = [];
@@ -93,30 +103,27 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
         });
 
-        eventSource.onmessage = (event) => {
-            const data: CrawlDto = JSON.parse(event.data);
-            this.crawlData.push(data);
-            this.requestUpdate();
-        };
-
-        eventSource.onerror = (error) => {
-            if (eventSource.readyState === EventSource.CLOSED) {
-                console.log('EventSource connection closed by the server.');
-            } else {
-                console.error('EventSource encountered an error:', error);
+        try {
+            for await (const event of stream) {
+                this.crawlData.push(event);
+                this.requestUpdate();
             }
-            this.scanRunning = false;
-            this.#init();
 
+            // Completed normally
+            debugger;
             this.#notificationContext?.peek("default", {
-                data: {
-                    headline: 'Crawl completed',
-                    message: 'You can now view the results.',
-                }
+                data: { headline: 'Crawl completed', message: 'You can now view the results.' }
             });
-
-            eventSource.close();
-        };
+        } catch (err) {
+            debugger;
+            this.#notificationContext?.peek("danger", {
+                data: { headline: 'Crawl failed', message: (err as Error).message ?? 'Unknown error' }
+            });
+        } finally {
+            debugger;
+            this.scanRunning = false;
+            this.#init(); // refresh latest audit + scores
+        }
     }
 
     #renderScanBox() {
@@ -249,6 +256,80 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
         }
     }
 
+    #renderAuditHistory() {
+        if (this._auditOverviews.length === 0) return nothing;
+
+        // Get the most recent 5 audits
+        const recentAudits = this._auditOverviews.slice(0, 5).reverse();
+        
+        // Calculate max value for scaling
+        const maxTotal = Math.max(...recentAudits.map(a => a.total || 0));
+        const chartHeight = 150;
+        const chartWidth = 100; // percentage
+
+        // Calculate points for the line
+        const points = recentAudits.map((audit, index) => {
+            const x = (index / (recentAudits.length - 1)) * chartWidth;
+            const y = chartHeight - ((audit.total || 0) / maxTotal) * chartHeight;
+            return `${x},${y}`;
+        }).join(' ');
+
+        return html`
+            <uui-box headline="Audit History" class="span-3">
+                <div class="chart-container">
+                    <svg class="chart" viewBox="0 0 100 ${chartHeight}" preserveAspectRatio="none">
+                        <!-- Grid lines -->
+                        ${[0, 25, 50, 75, 100].map(percent => html`
+                            <line 
+                                x1="0" 
+                                y1="${(percent / 100) * chartHeight}" 
+                                x2="100" 
+                                y2="${(percent / 100) * chartHeight}" 
+                                class="chart-grid-line"
+                            />
+                        `)}
+                        
+                        <!-- Line chart -->
+                        <polyline
+                            points="${points}"
+                            class="chart-line"
+                            fill="none"
+                            stroke="var(--uui-color-interactive)"
+                            stroke-width="0.5"
+                        />
+                        
+                        <!-- Data points -->
+                        ${recentAudits.map((audit, index) => {
+                            const x = (index / (recentAudits.length - 1)) * chartWidth;
+                            const y = chartHeight - ((audit.total || 0) / maxTotal) * chartHeight;
+                            return html`
+                                <circle
+                                    cx="${x}"
+                                    cy="${y}"
+                                    r="1"
+                                    class="chart-point"
+                                    fill="var(--uui-color-interactive)"
+                                />
+                            `;
+                        })}
+                    </svg>
+                    
+                    <!-- Labels -->
+                    <div class="chart-labels">
+                        ${recentAudits.map(audit => html`
+                            <div class="chart-label">
+                                <div class="chart-label-date">
+                                    ${audit.runDate ? this.localize.date(audit.runDate, { dateStyle: 'short' }) : 'N/A'}
+                                </div>
+                                <div class="chart-label-value">${audit.total || 0} pages</div>
+                            </div>
+                        `)}
+                    </div>
+                </div>
+            </uui-box>
+        `;
+    }
+
     _renderScanData() {
         if (this.crawlData.length !== 0) {
             const total = this.crawlData.length;
@@ -282,7 +363,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
                     </div>
-                    <content-audit-issues-table-collection-view .data=${this._topIssues}></content-audit-issues-table-collection-view>
+                    <content-audit-issues-table-collection-view .data=${this._topIssues} hide-summary></content-audit-issues-table-collection-view>
                 </uui-box>
             `
         }
@@ -293,7 +374,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             <div id="main">
                 ${this.#renderLatestAudit()}
                 ${this.#renderHealthScore()}
-                
+                ${this.#renderAuditHistory()}
                 ${this.#renderTopIssues()}
             </div>
         `
@@ -377,6 +458,62 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 0% {
                     stroke-dasharray: 0 100;
                 }
+            }
+
+            /* Chart styles */
+            .chart-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--uui-size-space-4);
+            }
+
+            .chart {
+                width: 100%;
+                height: 150px;
+                border: 1px solid var(--uui-color-border);
+                border-radius: var(--uui-border-radius);
+                padding: var(--uui-size-space-3);
+                background: var(--uui-color-surface);
+            }
+
+            .chart-grid-line {
+                stroke: var(--uui-color-border);
+                stroke-width: 0.1;
+                stroke-dasharray: 1, 1;
+            }
+
+            .chart-line {
+                stroke-width: 0.5;
+            }
+
+            .chart-point {
+                cursor: pointer;
+            }
+
+            .chart-point:hover {
+                r: 1.5;
+            }
+
+            .chart-labels {
+                display: flex;
+                justify-content: space-between;
+                gap: var(--uui-size-space-2);
+            }
+
+            .chart-label {
+                flex: 1;
+                text-align: center;
+                font-size: 0.75rem;
+            }
+
+            .chart-label-date {
+                font-weight: 600;
+                color: var(--uui-color-text);
+                margin-bottom: var(--uui-size-space-1);
+            }
+
+            .chart-label-value {
+                color: var(--uui-color-text-alt);
             }
         `
     ]

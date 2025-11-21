@@ -1,20 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
+using OpenIddict.Validation.AspNetCore;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Community.ContentAudit.Authorization;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.NotificationHandlers;
 using Umbraco.Community.ContentAudit.Repositories;
 using Umbraco.Community.ContentAudit.Services;
-
-#if NET8_0
-using Umbraco.Community.ContentAudit.Sections;
-using Umbraco.Community.ContentAudit.Dashboards;
-using Umbraco.Community.ContentAudit.ContentApps;
-#endif
 
 namespace Umbraco.Community.ContentAudit
 {
@@ -31,7 +27,7 @@ namespace Umbraco.Community.ContentAudit
                 throw new Exception($"Playwright exited with code {exitCode}");
             }
 
-            builder.AddNotificationHandler<UmbracoApplicationStartingNotification, RunAuditPageMigration>();
+            builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, RunAuditPageMigration>();
 
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
             builder.Services.AddScoped<IRobotsService, RobotsService>();
@@ -52,13 +48,16 @@ namespace Umbraco.Community.ContentAudit
                 .Bind(builder.Config.GetSection("ContentAudit"))
                 .ValidateDataAnnotations();
 
-#if NET9_0_OR_GREATER
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
-#else
-            builder.Sections().Append<AuditSection>();
-            builder.Dashboards().Add<ContentAuditDashboard>();
-            builder.ContentApps().Append<ContentAuditContentApp>();
-#endif
+
+            builder.Services.AddAuthorization(config =>
+            {
+                config.AddPolicy(AuthorizationPolicies.SectionAccessContentAudit, policy =>
+                {
+                    policy.AuthenticationSchemes.Add(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+                    policy.RequireClaim(Cms.Core.Constants.Security.AllowedApplicationsClaimType, Constants.SectionAlias);
+                });
+            });
         }
     }
 }

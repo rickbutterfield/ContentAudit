@@ -9,9 +9,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
         private readonly IScopeProvider _scopeProvider;
 
         public AuditRepository(IScopeProvider scopeProvider)
-        {
-            _scopeProvider = scopeProvider;
-        }
+            => _scopeProvider = scopeProvider;
 
         public async Task<int?> GetLatestAuditId()
         {
@@ -31,12 +29,24 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return latestId;
         }
 
+        public async Task<IEnumerable<OverviewSchema>> GetAllAuditOverviews()
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            var auditOverviews = await scope.Database.FetchAsync<OverviewSchema>(
+                $"SELECT * FROM [{OverviewSchema.TableName}]", CancellationToken.None);
+
+            scope.Complete();
+
+            return auditOverviews;
+        }
+
         public async Task<IEnumerable<OverviewSchema>> GetLatestAuditOverview(int latestRunId)
         {
             using var scope = _scopeProvider.CreateScope();
 
             var latestAudit = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE Id = @0", latestRunId);
+                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE Id = @0", new object[] { latestRunId }, CancellationToken.None);
 
             scope.Complete();
 
@@ -52,7 +62,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
                 FROM [{PageSchema.TableName}] 
                 WHERE RunId = @0";
 
-            var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, runId);
+            var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, new object[] { runId }, CancellationToken.None);
 
             scope.Complete();
 
@@ -64,7 +74,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string seoSqlQuery = $@"SELECT * FROM [{SeoSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var seoData = await scope.Database.FetchAsync<SeoSchema>(seoSqlQuery, runId, url);
+            var seoData = await scope.Database.FetchAsync<SeoSchema>(seoSqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -76,7 +86,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string contentAnalysisSqlQuery = $@"SELECT * FROM [{ContentAnalysisSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var contentAnalysisData = await scope.Database.FetchAsync<ContentAnalysisSchema>(contentAnalysisSqlQuery, runId, url);
+            var contentAnalysisData = await scope.Database.FetchAsync<ContentAnalysisSchema>(contentAnalysisSqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -88,7 +98,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string performanceSqlQuery = $@"SELECT * FROM [{PerformanceSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var performanceData = await scope.Database.FetchAsync<PerformanceSchema>(performanceSqlQuery, runId, url);
+            var performanceData = await scope.Database.FetchAsync<PerformanceSchema>(performanceSqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -100,7 +110,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string accessibilitySqlQuery = $@"SELECT * FROM [{AccessibilitySchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var accessibilityData = await scope.Database.FetchAsync<AccessibilitySchema>(accessibilitySqlQuery, runId, url);
+            var accessibilityData = await scope.Database.FetchAsync<AccessibilitySchema>(accessibilitySqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -112,7 +122,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string technicalSeoSqlQuery = $@"SELECT * FROM [{TechnicalSeoSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var technicalSeoData = await scope.Database.FetchAsync<TechnicalSeoSchema>(technicalSeoSqlQuery, runId, url);
+            var technicalSeoData = await scope.Database.FetchAsync<TechnicalSeoSchema>(technicalSeoSqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -124,7 +134,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string socialMediaSqlQuery = $@"SELECT * FROM [{SocialMediaSchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var socialMediaData = await scope.Database.FetchAsync<SocialMediaSchema>(socialMediaSqlQuery, runId, url);
+            var socialMediaData = await scope.Database.FetchAsync<SocialMediaSchema>(socialMediaSqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -136,7 +146,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string contentQualitySqlQuery = $@"SELECT * FROM [{ContentQualitySchema.TableName}] WHERE RunId = @0 AND Url = @1";
-            var contentQualityData = await scope.Database.FetchAsync<ContentQualitySchema>(contentQualitySqlQuery, runId, url);
+            var contentQualityData = await scope.Database.FetchAsync<ContentQualitySchema>(contentQualitySqlQuery, new object[] { runId, url }, CancellationToken.None);
 
             scope.Complete();
 
@@ -148,7 +158,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string linksSqlQuery = $@"SELECT * FROM [{LinkSchema.TableName}] WHERE {nameof(LinkSchema.RunId)} = @0 AND {nameof(LinkSchema.FoundPage)} = @1";
-            var linksData = await scope.Database.FetchAsync<LinkSchema>(linksSqlQuery, runId, foundPage);
+            var linksData = await scope.Database.FetchAsync<LinkSchema>(linksSqlQuery, new object[] { runId, foundPage }, CancellationToken.None);
 
             scope.Complete();
 
@@ -160,7 +170,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string resourcesSqlQuery = $@"SELECT * FROM [{ResourceSchema.TableName}] WHERE {nameof(ResourceSchema.RunId)} = @0 AND {nameof(ResourceSchema.FoundPage)} = @1";
-            var resourcesData = await scope.Database.FetchAsync<ResourceSchema>(resourcesSqlQuery, runId, foundPage);
+            var resourcesData = await scope.Database.FetchAsync<ResourceSchema>(resourcesSqlQuery, new object[] { runId, foundPage }, CancellationToken.None);
 
             scope.Complete();
 
@@ -172,7 +182,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             string imagesSqlQuery = $@"SELECT * FROM [{ImageSchema.TableName}] WHERE {nameof(ImageSchema.RunId)} = @0 AND {nameof(ImageSchema.FoundPage)} = @1";
-            var imagesData = await scope.Database.FetchAsync<ImageSchema>(imagesSqlQuery, runId, foundPage);
+            var imagesData = await scope.Database.FetchAsync<ImageSchema>(imagesSqlQuery, new object[] { runId, foundPage }, CancellationToken.None);
 
             scope.Complete();
 

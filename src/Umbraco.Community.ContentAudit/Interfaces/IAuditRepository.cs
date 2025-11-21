@@ -17,5 +17,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<IEnumerable<LinkSchema>> GetLinkData(int runId, string foundPage);
         Task<IEnumerable<ResourceSchema>> GetResourceData(int runId, string foundPage);
         Task<IEnumerable<ImageSchema>> GetImageData(int runId, string foundPage);
+        Task<IEnumerable<OverviewSchema>> GetAllAuditOverviews();
     }
 }

@@ -8,8 +8,7 @@ import { UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
 import { PageAnalysisDto } from "../../../../api";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_ALIAS } from "../constants";
 
-export class ContentAuditAllPagesWorkspaceContext
-	extends UmbContextBase<ContentAuditAllPagesWorkspaceContext> {
+export class ContentAuditAllPagesWorkspaceContext extends UmbContextBase {
 
 	public readonly workspaceAlias = CONTENT_AUDIT_ALL_PAGES_WORKSPACE_ALIAS;
 	public readonly repository = new ContentAuditAllPagesDetailRepository(this);

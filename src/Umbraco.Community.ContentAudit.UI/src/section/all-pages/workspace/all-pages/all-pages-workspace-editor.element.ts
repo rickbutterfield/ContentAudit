@@ -18,7 +18,7 @@ export class ContentAuditAllPagesWorkspaceEditorElement extends UmbLitElement {
 		this.consumeContext(CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, (instance) => {
 			this.#workspaceContext = instance;
 
-			this.observe(this.#workspaceContext.data, (data) => {
+			this.observe(this.#workspaceContext?.data, (data) => {
 				this._data = data;
 			});
 		});

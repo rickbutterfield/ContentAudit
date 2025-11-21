@@ -1,13 +1,14 @@
 ﻿import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
-import { tryExecuteAndNotify } from '@umbraco-cms/backoffice/resources';
-import { AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse } from "../../api";
+import { tryExecute } from '@umbraco-cms/backoffice/resources';
+import { AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, GetCollectionResponse } from "../../api";
 
 export interface AuditDataSource {
     getLatestAuditOverview(): Promise<UmbDataSourceResponse<GetLatestAuditOverviewResponse>>
     getPagesWithMissingMetadata(): Promise<UmbDataSourceResponse<GetPagesWithMissingMetadataResponse>>
     getTopIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>>
     getHealthScore(): Promise<UmbDataSourceResponse<GetHealthScoreResponse>>
+    getAuditOverviews(): Promise<UmbDataSourceResponse<GetCollectionResponse>>
 }
 
 export class ContentAuditDataSource implements AuditDataSource {
@@ -18,18 +19,26 @@ export class ContentAuditDataSource implements AuditDataSource {
     }
 
     async getLatestAuditOverview(): Promise<UmbDataSourceResponse<GetLatestAuditOverviewResponse>> {
-        return await tryExecuteAndNotify(this.#host, AuditService.getLatestAuditOverview());
+        return await tryExecute(this.#host, AuditService.getLatestAuditOverview());
     }
 
     async getPagesWithMissingMetadata(): Promise<UmbDataSourceResponse<GetPagesWithMissingMetadataResponse>> {
-        return await tryExecuteAndNotify(this.#host, AuditService.getPagesWithMissingMetadata());
+        return await tryExecute(this.#host, AuditService.getPagesWithMissingMetadata());
     }
 
     async getTopIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>> {
-        return await tryExecuteAndNotify(this.#host, AuditService.getAllIssues({ skip: 0, take: 5 }));
+        return await tryExecute(this.#host, AuditService.getAllIssues({
+            query: { skip: 0, take: 5 }
+        }));
     }
 
     async getHealthScore(): Promise<UmbDataSourceResponse<GetHealthScoreResponse>> {
-        return await tryExecuteAndNotify(this.#host, AuditService.getHealthScore());
+        return await tryExecute(this.#host, AuditService.getHealthScore());
+    }
+
+    async getAuditOverviews(): Promise<UmbDataSourceResponse<GetCollectionResponse>> {
+        return await tryExecute(this.#host, AuditService.getCollection({
+            query: { skip: 0, take: 5 }
+        }));
     }
 }

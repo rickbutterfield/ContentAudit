@@ -12,12 +12,14 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }
 
+        public Guid Key { get; set; }
         public DateTime RunDate { get; set; }
         public int Total { get; set; }
         public int TotalInternal { get; set; }
         public int TotalExternal { get; set; }
         public int TotalAssets { get; set; }
         public int TotalBlocked { get; set; }
+        public double HealthScore { get; set; }
 
         public DateTime CreatedDate => DateTime.UtcNow;
     }

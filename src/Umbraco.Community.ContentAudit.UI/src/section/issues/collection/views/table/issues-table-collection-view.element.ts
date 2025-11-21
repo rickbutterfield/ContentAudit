@@ -12,9 +12,16 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
     @property({ type: Array, attribute: false })
     data: Array<IssueDto> = [];
 
+    @property({ type: Boolean, attribute: 'hide-summary' })
+    hideSummary: boolean = false;
+
+    @state()
+    private _issues: Array<IssueDto> = [];
+
     updated(changedProperties: Map<string, any>) {
         if (changedProperties.has('data')) {
             if (this.data.length !== 0) {
+                this._issues = this.data;
                 this.#createTableItems(this.data);
             }
         }
@@ -67,7 +74,10 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
 
     #observeCollectionItems() {
         if (!this.#collectionContext) return;
-        this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
+        this.observe(this.#collectionContext.items, (items) => {
+            this._issues = items;
+            this.#createTableItems(items);
+        }, 'umbCollectionItemsObserver');
     }
 
     #createTableItems(issues: IssueDto[]) {
@@ -107,9 +117,41 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
         });
     }
 
+    #renderSummary() {
+        if (!this._issues.length || this.hideSummary) return;
+
+        const highPriorityCount = this._issues.filter(i => i.priority === 'High').length;
+        const mediumPriorityCount = this._issues.filter(i => i.priority === 'Medium').length;
+        const lowPriorityCount = this._issues.filter(i => i.priority === 'Low').length;
+
+        return html`
+            <div class="summary-container">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Issues:</span>
+                        <span class="summary-value">${this._issues.length}</span>
+                    </div>
+                    <div class="summary-item high">
+                        <span class="summary-label">High Priority:</span>
+                        <span class="summary-value">${highPriorityCount}</span>
+                    </div>
+                    <div class="summary-item medium">
+                        <span class="summary-label">Medium Priority:</span>
+                        <span class="summary-value">${mediumPriorityCount}</span>
+                    </div>
+                    <div class="summary-item low">
+                        <span class="summary-label">Low Priority:</span>
+                        <span class="summary-value">${lowPriorityCount}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     override render() {
         if (this._tableItems.length !== 0) {
             return html`
+                ${this.#renderSummary()}
 			    <umb-table
                     .config=${this._tableConfig}
                     .columns=${this._tableColumns}
@@ -125,6 +167,49 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
 				display: flex;
 				flex-direction: column;
 			}
+
+            .summary-container {
+                margin-bottom: var(--uui-size-space-5);
+            }
+
+            .summary-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: var(--uui-size-space-4);
+            }
+
+            .summary-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--uui-size-space-4);
+                background: var(--uui-color-surface);
+                border-radius: var(--uui-border-radius);
+                border: 1px solid var(--uui-color-border);
+            }
+
+            .summary-item.high {
+                border-left: 4px solid var(--uui-color-danger);
+            }
+
+            .summary-item.medium {
+                border-left: 4px solid var(--uui-color-warning);
+            }
+
+            .summary-item.low {
+                border-left: 4px solid var(--uui-color-default);
+            }
+
+            .summary-label {
+                font-size: 0.875rem;
+                color: var(--uui-color-text-alt);
+            }
+
+            .summary-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--uui-color-text);
+            }
 		`,
     ];
 }

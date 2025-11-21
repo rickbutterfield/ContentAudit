@@ -21,11 +21,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         public IEnumerable<AuditIssueProperty> ExposedProperties => new List<AuditIssueProperty>()
         {
-#if NET9_0
             new() { Name = "Emissions per page view", Alias = "emissionsData.emissionsPerPageView", LabelTemplate = "{=value}g" },
-#else
-            new() { Name = "Emissions per page view", Alias = "emissionsData.emissionsPerPageView", LabelTemplate = "{{value}}g" },
-#endif
             new() { Name = "Carbon rating", Alias = "emissionsData.carbonRating", ElementName = "content-audit-carbon-intensity-label" }
         };
 

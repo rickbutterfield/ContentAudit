@@ -1,7 +1,7 @@
 ﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { AuditService, PageAnalysisDto } from "../../../../api";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditMetadataCollectionDataSource implements UmbCollectionDataSource<PageAnalysisDto> {
     #host: UmbControllerHost;
@@ -11,7 +11,7 @@ export class ContentAuditMetadataCollectionDataSource implements UmbCollectionDa
     }
 
 	async getCollection(filter: UmbCollectionFilterModel) {
-		const { data, error } = await tryExecuteAndNotify(this.#host, AuditService.getPagesWithMissingMetadata(filter));
+		const { data, error } = await tryExecute(this.#host, AuditService.getPagesWithMissingMetadata({ query: filter }));
 
 		if (error) {
 			return { error };

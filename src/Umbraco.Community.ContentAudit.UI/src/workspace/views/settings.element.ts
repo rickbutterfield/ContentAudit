@@ -16,11 +16,11 @@ export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement)
         this.consumeContext(CONTENT_AUDIT_CONTEXT_TOKEN, (context) => {
             this.#context = context;
 
-            this.observe(context.settings, (settings) => {
+            this.observe(context?.settings, (settings) => {
                 this.settings = settings;
             });
 
-            this.#context.getSettings();
+            this.#context?.getSettings();
         });
     }
 

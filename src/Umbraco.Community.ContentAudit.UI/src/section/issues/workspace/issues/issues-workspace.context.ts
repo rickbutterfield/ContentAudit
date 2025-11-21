@@ -8,8 +8,7 @@ import { UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
 import { IssueDto } from "../../../../api";
 import { CONTENT_AUDIT_ISSUES_WORKSPACE_ALIAS } from "../constants";
 
-export class ContentAuditIssuesWorkspaceContext
-	extends UmbContextBase<ContentAuditIssuesWorkspaceContext> {
+export class ContentAuditIssuesWorkspaceContext extends UmbContextBase {
 
 	public readonly workspaceAlias = CONTENT_AUDIT_ISSUES_WORKSPACE_ALIAS;
 	public readonly repository = new ContentAuditIssuesDetailRepository(this);

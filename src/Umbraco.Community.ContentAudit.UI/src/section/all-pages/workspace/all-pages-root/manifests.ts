@@ -10,7 +10,7 @@ export const manifests: Array<UmbExtensionManifest> = [
         name: 'All Pages Root Workspace',
         meta: {
             entityType: AUDIT_ALL_PAGES_ROOT_ENTITY_TYPE,
-            headline: 'All Pages'
+            headline: 'All Pages',
         }
     },
     {

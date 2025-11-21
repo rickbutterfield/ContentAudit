@@ -5,16 +5,36 @@ using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Migrations
 {
-    public class InitialMigration : MigrationBase
+    /// <summary>
+    /// Initial database migration that creates all Content Audit tables.
+    /// </summary>
+    /// <remarks>
+    /// This migration creates the following database tables:
+    /// - umbContentAuditOverview: Stores audit run summaries
+    /// - umbContentAuditPage: Stores page-level audit data
+    /// - umbContentAuditImage: Stores image metadata and analysis
+    /// - umbContentAuditSeo: Stores SEO-related data
+    /// - umbContentAuditContentAnalysis: Stores content analysis metrics
+    /// - umbContentAuditPerformance: Stores performance metrics
+    /// - umbContentAuditAccessibility: Stores accessibility data
+    /// - umbContentAuditContentQuality: Stores content quality assessments
+    /// - umbContentAuditSocialMedia: Stores social media integration data
+    /// - umbContentAuditTechnicalSeo: Stores technical SEO data
+    /// - umbContentAuditLink: Stores discovered links
+    /// - umbContentAuditResource: Stores resource references (CSS, JS, etc.)
+    /// </remarks>
+    public class InitialMigration : AsyncMigrationBase
     {
-        private readonly IHostEnvironment _hostEnvironment;
+        public InitialMigration(IMigrationContext context, IHostEnvironment hostEnvironment) : base(context) { }
 
-        public InitialMigration(IMigrationContext context, IHostEnvironment hostEnvironment) : base(context)
-        {
-            _hostEnvironment = hostEnvironment;
-        }
-
-        protected override void Migrate()
+        /// <summary>
+        /// Executes the migration to create all Content Audit database tables.
+        /// </summary>
+        /// <remarks>
+        /// Each table is checked for existence before creation to support idempotent migrations.
+        /// Tables are created using NPoco schema definitions from the corresponding schema classes.
+        /// </remarks>
+        protected override Task MigrateAsync()
         {
             Logger.LogDebug("Running migration {MigrationStep}", "InitialMigration");
 
@@ -66,6 +86,8 @@ namespace Umbraco.Community.ContentAudit.Migrations
             {
                 Create.Table<ResourceSchema>().Do();
             }
+
+            return Task.CompletedTask;
         }
     }
-} 
+}

@@ -10,41 +10,61 @@ using Umbraco.Community.ContentAudit.Migrations;
 
 namespace Umbraco.Community.ContentAudit.NotificationHandlers
 {
-    public class RunAuditPageMigration : INotificationHandler<UmbracoApplicationStartingNotification>
+    /// <summary>
+    /// Notification handler that executes Content Audit database migrations during application startup.
+    /// </summary>
+    /// <remarks>
+    /// This handler runs all Content Audit migrations in sequence when the Umbraco application starts.
+    /// It also ensures that the admin user group has access to the Content Audit section.
+    /// The migration state is tracked using Umbraco's KeyValue service to prevent duplicate execution.
+    /// </remarks>
+    public class RunAuditPageMigration : INotificationAsyncHandler<UmbracoApplicationStartingNotification>
     {
         private readonly IMigrationPlanExecutor _migrationPlanExecutor;
         private readonly ICoreScopeProvider _coreScopeProvider;
         private readonly IKeyValueService _keyValueService;
         private readonly IRuntimeState _runtimeState;
-#if !NET9_0
-        private readonly IUserService _userService;
-#else
         private readonly IUserGroupService _userGroupService;
-#endif
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RunAuditPageMigration"/> class.
+        /// </summary>
+        /// <param name="coreScopeProvider">The core scope provider for database operations.</param>
+        /// <param name="migrationPlanExecutor">The migration plan executor.</param>
+        /// <param name="keyValueService">The key-value service for tracking migration state.</param>
+        /// <param name="userGroupService">The user group service for configuring section access.</param>
+        /// <param name="runtimeState">The runtime state to check application readiness.</param>
         public RunAuditPageMigration(
             ICoreScopeProvider coreScopeProvider,
             IMigrationPlanExecutor migrationPlanExecutor,
             IKeyValueService keyValueService,
-#if !NET9_0
-            IUserService userService,
-#else
             IUserGroupService userGroupService,
-#endif
             IRuntimeState runtimeState)
         {
             _migrationPlanExecutor = migrationPlanExecutor;
             _coreScopeProvider = coreScopeProvider;
             _keyValueService = keyValueService;
             _runtimeState = runtimeState;
-#if !NET9_0
-            _userService = userService;
-#else
             _userGroupService = userGroupService;
-#endif
         }
 
-        public async void Handle(UmbracoApplicationStartingNotification notification)
+        /// <summary>
+        /// Handles the application starting notification to execute Content Audit migrations.
+        /// </summary>
+        /// <param name="notification">The application starting notification.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <remarks>
+        /// This method:
+        /// 1. Checks if the runtime is at Run level before executing migrations
+        /// 2. Creates a migration plan with all Content Audit migrations in sequence
+        /// 3. Executes the migration plan using the Umbraco migration framework
+        /// 4. Grants the admin user group access to the Content Audit section if not already configured
+        /// 
+        /// The migration plan includes:
+        /// - InitialMigration: Creates all Content Audit database tables
+        /// - AddHealthScoreMigration: Adds the HealthScore column to the overview table
+        /// </remarks>
+        public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
         {
             if (_runtimeState.Level < RuntimeLevel.Run)
                 return;
@@ -52,29 +72,22 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
             var migrationPlan = new MigrationPlan("ContentAudit");
 
             migrationPlan.From(string.Empty)
-                .To<InitialMigration>("contentaudit-init");
+                .To<InitialMigration>("contentaudit-init")
+                .To<AddHealthScoreMigration>("contentaudit-add-healthscore");
 
             var upgrader = new Upgrader(migrationPlan);
-            upgrader.Execute(
+            await upgrader.ExecuteAsync(
                 _migrationPlanExecutor,
                 _coreScopeProvider,
                 _keyValueService);
 
-#if !NET9_0
-            var adminGroup = _userService.GetUserGroupByAlias(Cms.Core.Constants.Security.AdminGroupAlias);
-#else
             var adminGroup = await _userGroupService.GetAsync(Cms.Core.Constants.Security.AdminGroupAlias);
-#endif
             if (adminGroup != null)
             {
                 if (!adminGroup.AllowedSections.Contains(Constants.SectionAlias))
                 {
                     adminGroup.AddAllowedSection(Constants.SectionAlias);
-#if !NET9_0
-                    _userService.Save(adminGroup);
-#else
                     await _userGroupService.UpdateAsync(adminGroup, Cms.Core.Constants.Security.SuperUserKey);
-#endif
                 }
             }
         }
