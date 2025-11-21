@@ -1,6 +1,6 @@
 ﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { IssueDto, AuditService } from "../../../../api";
+import { IssueDto, IssueService } from "../../../../api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditIssuesCollectionDataSource implements UmbCollectionDataSource<IssueDto> {
@@ -11,7 +11,7 @@ export class ContentAuditIssuesCollectionDataSource implements UmbCollectionData
 	}
 
 	async getCollection(filter: UmbCollectionFilterModel) {
-		const { data, error } = await tryExecute(this.#host, AuditService.getAllIssues({ query: filter }));
+		const { data, error } = await tryExecute(this.#host, IssueService.getAllIssues({ query: filter }));
 
 		if (error) {
 			return { error };

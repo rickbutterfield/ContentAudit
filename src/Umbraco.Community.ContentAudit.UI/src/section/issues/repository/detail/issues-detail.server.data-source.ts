@@ -1,5 +1,5 @@
 ﻿import { UmbReadDetailDataSource } from "@umbraco-cms/backoffice/repository";
-import { AuditService, IssueDto } from "../../../../api";
+import { IssueDto, IssueService } from "../../../../api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
@@ -15,7 +15,7 @@ export class ContentAuditIssuesServerDataSource implements UmbReadDetailDataSour
 
 		const { data, error } = await tryExecute(
 			this.#host,
-			AuditService.getIssue({ query: { issueGuid: unique } })
+			IssueService.getIssue({ path: { id: unique } })
 		);
 
 		if (error || !data) {

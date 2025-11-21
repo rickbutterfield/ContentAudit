@@ -5,7 +5,7 @@ import { UmbWorkspaceRouteManager } from "@umbraco-cms/backoffice/workspace";
 import { UmbArrayState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
 import { CONTENT_AUDIT_AUDITS_WORKSPACE_ALIAS } from "../constants";
 import ContentAuditAuditsWorkspaceEditorElement from "./audits-workspace-editor.element";
-import { OverviewDto, AuditService, IssueDto } from "../../../../api";
+import { OverviewDto, AuditService, IssueDto, IssueService } from "../../../../api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
@@ -50,7 +50,7 @@ export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 	}
 
 	async loadIssues() {
-		const { data } = await tryExecute(this, AuditService.getAllIssues({ query: { skip: 0, take: 100 } }));
+		const { data } = await tryExecute(this, IssueService.getAllIssues({ query: { skip: 0, take: 100 } }));
 		
 		if (data && data.items) {
 			// Sort by priority score descending

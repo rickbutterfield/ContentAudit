@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ChildrenData, ChildrenResponses, GetAllImagesData, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesResponses, GetCollectionData, GetCollectionResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponses, GetExportDataData, GetExportDataResponses, GetExternalLinksData, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreResponses, GetInteralLinksData, GetInteralLinksResponses, GetIssueData, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataResponses, GetLatestAuditOverviewData, GetLatestAuditOverviewResponses, GetLatestPageAuditDataData, GetLatestPageAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsResponses, RootData, RootResponses, StartCrawlData, StartCrawlResponses } from './types.gen';
+import type { ChildrenData, ChildrenResponses, ExportData, ExportResponses, GetAllImagesData, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesResponses, GetByKeyData, GetByKeyResponses, GetCollectionData, GetCollectionResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsResponses, GetExternalLinksData, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreResponses, GetInternalLinksData, GetInternalLinksResponses, GetIssueData, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataResponses, GetLatestAuditOverviewData, GetLatestAuditOverviewResponses, GetOrphanedPagesData, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsResponses, RootData, RootResponses, StartCrawlData, StartCrawlResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -33,13 +33,6 @@ export class AuditService {
         });
     }
     
-    public static getAllIssues<ThrowOnError extends boolean = true>(options?: Options<GetAllIssuesData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetAllIssuesResponses, unknown, ThrowOnError>({
-            url: '/umbraco/content-audit/management/api/v1/audit/all-issues',
-            ...options
-        });
-    }
-    
     public static getDuplicateContentUrls<ThrowOnError extends boolean = true>(options?: Options<GetDuplicateContentUrlsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetDuplicateContentUrlsResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/duplicate-content',
@@ -47,8 +40,8 @@ export class AuditService {
         });
     }
     
-    public static getExportData<ThrowOnError extends boolean = true>(options?: Options<GetExportDataData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetExportDataResponses, unknown, ThrowOnError>({
+    public static export<ThrowOnError extends boolean = true>(options?: Options<ExportData, ThrowOnError>) {
+        return (options?.client ?? client).get<ExportResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/export',
             ...options
         });
@@ -68,16 +61,9 @@ export class AuditService {
         });
     }
     
-    public static getInteralLinks<ThrowOnError extends boolean = true>(options?: Options<GetInteralLinksData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetInteralLinksResponses, unknown, ThrowOnError>({
+    public static getInternalLinks<ThrowOnError extends boolean = true>(options?: Options<GetInternalLinksData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetInternalLinksResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/internal-links',
-            ...options
-        });
-    }
-    
-    public static getIssue<ThrowOnError extends boolean = true>(options?: Options<GetIssueData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetIssueResponses, unknown, ThrowOnError>({
-            url: '/umbraco/content-audit/management/api/v1/audit/issue',
             ...options
         });
     }
@@ -96,8 +82,8 @@ export class AuditService {
         });
     }
     
-    public static getLatestPageAuditData<ThrowOnError extends boolean = true>(options?: Options<GetLatestPageAuditDataData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetLatestPageAuditDataResponses, unknown, ThrowOnError>({
+    public static getByKey<ThrowOnError extends boolean = true>(options?: Options<GetByKeyData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetByKeyResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/latest-page-data',
             ...options
         });
@@ -136,6 +122,22 @@ export class CrawlService {
     public static startCrawl<ThrowOnError extends boolean = true>(options?: Options<StartCrawlData, ThrowOnError>) {
         return (options?.client ?? client).sse.get<StartCrawlResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/crawl',
+            ...options
+        });
+    }
+}
+
+export class IssueService {
+    public static getAllIssues<ThrowOnError extends boolean = true>(options?: Options<GetAllIssuesData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetAllIssuesResponses, unknown, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/issue',
+            ...options
+        });
+    }
+    
+    public static getIssue<ThrowOnError extends boolean = true>(options: Options<GetIssueData, ThrowOnError>) {
+        return (options.client ?? client).get<GetIssueResponses, unknown, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/issue/{id}',
             ...options
         });
     }

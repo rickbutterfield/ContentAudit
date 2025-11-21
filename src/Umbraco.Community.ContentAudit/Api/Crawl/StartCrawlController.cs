@@ -1,31 +1,21 @@
-﻿using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Umbraco.Community.ContentAudit.Authorization;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models.Dtos;
 
-namespace Umbraco.Community.ContentAudit.Api
+namespace Umbraco.Community.ContentAudit.Api.Crawl
 {
     /// <summary>
-    /// Management API controller for initiating and monitoring audit crawl operations.
+    /// Starts a new audit crawl and streams progress updates.
     /// </summary>
-    [ApiVersion("1.0")]
-    [ApiExplorerSettings(GroupName = "Crawl")]
-    [Authorize(Policy = AuthorizationPolicies.SectionAccessContentAudit)]
-    [Route($"{Constants.ManagementApi.RootPath}/crawl")]
-    public class CrawlController : ContentAuditManagementApiControllerBase
+    public class StartCrawlController : CrawlControllerBase
     {
-        private readonly IAuditService _auditService;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="CrawlController"/> class.
+        /// Initializes a new instance of the controller.
         /// </summary>
-        /// <param name="auditService">The audit service for performing crawl operations.</param>
-        public CrawlController(IAuditService auditService)
-            => _auditService = auditService;
+        /// <param name="auditService">Audit service</param>
+        public StartCrawlController(IAuditService auditService) : base(auditService) { }
 
         /// <summary>
         /// Starts a new audit crawl and streams progress updates via Server-Sent Events (SSE).
@@ -44,7 +34,7 @@ namespace Umbraco.Community.ContentAudit.Api
         {
             string absoluteRootUrl = $"{Request.Scheme}://{Request.Host}";
 
-            return TypedResults.ServerSentEvents(_auditService.StartCrawl(absoluteRootUrl, cancellationToken), "crawl");
+            return TypedResults.ServerSentEvents(AuditService.StartCrawl(absoluteRootUrl, cancellationToken), "crawl");
         }
     }
 }

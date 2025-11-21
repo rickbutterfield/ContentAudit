@@ -1,7 +1,7 @@
 ﻿import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
 import { tryExecute } from '@umbraco-cms/backoffice/resources';
-import { AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, GetCollectionResponse } from "../../api";
+import { AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, GetCollectionResponse, IssueService } from "../../api";
 
 export interface AuditDataSource {
     getLatestAuditOverview(): Promise<UmbDataSourceResponse<GetLatestAuditOverviewResponse>>
@@ -27,7 +27,7 @@ export class ContentAuditDataSource implements AuditDataSource {
     }
 
     async getTopIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>> {
-        return await tryExecute(this.#host, AuditService.getAllIssues({
+        return await tryExecute(this.#host, IssueService.getAllIssues({
             query: { skip: 0, take: 5 }
         }));
     }

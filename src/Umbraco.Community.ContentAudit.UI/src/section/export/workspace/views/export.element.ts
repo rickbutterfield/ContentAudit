@@ -10,7 +10,7 @@ export class ContentAuditExportElement extends UmbElementMixin(LitElement) {
     }
 
     async #exportCsv() {
-        const { data, error } = await tryExecuteAndNotify(this, AuditService.getExportData());
+        const { data, error } = await tryExecuteAndNotify(this, AuditService.export());
 
         if (data) {
             const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });

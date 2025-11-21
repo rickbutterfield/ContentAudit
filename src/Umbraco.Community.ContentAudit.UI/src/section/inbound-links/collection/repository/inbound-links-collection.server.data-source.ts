@@ -11,7 +11,7 @@ export class ContentAuditInboundLinksCollectionDataSource implements UmbCollecti
 	}
 
 	async getCollection(filter: UmbCollectionFilterModel) {
-		const { data, error } = await tryExecute(this.#host, AuditService.getInteralLinks({ query: filter }));
+		const { data, error } = await tryExecute(this.#host, AuditService.getInternalLinks({ query: filter }));
 
 		if (error) {
 			return { error };

@@ -13,7 +13,7 @@ class y {
     c(this, n, e);
   }
   async getCollection(e) {
-    const { data: t, error: r } = await f(s(this, n), C.getInteralLinks({ query: e }));
+    const { data: t, error: r } = await f(s(this, n), C.getInternalLinks({ query: e }));
     if (r)
       return { error: r };
     if (!t)

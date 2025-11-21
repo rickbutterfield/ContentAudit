@@ -15,11 +15,7 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         /// Initializes a new instance of the <see cref="GetCollectionAuditsController"/> class.
         /// </summary>
         /// <param name="dataService">The data service for audit operations.</param>
-        public GetCollectionAuditsController(
-            IDataService dataService)
-        : base(dataService)
-        {
-        }
+        public GetCollectionAuditsController(IDataService dataService) : base(dataService) { }
 
         /// <summary>
         /// Gets a paginated collection of all audit run overviews with summary statistics and health scores.

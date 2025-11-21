@@ -420,25 +420,6 @@ export type GetAllImagesResponses = {
 
 export type GetAllImagesResponse = GetAllImagesResponses[keyof GetAllImagesResponses];
 
-export type GetAllIssuesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        skip?: number;
-        take?: number;
-    };
-    url: '/umbraco/content-audit/management/api/v1/audit/all-issues';
-};
-
-export type GetAllIssuesResponses = {
-    /**
-     * OK
-     */
-    200: PagedIssueDtoModel;
-};
-
-export type GetAllIssuesResponse = GetAllIssuesResponses[keyof GetAllIssuesResponses];
-
 export type GetDuplicateContentUrlsData = {
     body?: never;
     path?: never;
@@ -459,21 +440,21 @@ export type GetDuplicateContentUrlsResponses = {
 
 export type GetDuplicateContentUrlsResponse = GetDuplicateContentUrlsResponses[keyof GetDuplicateContentUrlsResponses];
 
-export type GetExportDataData = {
+export type ExportData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/audit/export';
 };
 
-export type GetExportDataResponses = {
+export type ExportResponses = {
     /**
      * OK
      */
     200: Blob | File;
 };
 
-export type GetExportDataResponse = GetExportDataResponses[keyof GetExportDataResponses];
+export type ExportResponse = ExportResponses[keyof ExportResponses];
 
 export type GetExternalLinksData = {
     body?: never;
@@ -511,7 +492,7 @@ export type GetHealthScoreResponses = {
 
 export type GetHealthScoreResponse = GetHealthScoreResponses[keyof GetHealthScoreResponses];
 
-export type GetInteralLinksData = {
+export type GetInternalLinksData = {
     body?: never;
     path?: never;
     query?: {
@@ -522,32 +503,14 @@ export type GetInteralLinksData = {
     url: '/umbraco/content-audit/management/api/v1/audit/internal-links';
 };
 
-export type GetInteralLinksResponses = {
+export type GetInternalLinksResponses = {
     /**
      * OK
      */
     200: PagedLinkGroupDtoModel;
 };
 
-export type GetInteralLinksResponse = GetInteralLinksResponses[keyof GetInteralLinksResponses];
-
-export type GetIssueData = {
-    body?: never;
-    path?: never;
-    query?: {
-        issueGuid?: string;
-    };
-    url: '/umbraco/content-audit/management/api/v1/audit/issue';
-};
-
-export type GetIssueResponses = {
-    /**
-     * OK
-     */
-    200: IssueDto;
-};
-
-export type GetIssueResponse = GetIssueResponses[keyof GetIssueResponses];
+export type GetInternalLinksResponse = GetInternalLinksResponses[keyof GetInternalLinksResponses];
 
 export type GetLatestAuditOverviewData = {
     body?: never;
@@ -586,7 +549,7 @@ export type GetLatestAuditDataResponses = {
 
 export type GetLatestAuditDataResponse = GetLatestAuditDataResponses[keyof GetLatestAuditDataResponses];
 
-export type GetLatestPageAuditDataData = {
+export type GetByKeyData = {
     body?: never;
     path?: never;
     query?: {
@@ -595,14 +558,14 @@ export type GetLatestPageAuditDataData = {
     url: '/umbraco/content-audit/management/api/v1/audit/latest-page-data';
 };
 
-export type GetLatestPageAuditDataResponses = {
+export type GetByKeyResponses = {
     /**
      * OK
      */
     200: PageAnalysisDto;
 };
 
-export type GetLatestPageAuditDataResponse = GetLatestPageAuditDataResponses[keyof GetLatestPageAuditDataResponses];
+export type GetByKeyResponse = GetByKeyResponses[keyof GetByKeyResponses];
 
 export type GetPagesWithMissingMetadataData = {
     body?: never;
@@ -693,6 +656,43 @@ export type StartCrawlResponses = {
 };
 
 export type StartCrawlResponse = StartCrawlResponses[keyof StartCrawlResponses];
+
+export type GetAllIssuesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+    };
+    url: '/umbraco/content-audit/management/api/v1/issue';
+};
+
+export type GetAllIssuesResponses = {
+    /**
+     * OK
+     */
+    200: PagedIssueDtoModel;
+};
+
+export type GetAllIssuesResponse = GetAllIssuesResponses[keyof GetAllIssuesResponses];
+
+export type GetIssueData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/issue/{id}';
+};
+
+export type GetIssueResponses = {
+    /**
+     * OK
+     */
+    200: IssueDto;
+};
+
+export type GetIssueResponse = GetIssueResponses[keyof GetIssueResponses];
 
 export type GetSettingsData = {
     body?: never;

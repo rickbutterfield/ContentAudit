@@ -29,9 +29,7 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         /// <param name="dataService">The data service for accessing audit data.</param>
         public AuditControllerBase(
             IDataService dataService)
-        {
-            DataService = dataService;
-        }
+            => DataService = dataService;
 
         /// <summary>
         /// Gets the data service for accessing audit data, issues, pages, and related information.
