@@ -21,41 +21,49 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
     /// 
     /// This is flagged as a high-priority warning to ensure SEO best practices are being followed.
     /// </remarks>
+    /// <inheritdoc />
     public class CanonicalisedUrls : IAuditPageIssue
     {
         /// <summary>
         /// Gets the unique identifier for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public Guid Id => new Guid("cccb0159-f35f-45be-a32d-b2f7832eb242");
 
         /// <summary>
         /// Gets the display name of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Name => "Canonicalised";
 
         /// <summary>
         /// Gets the description of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public string Description => "Pages that have a canonical to a different URL";
 
         /// <summary>
         /// Gets the category this audit issue belongs to.
         /// </summary>
+        /// <inheritdoc />
         public string Category => "Canonicals";
 
         /// <summary>
         /// Gets the issue type classification.
         /// </summary>
+        /// <inheritdoc />
         public IssueType Type => IssueType.Warning;
 
         /// <summary>
         /// Gets the priority level of this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IssuePriority Priority => IssuePriority.High;
 
         /// <summary>
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
+        /// <inheritdoc />
         public IEnumerable<AuditIssueProperty> ExposedProperties => default;
 
         /// <summary>
@@ -70,6 +78,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// - Canonical URL is not null or empty
         /// - Canonical URL differs from the page's actual URL
         /// </remarks>
+        /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
             return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && !string.IsNullOrEmpty(x.SeoData?.CanonicalUrl) && x.SeoData.CanonicalUrl != x.PageData.Url);
