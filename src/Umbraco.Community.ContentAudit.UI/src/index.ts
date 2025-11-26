@@ -34,13 +34,13 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
         const config = authContext.getOpenApiConfiguration();
 
         client.setConfig({
-            auth: config.token,
-            baseUrl: config.base,
-            credentials: config.credentials,
+            baseUrl: config?.base ?? "",
+            auth: config?.token ?? undefined,
+            credentials: config?.credentials ?? "same-origin",
         });
 
         client.interceptors.request.use(async (request, _options) => {
-            const token = await authContext.getLatestToken();
+            const token = await config.token();
             request.headers.set('Authorization', `Bearer ${token}`);
             return request;
         });

@@ -2,7 +2,7 @@ var pa = (t) => {
   throw TypeError(t);
 };
 var ha = (t, e, a) => e.has(t) || pa("Cannot " + a);
-var u = (t, e, a) => (ha(t, e, "read from private field"), a ? a.call(t) : e.get(t)), y = (t, e, a) => e.has(t) ? pa("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), A = (t, e, a, i) => (ha(t, e, "write to private field"), i ? i.call(t, a) : e.set(t, a), a);
+var u = (t, e, a) => (ha(t, e, "read from private field"), a ? a.call(t) : e.get(t)), y = (t, e, a) => e.has(t) ? pa("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), A = (t, e, a, n) => (ha(t, e, "write to private field"), n ? n.call(t, a) : e.set(t, a), a);
 import { UMB_AUTH_CONTEXT as gi } from "@umbraco-cms/backoffice/auth";
 import { UmbElementMixin as ce } from "@umbraco-cms/backoffice/element-api";
 import { LitElement as J, html as m, css as T, property as H, customElement as C, nothing as za, state as d } from "@umbraco-cms/backoffice/external/lit";
@@ -56,10 +56,10 @@ const $i = [
     color: "danger"
   }
 ];
-var Ui = Object.defineProperty, Li = Object.getOwnPropertyDescriptor, Ya = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Li(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Ui(e, a, n), n;
+var Ui = Object.defineProperty, Li = Object.getOwnPropertyDescriptor, Ya = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Li(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Ui(e, a, i), i;
 };
 let je = class extends ce(J) {
   constructor() {
@@ -94,10 +94,10 @@ Ya([
 je = Ya([
   C("content-audit-issue-type-label")
 ], je);
-var ki = Object.defineProperty, Ni = Object.getOwnPropertyDescriptor, Ha = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Ni(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && ki(e, a, n), n;
+var ki = Object.defineProperty, Ni = Object.getOwnPropertyDescriptor, Ha = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Ni(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && ki(e, a, i), i;
 };
 let Be = class extends ce(J) {
   constructor() {
@@ -132,10 +132,10 @@ Ha([
 Be = Ha([
   C("content-audit-priority-type-label")
 ], Be);
-var Di = Object.defineProperty, Ri = Object.getOwnPropertyDescriptor, Ka = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Ri(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Di(e, a, n), n;
+var Di = Object.defineProperty, Ri = Object.getOwnPropertyDescriptor, Ka = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Ri(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Di(e, a, i), i;
 };
 let gt = class extends ce(J) {
   _getColor(t) {
@@ -151,10 +151,10 @@ Ka([
 gt = Ka([
   C("content-audit-status-code-label")
 ], gt);
-var Vi = Object.defineProperty, Wi = Object.getOwnPropertyDescriptor, Ga = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Wi(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Vi(e, a, n), n;
+var Vi = Object.defineProperty, Wi = Object.getOwnPropertyDescriptor, Ga = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Wi(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Vi(e, a, i), i;
 };
 let wt = class extends ce(J) {
   constructor() {
@@ -188,8 +188,8 @@ const xi = {
   onRequest: t,
   onSseError: e,
   onSseEvent: a,
-  responseTransformer: i,
-  responseValidator: n,
+  responseTransformer: n,
+  responseValidator: i,
   sseDefaultRetryDelay: o,
   sseMaxRetryAttempts: s,
   sseMaxRetryDelay: l,
@@ -268,7 +268,7 @@ const xi = {
                   X = I;
                 }
               }
-              ma && (n && await n(X), i && (X = await i(X))), a == null || a({
+              ma && (i && await i(X), n && (X = await n(X))), a == null || a({
                 data: X,
                 event: ua,
                 id: b,
@@ -328,12 +328,12 @@ const xi = {
   allowReserved: t,
   explode: e,
   name: a,
-  style: i,
-  value: n
+  style: n,
+  value: i
 }) => {
   if (!e) {
-    const l = (t ? n : n.map((c) => encodeURIComponent(c))).join(Bi(i));
-    switch (i) {
+    const l = (t ? i : i.map((c) => encodeURIComponent(c))).join(Bi(n));
+    switch (n) {
       case "label":
         return `.${l}`;
       case "matrix":
@@ -344,12 +344,12 @@ const xi = {
         return `${a}=${l}`;
     }
   }
-  const o = ji(i), s = n.map((l) => i === "label" || i === "simple" ? t ? l : encodeURIComponent(l) : Xe({
+  const o = ji(n), s = i.map((l) => n === "label" || n === "simple" ? t ? l : encodeURIComponent(l) : Xe({
     allowReserved: t,
     name: a,
     value: l
   })).join(o);
-  return i === "label" || i === "matrix" ? o + s : s;
+  return n === "label" || n === "matrix" ? o + s : s;
 }, Xe = ({
   allowReserved: t,
   name: e,
@@ -366,15 +366,15 @@ const xi = {
   allowReserved: t,
   explode: e,
   name: a,
-  style: i,
-  value: n,
+  style: n,
+  value: i,
   valueOnly: o
 }) => {
-  if (n instanceof Date)
-    return o ? n.toISOString() : `${a}=${n.toISOString()}`;
-  if (i !== "deepObject" && !e) {
+  if (i instanceof Date)
+    return o ? i.toISOString() : `${a}=${i.toISOString()}`;
+  if (n !== "deepObject" && !e) {
     let c = [];
-    Object.entries(n).forEach(([r, b]) => {
+    Object.entries(i).forEach(([r, b]) => {
       c = [
         ...c,
         r,
@@ -382,7 +382,7 @@ const xi = {
       ];
     });
     const h = c.join(",");
-    switch (i) {
+    switch (n) {
       case "form":
         return `${a}=${h}`;
       case "label":
@@ -393,34 +393,34 @@ const xi = {
         return h;
     }
   }
-  const s = zi(i), l = Object.entries(n).map(
+  const s = zi(n), l = Object.entries(i).map(
     ([c, h]) => Xe({
       allowReserved: t,
-      name: i === "deepObject" ? `${a}[${c}]` : c,
+      name: n === "deepObject" ? `${a}[${c}]` : c,
       value: h
     })
   ).join(s);
-  return i === "label" || i === "matrix" ? s + l : l;
+  return n === "label" || n === "matrix" ? s + l : l;
 }, qi = /\{[^{}]+\}/g, Yi = ({ path: t, url: e }) => {
   let a = e;
-  const i = e.match(qi);
-  if (i)
-    for (const n of i) {
-      let o = !1, s = n.substring(1, n.length - 1), l = "simple";
+  const n = e.match(qi);
+  if (n)
+    for (const i of n) {
+      let o = !1, s = i.substring(1, i.length - 1), l = "simple";
       s.endsWith("*") && (o = !0, s = s.substring(0, s.length - 1)), s.startsWith(".") ? (s = s.substring(1), l = "label") : s.startsWith(";") && (s = s.substring(1), l = "matrix");
       const c = t[s];
       if (c == null)
         continue;
       if (Array.isArray(c)) {
         a = a.replace(
-          n,
+          i,
           Xa({ explode: o, name: s, style: l, value: c })
         );
         continue;
       }
       if (typeof c == "object") {
         a = a.replace(
-          n,
+          i,
           Ja({
             explode: o,
             name: s,
@@ -433,7 +433,7 @@ const xi = {
       }
       if (l === "matrix") {
         a = a.replace(
-          n,
+          i,
           `;${Xe({
             name: s,
             value: c
@@ -444,20 +444,20 @@ const xi = {
       const h = encodeURIComponent(
         l === "label" ? `.${c}` : c
       );
-      a = a.replace(n, h);
+      a = a.replace(i, h);
     }
   return a;
 }, Hi = ({
   baseUrl: t,
   path: e,
   query: a,
-  querySerializer: i,
-  url: n
+  querySerializer: n,
+  url: i
 }) => {
-  const o = n.startsWith("/") ? n : `/${n}`;
+  const o = i.startsWith("/") ? i : `/${i}`;
   let s = (t ?? "") + o;
   e && (s = Yi({ path: e, url: s }));
-  let l = a ? i(a) : "";
+  let l = a ? n(a) : "";
   return l.startsWith("?") && (l = l.substring(1)), l && (s += `?${l}`), s;
 };
 function Ki(t) {
@@ -475,11 +475,11 @@ const Gi = async (t, e) => {
   allowReserved: t,
   array: e,
   object: a
-} = {}) => (n) => {
+} = {}) => (i) => {
   const o = [];
-  if (n && typeof n == "object")
-    for (const s in n) {
-      const l = n[s];
+  if (i && typeof i == "object")
+    for (const s in i) {
+      const l = i[s];
       if (l != null)
         if (Array.isArray(l)) {
           const c = Xa({
@@ -522,15 +522,15 @@ const Gi = async (t, e) => {
     if (e === "multipart/form-data")
       return "formData";
     if (["application/", "audio/", "image/", "video/"].some(
-      (i) => e.startsWith(i)
+      (n) => e.startsWith(n)
     ))
       return "blob";
     if (e.startsWith("text/"))
       return "text";
   }
 }, Xi = (t, e) => {
-  var a, i;
-  return e ? !!(t.headers.has(e) || (a = t.query) != null && a[e] || (i = t.headers.get("Cookie")) != null && i.includes(`${e}=`)) : !1;
+  var a, n;
+  return e ? !!(t.headers.has(e) || (a = t.query) != null && a[e] || (n = t.headers.get("Cookie")) != null && n.includes(`${e}=`)) : !1;
 }, Ji = async ({
   security: t,
   ...e
@@ -538,20 +538,20 @@ const Gi = async (t, e) => {
   for (const a of t) {
     if (Xi(e, a.name))
       continue;
-    const i = await Gi(a, e.auth);
-    if (!i)
+    const n = await Gi(a, e.auth);
+    if (!n)
       continue;
-    const n = a.name ?? "Authorization";
+    const i = a.name ?? "Authorization";
     switch (a.in) {
       case "query":
-        e.query || (e.query = {}), e.query[n] = i;
+        e.query || (e.query = {}), e.query[i] = n;
         break;
       case "cookie":
-        e.headers.append("Cookie", `${n}=${i}`);
+        e.headers.append("Cookie", `${i}=${n}`);
         break;
       case "header":
       default:
-        e.headers.set(n, i);
+        e.headers.set(i, n);
         break;
     }
   }
@@ -562,28 +562,28 @@ const Gi = async (t, e) => {
   querySerializer: typeof t.querySerializer == "function" ? t.querySerializer : Qa(t.querySerializer),
   url: t.url
 }), ba = (t, e) => {
-  var i;
+  var n;
   const a = { ...t, ...e };
-  return (i = a.baseUrl) != null && i.endsWith("/") && (a.baseUrl = a.baseUrl.substring(0, a.baseUrl.length - 1)), a.headers = Za(t.headers, e.headers), a;
+  return (n = a.baseUrl) != null && n.endsWith("/") && (a.baseUrl = a.baseUrl.substring(0, a.baseUrl.length - 1)), a.headers = Za(t.headers, e.headers), a;
 }, Qi = (t) => {
   const e = [];
-  return t.forEach((a, i) => {
-    e.push([i, a]);
+  return t.forEach((a, n) => {
+    e.push([n, a]);
   }), e;
 }, Za = (...t) => {
   const e = new Headers();
   for (const a of t) {
     if (!a)
       continue;
-    const i = a instanceof Headers ? Qi(a) : Object.entries(a);
-    for (const [n, o] of i)
+    const n = a instanceof Headers ? Qi(a) : Object.entries(a);
+    for (const [i, o] of n)
       if (o === null)
-        e.delete(n);
+        e.delete(i);
       else if (Array.isArray(o))
         for (const s of o)
-          e.append(n, s);
+          e.append(i, s);
       else o !== void 0 && e.set(
-        n,
+        i,
         typeof o == "object" ? JSON.stringify(o) : o
       );
   }
@@ -608,8 +608,8 @@ class bt {
     return typeof e == "number" ? this.fns[e] ? e : -1 : this.fns.indexOf(e);
   }
   update(e, a) {
-    const i = this.getInterceptorIndex(e);
-    return this.fns[i] ? (this.fns[i] = a, e) : !1;
+    const n = this.getInterceptorIndex(e);
+    return this.fns[n] ? (this.fns[n] = a, e) : !1;
   }
   use(e) {
     return this.fns.push(e), this.fns.length - 1;
@@ -639,7 +639,7 @@ const Zi = () => ({
   ...t
 }), as = (t = {}) => {
   let e = ba(en(), t);
-  const a = () => ({ ...e }), i = (h) => (e = ba(e, h), a()), n = Zi(), o = async (h) => {
+  const a = () => ({ ...e }), n = (h) => (e = ba(e, h), a()), i = Zi(), o = async (h) => {
     const r = {
       ...e,
       ...h,
@@ -660,11 +660,11 @@ const Zi = () => ({
       body: Ki(r)
     };
     let U = new Request(b, ue);
-    for (const f of n.request.fns)
+    for (const f of i.request.fns)
       f && (U = await f(U, r));
     const De = r.fetch;
     let p = await De(U);
-    for (const f of n.response.fns)
+    for (const f of i.response.fns)
       f && (p = await f(p, U, r));
     const v = {
       request: U,
@@ -724,7 +724,7 @@ const Zi = () => ({
     }
     const F = me ?? G;
     let E = F;
-    for (const f of n.error.fns)
+    for (const f of i.error.fns)
       f && (E = await f(F, p, U, r));
     if (E = E || {}, r.throwOnError)
       throw E;
@@ -741,7 +741,7 @@ const Zi = () => ({
       method: h,
       onRequest: async (U, De) => {
         let p = new Request(U, De);
-        for (const v of n.request.fns)
+        for (const v of i.request.fns)
           v && (p = await v(p, b));
         return p;
       },
@@ -755,13 +755,13 @@ const Zi = () => ({
     get: l("GET"),
     getConfig: a,
     head: l("HEAD"),
-    interceptors: n,
+    interceptors: i,
     options: l("OPTIONS"),
     patch: l("PATCH"),
     post: l("POST"),
     put: l("PUT"),
     request: s,
-    setConfig: i,
+    setConfig: n,
     sse: {
       connect: c("CONNECT"),
       delete: c("DELETE"),
@@ -895,10 +895,10 @@ class ns {
     });
   }
 }
-var is = Object.defineProperty, ss = Object.getOwnPropertyDescriptor, an = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? ss(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && is(e, a, n), n;
+var is = Object.defineProperty, ss = Object.getOwnPropertyDescriptor, an = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? ss(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && is(e, a, i), i;
 };
 let ze = class extends ce(J) {
   _getColour() {
@@ -1022,7 +1022,7 @@ class Ot extends qa {
     y(this, oe);
     y(this, le);
     y(this, re);
-    this.workspaceAlias = qe, A(this, ne, new ht(void 0)), this.latestAuditOverview = u(this, ne).asObservable(), A(this, ie, new _t([], (i) => i.key)), this.auditOverviews = u(this, ie).asObservable(), A(this, se, new _t([], (i) => i.unique)), this.pagesWithMissingMetadata = u(this, se).asObservable(), A(this, oe, new _t([], (i) => i.name)), this.topIssues = u(this, oe).asObservable(), A(this, le, new ht(void 0)), this.healthScore = u(this, le).asObservable(), A(this, re, new ht(void 0)), this.settings = u(this, re).asObservable(), this.provideContext(Ii, this), this.provideContext(sn, this), A(this, $, new cs(this));
+    this.workspaceAlias = qe, A(this, ne, new ht(void 0)), this.latestAuditOverview = u(this, ne).asObservable(), A(this, ie, new _t([], (n) => n.key)), this.auditOverviews = u(this, ie).asObservable(), A(this, se, new _t([], (n) => n.unique)), this.pagesWithMissingMetadata = u(this, se).asObservable(), A(this, oe, new _t([], (n) => n.name)), this.topIssues = u(this, oe).asObservable(), A(this, le, new ht(void 0)), this.healthScore = u(this, le).asObservable(), A(this, re, new ht(void 0)), this.settings = u(this, re).asObservable(), this.provideContext(Ii, this), this.provideContext(sn, this), A(this, $, new cs(this));
   }
   getEntityType() {
     return nn;
@@ -1034,11 +1034,11 @@ class Ot extends qa {
   async getAuditOverviews() {
     const { data: a } = await u(this, $).getAuditOverviews();
     if (a && a.items) {
-      const i = a.items.sort((n, o) => {
-        const s = n.runDate ? new Date(n.runDate).getTime() : 0;
+      const n = a.items.sort((i, o) => {
+        const s = i.runDate ? new Date(i.runDate).getTime() : 0;
         return (o.runDate ? new Date(o.runDate).getTime() : 0) - s;
       });
-      u(this, ie).setValue(i);
+      u(this, ie).setValue(n);
     }
   }
   async getPagesWithMissingMetadata() {
@@ -1084,16 +1084,16 @@ const ms = (t) => (e, a) => {
  */
 const xe = globalThis, kt = xe.ShadowRoot && (xe.ShadyCSS === void 0 || xe.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, on = Symbol(), Ca = /* @__PURE__ */ new WeakMap();
 let ds = class {
-  constructor(e, a, i) {
-    if (this._$cssResult$ = !0, i !== on) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+  constructor(e, a, n) {
+    if (this._$cssResult$ = !0, n !== on) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = a;
   }
   get styleSheet() {
     let e = this.o;
     const a = this.t;
     if (kt && e === void 0) {
-      const i = a !== void 0 && a.length === 1;
-      i && (e = Ca.get(a)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), i && Ca.set(a, e));
+      const n = a !== void 0 && a.length === 1;
+      n && (e = Ca.get(a)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), n && Ca.set(a, e));
     }
     return e;
   }
@@ -1104,12 +1104,12 @@ let ds = class {
 const ps = (t) => new ds(typeof t == "string" ? t : t + "", void 0, on), hs = (t, e) => {
   if (kt) t.adoptedStyleSheets = e.map((a) => a instanceof CSSStyleSheet ? a : a.styleSheet);
   else for (const a of e) {
-    const i = document.createElement("style"), n = xe.litNonce;
-    n !== void 0 && i.setAttribute("nonce", n), i.textContent = a.cssText, t.appendChild(i);
+    const n = document.createElement("style"), i = xe.litNonce;
+    i !== void 0 && n.setAttribute("nonce", i), n.textContent = a.cssText, t.appendChild(n);
   }
 }, fa = kt ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let a = "";
-  for (const i of e.cssRules) a += i.cssText;
+  for (const n of e.cssRules) a += n.cssText;
   return ps(a);
 })(t) : t;
 /**
@@ -1156,19 +1156,19 @@ class de extends HTMLElement {
   }
   static createProperty(e, a = Aa) {
     if (a.state && (a.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((a = Object.create(a)).wrapped = !0), this.elementProperties.set(e, a), !a.noAccessor) {
-      const i = Symbol(), n = this.getPropertyDescriptor(e, i, a);
-      n !== void 0 && bs(this.prototype, e, n);
+      const n = Symbol(), i = this.getPropertyDescriptor(e, n, a);
+      i !== void 0 && bs(this.prototype, e, i);
     }
   }
-  static getPropertyDescriptor(e, a, i) {
-    const { get: n, set: o } = Cs(this.prototype, e) ?? { get() {
+  static getPropertyDescriptor(e, a, n) {
+    const { get: i, set: o } = Cs(this.prototype, e) ?? { get() {
       return this[a];
     }, set(s) {
       this[a] = s;
     } };
-    return { get: n, set(s) {
-      const l = n == null ? void 0 : n.call(this);
-      o == null || o.call(this, s), this.requestUpdate(e, l, i);
+    return { get: i, set(s) {
+      const l = i == null ? void 0 : i.call(this);
+      o == null || o.call(this, s), this.requestUpdate(e, l, n);
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
@@ -1182,32 +1182,32 @@ class de extends HTMLElement {
   static finalize() {
     if (this.hasOwnProperty(pe("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(pe("properties"))) {
-      const a = this.properties, i = [...fs(a), ...ys(a)];
-      for (const n of i) this.createProperty(n, a[n]);
+      const a = this.properties, n = [...fs(a), ...ys(a)];
+      for (const i of n) this.createProperty(i, a[i]);
     }
     const e = this[Symbol.metadata];
     if (e !== null) {
       const a = litPropertyMetadata.get(e);
-      if (a !== void 0) for (const [i, n] of a) this.elementProperties.set(i, n);
+      if (a !== void 0) for (const [n, i] of a) this.elementProperties.set(n, i);
     }
     this._$Eh = /* @__PURE__ */ new Map();
-    for (const [a, i] of this.elementProperties) {
-      const n = this._$Eu(a, i);
-      n !== void 0 && this._$Eh.set(n, a);
+    for (const [a, n] of this.elementProperties) {
+      const i = this._$Eu(a, n);
+      i !== void 0 && this._$Eh.set(i, a);
     }
     this.elementStyles = this.finalizeStyles(this.styles);
   }
   static finalizeStyles(e) {
     const a = [];
     if (Array.isArray(e)) {
-      const i = new Set(e.flat(1 / 0).reverse());
-      for (const n of i) a.unshift(fa(n));
+      const n = new Set(e.flat(1 / 0).reverse());
+      for (const i of n) a.unshift(fa(i));
     } else e !== void 0 && a.push(fa(e));
     return a;
   }
   static _$Eu(e, a) {
-    const i = a.attribute;
-    return i === !1 ? void 0 : typeof i == "string" ? i : typeof e == "string" ? e.toLowerCase() : void 0;
+    const n = a.attribute;
+    return n === !1 ? void 0 : typeof n == "string" ? n : typeof e == "string" ? e.toLowerCase() : void 0;
   }
   constructor() {
     super(), this._$Ep = void 0, this.isUpdatePending = !1, this.hasUpdated = !1, this._$Em = null, this._$Ev();
@@ -1226,7 +1226,7 @@ class de extends HTMLElement {
   }
   _$E_() {
     const e = /* @__PURE__ */ new Map(), a = this.constructor.elementProperties;
-    for (const i of a.keys()) this.hasOwnProperty(i) && (e.set(i, this[i]), delete this[i]);
+    for (const n of a.keys()) this.hasOwnProperty(n) && (e.set(n, this[n]), delete this[n]);
     e.size > 0 && (this._$Ep = e);
   }
   createRenderRoot() {
@@ -1236,8 +1236,8 @@ class de extends HTMLElement {
   connectedCallback() {
     var e;
     this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), (e = this._$EO) == null || e.forEach((a) => {
-      var i;
-      return (i = a.hostConnected) == null ? void 0 : i.call(a);
+      var n;
+      return (n = a.hostConnected) == null ? void 0 : n.call(a);
     });
   }
   enableUpdating(e) {
@@ -1245,40 +1245,40 @@ class de extends HTMLElement {
   disconnectedCallback() {
     var e;
     (e = this._$EO) == null || e.forEach((a) => {
-      var i;
-      return (i = a.hostDisconnected) == null ? void 0 : i.call(a);
+      var n;
+      return (n = a.hostDisconnected) == null ? void 0 : n.call(a);
     });
   }
-  attributeChangedCallback(e, a, i) {
-    this._$AK(e, i);
+  attributeChangedCallback(e, a, n) {
+    this._$AK(e, n);
   }
   _$ET(e, a) {
     var o;
-    const i = this.constructor.elementProperties.get(e), n = this.constructor._$Eu(e, i);
-    if (n !== void 0 && i.reflect === !0) {
-      const s = (((o = i.converter) == null ? void 0 : o.toAttribute) !== void 0 ? i.converter : Et).toAttribute(a, i.type);
-      this._$Em = e, s == null ? this.removeAttribute(n) : this.setAttribute(n, s), this._$Em = null;
+    const n = this.constructor.elementProperties.get(e), i = this.constructor._$Eu(e, n);
+    if (i !== void 0 && n.reflect === !0) {
+      const s = (((o = n.converter) == null ? void 0 : o.toAttribute) !== void 0 ? n.converter : Et).toAttribute(a, n.type);
+      this._$Em = e, s == null ? this.removeAttribute(i) : this.setAttribute(i, s), this._$Em = null;
     }
   }
   _$AK(e, a) {
     var o, s;
-    const i = this.constructor, n = i._$Eh.get(e);
-    if (n !== void 0 && this._$Em !== n) {
-      const l = i.getPropertyOptions(n), c = typeof l.converter == "function" ? { fromAttribute: l.converter } : ((o = l.converter) == null ? void 0 : o.fromAttribute) !== void 0 ? l.converter : Et;
-      this._$Em = n, this[n] = c.fromAttribute(a, l.type) ?? ((s = this._$Ej) == null ? void 0 : s.get(n)) ?? null, this._$Em = null;
+    const n = this.constructor, i = n._$Eh.get(e);
+    if (i !== void 0 && this._$Em !== i) {
+      const l = n.getPropertyOptions(i), c = typeof l.converter == "function" ? { fromAttribute: l.converter } : ((o = l.converter) == null ? void 0 : o.fromAttribute) !== void 0 ? l.converter : Et;
+      this._$Em = i, this[i] = c.fromAttribute(a, l.type) ?? ((s = this._$Ej) == null ? void 0 : s.get(i)) ?? null, this._$Em = null;
     }
   }
-  requestUpdate(e, a, i) {
-    var n;
+  requestUpdate(e, a, n) {
+    var i;
     if (e !== void 0) {
       const o = this.constructor, s = this[e];
-      if (i ?? (i = o.getPropertyOptions(e)), !((i.hasChanged ?? ln)(s, a) || i.useDefault && i.reflect && s === ((n = this._$Ej) == null ? void 0 : n.get(e)) && !this.hasAttribute(o._$Eu(e, i)))) return;
-      this.C(e, a, i);
+      if (n ?? (n = o.getPropertyOptions(e)), !((n.hasChanged ?? ln)(s, a) || n.useDefault && n.reflect && s === ((i = this._$Ej) == null ? void 0 : i.get(e)) && !this.hasAttribute(o._$Eu(e, n)))) return;
+      this.C(e, a, n);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
   }
-  C(e, a, { useDefault: i, reflect: n, wrapped: o }, s) {
-    i && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, s ?? a ?? this[e]), o !== !0 || s !== void 0) || (this._$AL.has(e) || (this.hasUpdated || i || (a = void 0), this._$AL.set(e, a)), n === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
+  C(e, a, { useDefault: n, reflect: i, wrapped: o }, s) {
+    n && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, s ?? a ?? this[e]), o !== !0 || s !== void 0) || (this._$AL.has(e) || (this.hasUpdated || n || (a = void 0), this._$AL.set(e, a)), i === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
   }
   async _$EP() {
     this.isUpdatePending = !0;
@@ -1294,15 +1294,15 @@ class de extends HTMLElement {
     return this.performUpdate();
   }
   performUpdate() {
-    var i;
+    var n;
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this._$Ep) {
         for (const [o, s] of this._$Ep) this[o] = s;
         this._$Ep = void 0;
       }
-      const n = this.constructor.elementProperties;
-      if (n.size > 0) for (const [o, s] of n) {
+      const i = this.constructor.elementProperties;
+      if (i.size > 0) for (const [o, s] of i) {
         const { wrapped: l } = s, c = this[o];
         l !== !0 || this._$AL.has(o) || c === void 0 || this.C(o, void 0, s, c);
       }
@@ -1310,12 +1310,12 @@ class de extends HTMLElement {
     let e = !1;
     const a = this._$AL;
     try {
-      e = this.shouldUpdate(a), e ? (this.willUpdate(a), (i = this._$EO) == null || i.forEach((n) => {
+      e = this.shouldUpdate(a), e ? (this.willUpdate(a), (n = this._$EO) == null || n.forEach((i) => {
         var o;
-        return (o = n.hostUpdate) == null ? void 0 : o.call(n);
+        return (o = i.hostUpdate) == null ? void 0 : o.call(i);
       }), this.update(a)) : this._$EM();
-    } catch (n) {
-      throw e = !1, this._$EM(), n;
+    } catch (i) {
+      throw e = !1, this._$EM(), i;
     }
     e && this._$AE(a);
   }
@@ -1323,9 +1323,9 @@ class de extends HTMLElement {
   }
   _$AE(e) {
     var a;
-    (a = this._$EO) == null || a.forEach((i) => {
-      var n;
-      return (n = i.hostUpdated) == null ? void 0 : n.call(i);
+    (a = this._$EO) == null || a.forEach((n) => {
+      var i;
+      return (i = n.hostUpdated) == null ? void 0 : i.call(n);
     }), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(e)), this.updated(e);
   }
   _$EM() {
@@ -1349,10 +1349,10 @@ class de extends HTMLElement {
   }
 }
 de.elementStyles = [], de.shadowRootOptions = { mode: "open" }, de[pe("elementProperties")] = /* @__PURE__ */ new Map(), de[pe("finalized")] = /* @__PURE__ */ new Map(), Ct == null || Ct({ ReactiveElement: de }), (R.reactiveElementVersions ?? (R.reactiveElementVersions = [])).push("2.1.0");
-var vs = Object.getOwnPropertyDescriptor, gs = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? vs(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = s(n) || n);
-  return n;
+var vs = Object.getOwnPropertyDescriptor, gs = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? vs(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = s(i) || i);
+  return i;
 };
 let Ye = class extends ce(J) {
   constructor() {
@@ -1382,13 +1382,13 @@ class Es {
     A(this, Pe, e);
   }
   async getCollection(e) {
-    const { data: a, error: i } = await ee(u(this, Pe), tn.getAllIssues({ query: e }));
-    if (i)
-      return { error: i };
+    const { data: a, error: n } = await ee(u(this, Pe), tn.getAllIssues({ query: e }));
+    if (n)
+      return { error: n };
     if (!a)
       return { data: { items: [], total: 0 } };
-    const { items: n, total: o } = a;
-    return { data: { items: n, total: o } };
+    const { items: i, total: o } = a;
+    return { data: { items: i, total: o } };
   }
 }
 Pe = new WeakMap();
@@ -1409,10 +1409,10 @@ const Ss = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   ContentAuditIssuesCollectionRepository: Ta,
   default: Ta
 }, Symbol.toStringTag, { value: "Module" }));
-var $s = Object.defineProperty, Ps = Object.getOwnPropertyDescriptor, cn = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Ps(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && $s(e, a, n), n;
+var $s = Object.defineProperty, Ps = Object.getOwnPropertyDescriptor, cn = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Ps(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && $s(e, a, i), i;
 };
 let He = class extends J {
   render() {
@@ -1443,11 +1443,11 @@ He = cn([
 ], He);
 var Us = Object.defineProperty, Ls = Object.getOwnPropertyDescriptor, un = (t) => {
   throw TypeError(t);
-}, Q = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Ls(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Us(e, a, n), n;
-}, Rt = (t, e, a) => e.has(t) || un("Cannot " + a), va = (t, e, a) => (Rt(t, e, "read from private field"), e.get(t)), ga = (t, e, a) => e.has(t) ? un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), ks = (t, e, a, i) => (Rt(t, e, "write to private field"), e.set(t, a), a), Me = (t, e, a) => (Rt(t, e, "access private method"), a), he, te, mn, Vt, dn;
+}, Q = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Ls(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Us(e, a, i), i;
+}, Rt = (t, e, a) => e.has(t) || un("Cannot " + a), va = (t, e, a) => (Rt(t, e, "read from private field"), e.get(t)), ga = (t, e, a) => e.has(t) ? un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), ks = (t, e, a, n) => (Rt(t, e, "write to private field"), e.set(t, a), a), Me = (t, e, a) => (Rt(t, e, "access private method"), a), he, te, mn, Vt, dn;
 let O = class extends P {
   constructor() {
     super(), ga(this, te), this.data = [], this.hideSummary = !1, this._issues = [], this._tableConfig = {
@@ -1537,7 +1537,7 @@ Vt = function(t) {
 };
 dn = function() {
   if (!this._issues.length || this.hideSummary) return;
-  const t = this._issues.filter((i) => i.priority === "High").length, e = this._issues.filter((i) => i.priority === "Medium").length, a = this._issues.filter((i) => i.priority === "Low").length;
+  const t = this._issues.filter((n) => n.priority === "High").length, e = this._issues.filter((n) => n.priority === "Medium").length, a = this._issues.filter((n) => n.priority === "Low").length;
   return m`
             <div class="summary-container">
                 <div class="summary-grid">
@@ -1929,11 +1929,11 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 ], xt = "Umb.Collection.ContentAudit.AllPages", Js = "Umb.CollectionView.ContentAudit.AllPages.Table", bn = "Umb.Repository.ContentAuditAllPagesCollection";
 var Qs = Object.defineProperty, Zs = Object.getOwnPropertyDescriptor, Cn = (t) => {
   throw TypeError(t);
-}, Ze = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Zs(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Qs(e, a, n), n;
-}, Mt = (t, e, a) => e.has(t) || Cn("Cannot " + a), Oa = (t, e, a) => (Mt(t, e, "read from private field"), e.get(t)), Ea = (t, e, a) => e.has(t) ? Cn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), eo = (t, e, a, i) => (Mt(t, e, "write to private field"), e.set(t, a), a), fn = (t, e, a) => (Mt(t, e, "access private method"), a), _e, Ke, yn, An;
+}, Ze = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Zs(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Qs(e, a, i), i;
+}, Mt = (t, e, a) => e.has(t) || Cn("Cannot " + a), Oa = (t, e, a) => (Mt(t, e, "read from private field"), e.get(t)), Ea = (t, e, a) => e.has(t) ? Cn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), eo = (t, e, a, n) => (Mt(t, e, "write to private field"), e.set(t, a), a), fn = (t, e, a) => (Mt(t, e, "access private method"), a), _e, Ke, yn, An;
 let V = class extends P {
   constructor() {
     super(), Ea(this, Ke), this._tableConfig = {
@@ -1978,7 +1978,7 @@ yn = function() {
 };
 An = function(t) {
   this._tableItems = t.map((e) => {
-    var a, i, n;
+    var a, n, i;
     return {
       id: e == null ? void 0 : e.unique,
       entityType: e == null ? void 0 : e.entityType,
@@ -1990,11 +1990,11 @@ An = function(t) {
         },
         {
           columnAlias: "contentType",
-          value: (i = e.technicalSeoData) == null ? void 0 : i.contentType
+          value: (n = e.technicalSeoData) == null ? void 0 : n.contentType
         },
         {
           columnAlias: "statusCode",
-          value: m`<content-audit-status-code-label .statusCode=${(n = e.pageData) == null ? void 0 : n.statusCode}></content-audit-status-code-label>`
+          value: m`<content-audit-status-code-label .statusCode=${(i = e.pageData) == null ? void 0 : i.statusCode}></content-audit-status-code-label>`
         },
         {
           columnAlias: "redirect",
@@ -2254,11 +2254,11 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, So = [Eo], jt = "Umb.Collection.ContentAudit.StatusCodes", $o = "Umb.CollectionView.ContentAudit.StatusCodes.Table", gn = "Umb.Repository.ContentAuditStatusCodesCollection";
 var Po = Object.defineProperty, Uo = Object.getOwnPropertyDescriptor, wn = (t) => {
   throw TypeError(t);
-}, et = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Uo(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Po(e, a, n), n;
-}, Bt = (t, e, a) => e.has(t) || wn("Cannot " + a), St = (t, e, a) => (Bt(t, e, "read from private field"), e.get(t)), ft = (t, e, a) => e.has(t) ? wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), In = (t, e, a, i) => (Bt(t, e, "write to private field"), e.set(t, a), a), zt = (t, e, a) => (Bt(t, e, "access private method"), a), be, tt, Ce, On, En, Sn;
+}, et = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Uo(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Po(e, a, i), i;
+}, Bt = (t, e, a) => e.has(t) || wn("Cannot " + a), St = (t, e, a) => (Bt(t, e, "read from private field"), e.get(t)), ft = (t, e, a) => e.has(t) ? wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), In = (t, e, a, n) => (Bt(t, e, "write to private field"), e.set(t, a), a), zt = (t, e, a) => (Bt(t, e, "access private method"), a), be, tt, Ce, On, En, Sn;
 let W = class extends P {
   constructor() {
     super(), ft(this, Ce), this._tableConfig = {
@@ -2307,8 +2307,8 @@ Sn = function(t) {
   const e = St(this, tt);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
-    var n, o, s;
-    const i = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
+    var i, o, s;
+    const n = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a == null ? void 0 : a.unique,
       entityType: a == null ? void 0 : a.entityType,
@@ -2316,7 +2316,7 @@ Sn = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${i}>${(n = a.pageData) == null ? void 0 : n.url}</a>`
+          value: m`<a href=${n}>${(i = a.pageData) == null ? void 0 : i.url}</a>`
         },
         {
           columnAlias: "contentType",
@@ -2441,11 +2441,11 @@ const Lo = W, ko = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, Mo = [xo], qt = "Umb.Collection.ContentAudit.OrphanedPages", jo = "Umb.CollectionView.ContentAudit.OrphanedPages.Table", Pn = "Umb.Repository.ContentAuditOrphanedPagesCollection";
 var Bo = Object.defineProperty, zo = Object.getOwnPropertyDescriptor, Un = (t) => {
   throw TypeError(t);
-}, at = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? zo(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Bo(e, a, n), n;
-}, Yt = (t, e, a) => e.has(t) || Un("Cannot " + a), $t = (t, e, a) => (Yt(t, e, "read from private field"), e.get(t)), yt = (t, e, a) => e.has(t) ? Un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), Ln = (t, e, a, i) => (Yt(t, e, "write to private field"), e.set(t, a), a), Ht = (t, e, a) => (Yt(t, e, "access private method"), a), fe, nt, ye, kn, Nn, Dn;
+}, at = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? zo(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Bo(e, a, i), i;
+}, Yt = (t, e, a) => e.has(t) || Un("Cannot " + a), $t = (t, e, a) => (Yt(t, e, "read from private field"), e.get(t)), yt = (t, e, a) => e.has(t) ? Un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), Ln = (t, e, a, n) => (Yt(t, e, "write to private field"), e.set(t, a), a), Ht = (t, e, a) => (Yt(t, e, "access private method"), a), fe, nt, ye, kn, Nn, Dn;
 let x = class extends P {
   constructor() {
     super(), yt(this, ye), this._tableConfig = {
@@ -2486,7 +2486,7 @@ Dn = function(t) {
   const e = $t(this, nt);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
-    const i = e({ entityType: "document" }) + ke.generateLocal({ unique: a.unique });
+    const n = e({ entityType: "document" }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a.unique,
       entityType: a.entityType,
@@ -2494,7 +2494,7 @@ Dn = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${i}>${a.url}</a>`
+          value: m`<a href=${n}>${a.url}</a>`
         }
       ]
     };
@@ -2611,11 +2611,11 @@ const qo = x, Yo = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, Qo = [Jo], Kt = "Umb.Collection.ContentAudit.ImagesAltText", Zo = "Umb.CollectionView.ContentAudit.ImagesAltText.Table", Vn = "Umb.Repository.ContentAuditImagesAltTextCollection";
 var el = Object.defineProperty, tl = Object.getOwnPropertyDescriptor, Wn = (t) => {
   throw TypeError(t);
-}, it = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? tl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && el(e, a, n), n;
-}, Gt = (t, e, a) => e.has(t) || Wn("Cannot " + a), Pt = (t, e, a) => (Gt(t, e, "read from private field"), e.get(t)), At = (t, e, a) => e.has(t) ? Wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), xn = (t, e, a, i) => (Gt(t, e, "write to private field"), e.set(t, a), a), Ft = (t, e, a) => (Gt(t, e, "access private method"), a), Ae, st, Te, Mn, jn, Bn;
+}, it = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? tl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && el(e, a, i), i;
+}, Gt = (t, e, a) => e.has(t) || Wn("Cannot " + a), Pt = (t, e, a) => (Gt(t, e, "read from private field"), e.get(t)), At = (t, e, a) => e.has(t) ? Wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), xn = (t, e, a, n) => (Gt(t, e, "write to private field"), e.set(t, a), a), Ft = (t, e, a) => (Gt(t, e, "access private method"), a), Ae, st, Te, Mn, jn, Bn;
 let M = class extends P {
   constructor() {
     super(), At(this, Te), this._tableConfig = {
@@ -2664,7 +2664,7 @@ Bn = function(t) {
   const e = Pt(this, st);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
-    const i = e({ entityType: "document" }) + ke.generateLocal({ unique: a.unique });
+    const n = e({ entityType: "document" }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a.unique,
       entityType: a.entityType,
@@ -2676,7 +2676,7 @@ Bn = function(t) {
         },
         {
           columnAlias: "foundPage",
-          value: m`<a href=${i}>${a.foundPage}</a>`
+          value: m`<a href=${n}>${a.foundPage}</a>`
         },
         {
           columnAlias: "altText",
@@ -2797,11 +2797,11 @@ const al = M, nl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, ul = [cl], Xt = "Umb.Collection.ContentAudit.OutboundLinks", ml = "Umb.CollectionView.ContentAudit.OutboundLinks.Table", qn = "Umb.Repository.ContentAuditOutboundLinksCollection";
 var dl = Object.defineProperty, pl = Object.getOwnPropertyDescriptor, Yn = (t) => {
   throw TypeError(t);
-}, ot = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? pl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && dl(e, a, n), n;
-}, Jt = (t, e, a) => e.has(t) || Yn("Cannot " + a), ka = (t, e, a) => (Jt(t, e, "read from private field"), e.get(t)), Na = (t, e, a) => e.has(t) ? Yn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hl = (t, e, a, i) => (Jt(t, e, "write to private field"), e.set(t, a), a), Hn = (t, e, a) => (Jt(t, e, "access private method"), a), ve, Ge, Kn, Gn;
+}, ot = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? pl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && dl(e, a, i), i;
+}, Jt = (t, e, a) => e.has(t) || Yn("Cannot " + a), ka = (t, e, a) => (Jt(t, e, "read from private field"), e.get(t)), Na = (t, e, a) => e.has(t) ? Yn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hl = (t, e, a, n) => (Jt(t, e, "write to private field"), e.set(t, a), a), Hn = (t, e, a) => (Jt(t, e, "access private method"), a), ve, Ge, Kn, Gn;
 let j = class extends P {
   constructor() {
     super(), Na(this, Ge), this._tableConfig = {
@@ -2981,11 +2981,11 @@ const _l = j, bl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, gl = [vl], Qt = "Umb.Collection.ContentAudit.InboundLinks", wl = "Umb.CollectionView.ContentAudit.InboundLinks.Table", Xn = "Umb.Repository.ContentAuditInboundLinksCollection";
 var Il = Object.defineProperty, Ol = Object.getOwnPropertyDescriptor, Jn = (t) => {
   throw TypeError(t);
-}, lt = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Ol(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Il(e, a, n), n;
-}, Zt = (t, e, a) => e.has(t) || Jn("Cannot " + a), Ra = (t, e, a) => (Zt(t, e, "read from private field"), e.get(t)), Va = (t, e, a) => e.has(t) ? Jn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), El = (t, e, a, i) => (Zt(t, e, "write to private field"), e.set(t, a), a), Qn = (t, e, a) => (Zt(t, e, "access private method"), a), ge, Fe, Zn, ei;
+}, lt = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Ol(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Il(e, a, i), i;
+}, Zt = (t, e, a) => e.has(t) || Jn("Cannot " + a), Ra = (t, e, a) => (Zt(t, e, "read from private field"), e.get(t)), Va = (t, e, a) => e.has(t) ? Jn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), El = (t, e, a, n) => (Zt(t, e, "write to private field"), e.set(t, a), a), Qn = (t, e, a) => (Zt(t, e, "access private method"), a), ge, Fe, Zn, ei;
 let B = class extends P {
   constructor() {
     super(), Va(this, Fe), this._tableConfig = {
@@ -3234,10 +3234,10 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ...Rl,
   ...jl
 ], zl = [], ta = "Umb.Collection.ContentAudit.DuplicateContent", ql = "Umb.CollectionView.ContentAudit.DuplicateContent.Table", ni = "Umb.Repository.ContentAuditDuplicateContentCollection";
-var Yl = Object.defineProperty, Hl = Object.getOwnPropertyDescriptor, rt = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Hl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && Yl(e, a, n), n;
+var Yl = Object.defineProperty, Hl = Object.getOwnPropertyDescriptor, rt = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Hl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && Yl(e, a, i), i;
 };
 let z = class extends P {
   //#collectionContext?: UmbDefaultCollectionContext<InternalPageGroupDto>;
@@ -3418,11 +3418,11 @@ const Kl = z, Gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, ar = [tr], aa = "Umb.Collection.ContentAudit.CarbonRating", nr = "Umb.CollectionView.ContentAudit.CarbonRating.Table", si = "Umb.Repository.ContentAuditCarbonRatingCollection";
 var ir = Object.defineProperty, sr = Object.getOwnPropertyDescriptor, oi = (t) => {
   throw TypeError(t);
-}, ct = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? sr(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && ir(e, a, n), n;
-}, na = (t, e, a) => e.has(t) || oi("Cannot " + a), Ut = (t, e, a) => (na(t, e, "read from private field"), e.get(t)), Tt = (t, e, a) => e.has(t) ? oi("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), li = (t, e, a, i) => (na(t, e, "write to private field"), e.set(t, a), a), ia = (t, e, a) => (na(t, e, "access private method"), a), we, ut, Ie, ri, ci, ui;
+}, ct = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? sr(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && ir(e, a, i), i;
+}, na = (t, e, a) => e.has(t) || oi("Cannot " + a), Ut = (t, e, a) => (na(t, e, "read from private field"), e.get(t)), Tt = (t, e, a) => e.has(t) ? oi("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), li = (t, e, a, n) => (na(t, e, "write to private field"), e.set(t, a), a), ia = (t, e, a) => (na(t, e, "access private method"), a), we, ut, Ie, ri, ci, ui;
 let q = class extends P {
   constructor() {
     super(), Tt(this, Ie), this._tableConfig = {
@@ -3480,8 +3480,8 @@ ui = function(t) {
   const e = Ut(this, ut);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
-    var n, o, s;
-    const i = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
+    var i, o, s;
+    const n = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a == null ? void 0 : a.unique,
       entityType: a == null ? void 0 : a.entityType,
@@ -3489,7 +3489,7 @@ ui = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${i}>${(n = a.pageData) == null ? void 0 : n.url}</a>`
+          value: m`<a href=${n}>${(i = a.pageData) == null ? void 0 : i.url}</a>`
         },
         {
           columnAlias: "contentType",
@@ -3622,11 +3622,11 @@ const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, hr = [pr], sa = "Umb.Collection.ContentAudit.CoreWebVitals", _r = "Umb.CollectionView.ContentAudit.CoreWebVitals.Table", di = "Umb.Repository.ContentAuditCoreWebVitalsCollection";
 var br = Object.defineProperty, Cr = Object.getOwnPropertyDescriptor, pi = (t) => {
   throw TypeError(t);
-}, mt = (t, e, a, i) => {
-  for (var n = i > 1 ? void 0 : i ? Cr(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (n = (i ? s(e, a, n) : s(n)) || n);
-  return i && n && br(e, a, n), n;
-}, oa = (t, e, a) => e.has(t) || pi("Cannot " + a), Lt = (t, e, a) => (oa(t, e, "read from private field"), e.get(t)), vt = (t, e, a) => e.has(t) ? pi("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hi = (t, e, a, i) => (oa(t, e, "write to private field"), e.set(t, a), a), la = (t, e, a) => (oa(t, e, "access private method"), a), Oe, dt, Ee, _i, bi, Ci;
+}, mt = (t, e, a, n) => {
+  for (var i = n > 1 ? void 0 : n ? Cr(e, a) : e, o = t.length - 1, s; o >= 0; o--)
+    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
+  return n && i && br(e, a, i), i;
+}, oa = (t, e, a) => e.has(t) || pi("Cannot " + a), Lt = (t, e, a) => (oa(t, e, "read from private field"), e.get(t)), vt = (t, e, a) => e.has(t) ? pi("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hi = (t, e, a, n) => (oa(t, e, "write to private field"), e.set(t, a), a), la = (t, e, a) => (oa(t, e, "access private method"), a), Oe, dt, Ee, _i, bi, Ci;
 let Y = class extends P {
   constructor() {
     super(), vt(this, Ee), this._tableConfig = {
@@ -3692,8 +3692,8 @@ Ci = function(t) {
   const e = Lt(this, dt);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.filter((a) => a.pageData.statusCode === 200).map((a) => {
-    var n;
-    const i = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
+    var i;
+    const n = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a == null ? void 0 : a.unique,
       entityType: a == null ? void 0 : a.entityType,
@@ -3701,7 +3701,7 @@ Ci = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${i}>${(n = a.pageData) == null ? void 0 : n.url}</a>`
+          value: m`<a href=${n}>${(i = a.pageData) == null ? void 0 : i.url}</a>`
         },
         {
           columnAlias: "cumulativeLayoutShift",
@@ -4074,14 +4074,14 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     ...jr
   ]), t.consumeContext(gi, async (a) => {
     if (!a) return;
-    const i = a.getOpenApiConfiguration();
+    const n = a.getOpenApiConfiguration();
     _.setConfig({
-      auth: i.token,
-      baseUrl: i.base,
-      credentials: i.credentials
-    }), _.interceptors.request.use(async (n, o) => {
-      const s = await a.getLatestToken();
-      return n.headers.set("Authorization", `Bearer ${s}`), n;
+      baseUrl: (n == null ? void 0 : n.base) ?? "",
+      auth: (n == null ? void 0 : n.token) ?? void 0,
+      credentials: (n == null ? void 0 : n.credentials) ?? "same-origin"
+    }), _.interceptors.request.use(async (i, o) => {
+      const s = await n.token();
+      return i.headers.set("Authorization", `Bearer ${s}`), i;
     });
   });
 };

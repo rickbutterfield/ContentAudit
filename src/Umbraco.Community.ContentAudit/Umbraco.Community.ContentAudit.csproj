@@ -1,72 +1,82 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-	<PropertyGroup>
-		<StaticWebAssetBasePath>/</StaticWebAssetBasePath>
-		<ContentTargetFolders>.</ContentTargetFolders>
+    <PropertyGroup>
+        <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+        <ContentTargetFolders>.</ContentTargetFolders>
 
-		<RootNamespace>Umbraco.Community.ContentAudit</RootNamespace>
-		<Product>ContentAudit</Product>
-		<PackageId>Umbraco.Community.ContentAudit</PackageId>
-		<Title>ContentAudit</Title>
-		<Description>First class site crawling and SEO auditing for Umbraco</Description>
-		<PackageTags>umbraco plugin package umbraco-marketplace</PackageTags>
+        <RootNamespace>Umbraco.Community.ContentAudit</RootNamespace>
+        <Product>ContentAudit</Product>
+        <PackageId>Umbraco.Community.ContentAudit</PackageId>
+        <Title>ContentAudit</Title>
+        <Description>First class site crawling and SEO auditing for Umbraco</Description>
+        <PackageTags>umbraco plugin package umbraco-marketplace</PackageTags>
 
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<PackageProjectUrl>https://github.com/rickbutterfield/ContentAudit</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/rickbutterfield/ContentAudit</RepositoryUrl>
-		<PackageIcon>icon.png</PackageIcon>
+        <PackageProjectUrl>https://github.com/rickbutterfield/ContentAudit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/rickbutterfield/ContentAudit</RepositoryUrl>
+        <PackageIcon>icon.png</PackageIcon>
 
-		<RepositoryType>git</RepositoryType>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-	
-    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
-	</PropertyGroup>
-	
-	<ItemGroup>
-		<PackageReference Include="CsvHelper" />
-		<PackageReference Include="Microsoft.Playwright" />
-		<PackageReference Include="Umbraco.Cms.Core" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" />
-		<PackageReference Include="Umbraco.Cms.Api.Common" />
-		<PackageReference Include="Umbraco.Cms.Api.Management" />
-	</ItemGroup>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 
-	<ItemGroup>
-		<Content Include="buildTransitive\**" PackagePath="buildTransitive" />
-	</ItemGroup>
+        <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="..\..\.github\assets\icon.png">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\.github\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CsvHelper" />
+        <PackageReference Include="Microsoft.Playwright" />
+        <PackageReference Include="Umbraco.Cms.Core" />
+        <PackageReference Include="Umbraco.Cms.Web.Common" />
+        <PackageReference Include="Umbraco.Cms.Web.Website" />
+        <PackageReference Include="Umbraco.Cms.Api.Common" />
+        <PackageReference Include="Umbraco.Cms.Api.Management" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Umbraco.Community.ContentAudit.UI\Umbraco.Community.ContentAudit.UI.esproj">
-			<ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-		</ProjectReference>
-	</ItemGroup>
+    <ItemGroup>
+        <Content Include="buildTransitive\**" PackagePath="buildTransitive" />
+    </ItemGroup>
 
-  <!-- Add JSON schema file to package output -->
-  <PropertyGroup>
-    <_ContentAuditJsonSchemaReference>appsettings-schema.ContentAudit.json</_ContentAuditJsonSchemaReference>
-  </PropertyGroup>
+    <ItemGroup>
+        <None Include="..\..\.github\assets\icon.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\..\.github\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
 
-  <!-- Generate JSON schema on build (and before copying to project) -->
-  <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Condition="!Exists('$(_ContentAuditJsonSchemaReference)')">
-    <Message Text="Generating $(_ContentAuditJsonSchemaReference) because it doesn't exist" Importance="high" />
-    <Exec WorkingDirectory="$(MSBuildThisFileDirectory)..\..\tools\Umbraco.Community.ContentAudit.SchemaGenerator" Command="dotnet run --configuration $(Configuration) -- --outputFile &quot;$(MSBuildThisFileDirectory)$(_ContentAuditJsonSchemaReference)&quot;" />
-  </Target>
+    <ItemGroup>
+        <ProjectReference Include="..\Umbraco.Community.ContentAudit.UI\Umbraco.Community.ContentAudit.UI.esproj">
+            <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+        </ProjectReference>
+    </ItemGroup>
 
-  <!-- Remove generated JSON schema on clean -->
-  <Target Name="RemoveAppsettingsSchema" AfterTargets="Clean" Condition="Exists('$(_ContentAuditJsonSchemaReference)')">
-    <Delete Files="$(_ContentAuditJsonSchemaReference)" />
-  </Target>
+    <!-- Add JSON schema file to package output -->
+    <PropertyGroup>
+        <_ContentAuditJsonSchemaReference>appsettings-schema.ContentAudit.json</_ContentAuditJsonSchemaReference>
+    </PropertyGroup>
+
+    <!-- Generate JSON schema on build (and before copying to project) -->
+    <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Condition="!Exists('$(_ContentAuditJsonSchemaReference)')">
+        <Message Text="Generating $(_ContentAuditJsonSchemaReference) because it doesn't exist" Importance="high" />
+        <Exec WorkingDirectory="$(MSBuildThisFileDirectory)..\..\tools\Umbraco.Community.ContentAudit.SchemaGenerator" Command="dotnet run --configuration $(Configuration) -- --outputFile &quot;$(MSBuildThisFileDirectory)$(_ContentAuditJsonSchemaReference)&quot;" />
+    </Target>
+
+    <!-- Remove generated JSON schema on clean -->
+    <Target Name="RemoveAppsettingsSchema" AfterTargets="Clean" Condition="Exists('$(_ContentAuditJsonSchemaReference)')">
+        <Delete Files="$(_ContentAuditJsonSchemaReference)" />
+    </Target>
+
+    <!-- Update umbraco-package.json files with current build version -->
+    <!-- Assumes that the client assets have already been built to wwwroot -->
+    <Target Name="UpdatePackageManifestVersion" BeforeTargets="Build" DependsOnTargets="GetBuildVersion;GetUmbracoBuildVersion" Condition="Exists('wwwroot\App_Plugins\Umbraco.Community.BlockPreview\umbraco-package.json')">
+        <Message Text="Update umbraco-package.json files with current build version" Importance="high" />
+        <ItemGroup>
+            <_PackageManifestFiles Include="wwwroot\App_Plugins\Umbraco.Community.BlockPreview\umbraco-package.json" />
+        </ItemGroup>
+        <JsonPathUpdateValue JsonFile="%(_PackageManifestFiles.FullPath)" Path="$.version" Value="&quot;$(PackageVersion)&quot;" />
+    </Target>
 </Project>
 
