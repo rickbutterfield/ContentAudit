@@ -54,7 +54,7 @@ export class ContentAuditWorkspaceElement extends UmbElementMixin(LitElement) {
                 this._data = data;
 
                 if (this._data != null) {
-                    if (this._data.pageData?.runId != 0) {
+                    if (this._data.pageData?.auditKey) {
                         this._createRoutes();
                     }
                 }

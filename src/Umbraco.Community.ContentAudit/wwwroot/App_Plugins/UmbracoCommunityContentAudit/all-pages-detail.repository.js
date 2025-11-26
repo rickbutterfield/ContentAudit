@@ -1,53 +1,53 @@
-var m = (e) => {
-  throw TypeError(e);
+var u = (i) => {
+  throw TypeError(i);
 };
-var l = (e, r, t) => r.has(e) || m("Cannot " + t);
-var s = (e, r, t) => (l(e, r, "read from private field"), t ? t.call(e) : r.get(e)), n = (e, r, t) => r.has(e) ? m("Cannot add the same private member more than once") : r instanceof WeakSet ? r.add(e) : r.set(e, t), h = (e, r, t, i) => (l(e, r, "write to private field"), i ? i.call(e, t) : r.set(e, t), t);
-import { UmbRepositoryBase as d } from "@umbraco-cms/backoffice/repository";
-import { CONTENT_AUDIT_ALL_PAGES_DETAIL_STORE_CONTEXT as w } from "./all-pages-detail.store.js";
-import { A as f } from "./index.js";
-import { tryExecute as p } from "@umbraco-cms/backoffice/resources";
-var c;
+var d = (i, r, t) => r.has(i) || u("Cannot " + t);
+var s = (i, r, t) => (d(i, r, "read from private field"), t ? t.call(i) : r.get(i)), n = (i, r, t) => r.has(i) ? u("Cannot add the same private member more than once") : r instanceof WeakSet ? r.add(i) : r.set(i, t), c = (i, r, t, e) => (d(i, r, "write to private field"), e ? e.call(i, t) : r.set(i, t), t);
+import { UmbRepositoryBase as y } from "@umbraco-cms/backoffice/repository";
+import { CONTENT_AUDIT_ALL_PAGES_DETAIL_STORE_CONTEXT as p } from "./all-pages-detail.store.js";
+import { A as w } from "./index.js";
+import { tryExecute as f } from "@umbraco-cms/backoffice/resources";
+var h;
 class A {
   constructor(r) {
-    n(this, c);
-    h(this, c, r);
+    n(this, h);
+    c(this, h, r);
   }
   async read(r) {
     if (!r) throw new Error("Unique is missing");
-    const { data: t, error: i } = await p(
-      s(this, c),
-      f.getByKey({ query: { unique: r } })
+    const { data: t, error: e } = await f(
+      s(this, h),
+      w.getByKey({ path: { id: r } })
     );
-    return i || !t ? { error: i } : { data: t };
+    return e || !t ? { error: e } : { data: t };
   }
 }
-c = new WeakMap();
-var a, o, u;
-class g extends d {
+h = new WeakMap();
+var a, o, m;
+class g extends y {
   constructor(t) {
     super(t);
     n(this, a);
     n(this, o);
-    n(this, u, new A(this));
-    h(this, a, Promise.all([
-      this.consumeContext(w, (i) => {
-        h(this, o, i);
+    n(this, m, new A(this));
+    c(this, a, Promise.all([
+      this.consumeContext(p, (e) => {
+        c(this, o, e);
       }).asPromise()
     ]));
   }
   async requestByUnique(t) {
     if (!t) throw new Error("Unique is missing");
     await s(this, a);
-    const { data: i, error: y } = await s(this, u).read(t);
-    return i && s(this, o).append(i), { data: i, error: y, asObservable: () => s(this, o).byUnique(t) };
+    const { data: e, error: l } = await s(this, m).read(t);
+    return e && s(this, o).append(e), { data: e, error: l, asObservable: () => s(this, o).byUnique(t) };
   }
   async byUnique(t) {
     if (!t) throw new Error("Unique is missing");
     return await s(this, a), s(this, o).byUnique(t);
   }
 }
-a = new WeakMap(), o = new WeakMap(), u = new WeakMap();
+a = new WeakMap(), o = new WeakMap(), m = new WeakMap();
 export {
   g as ContentAuditAllPagesDetailRepository,
   g as default

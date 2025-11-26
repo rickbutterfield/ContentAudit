@@ -11,7 +11,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public TechnicalSeoDto(TechnicalSeoSchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             ContentType = schema.ContentType;
             Charset = schema.Charset;
@@ -26,7 +26,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         }
 
         public int Id { get; set; }
-        public int RunId { get; set; }
+        public Guid AuditKey { get; set; }
         public string? Url { get; set; }
         public string? ContentType { get; set; }
         public string? Charset { get; set; }

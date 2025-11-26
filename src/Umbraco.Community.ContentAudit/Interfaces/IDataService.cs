@@ -6,6 +6,7 @@ namespace Umbraco.Community.ContentAudit.Interfaces
     public interface IDataService
     {
         Task<OverviewDto> GetLatestAuditOverview();
+        Task<PageAnalysisDto> GetAuditPageAnalysisByKey(Guid auditKey);
         Task<List<PageAnalysisDto>> GetLatestAuditData(string filter = "", int statusCode = 0);
         Task<PageAnalysisDto> GetLatestPageAuditData(Guid unique);
         Task<List<PageDto>> GetOrphanedPages(string filter = "");

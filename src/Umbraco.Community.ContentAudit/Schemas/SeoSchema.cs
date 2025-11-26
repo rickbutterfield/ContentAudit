@@ -27,7 +27,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         /// <param name="dto">The data transfer object containing SEO data</param>
         public SeoSchema(SeoDto dto)
         {
-            RunId = dto.RunId;
+            AuditKey = dto.AuditKey;
             Url = dto.Url;
             Title = dto.Title;
             MetaDescription = dto.MetaDescription;
@@ -57,9 +57,14 @@ namespace Umbraco.Community.ContentAudit.Schemas
         /// Gets or sets the unique identifier
         /// </summary>
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)] public int Id { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the audit run identifier
+        /// Gets or sets the audit run identifier (GUID)
+        /// </summary>
+        public Guid AuditKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audit run identifier (legacy - kept for migration safety)
         /// </summary>
         public int RunId { get; set; }
         

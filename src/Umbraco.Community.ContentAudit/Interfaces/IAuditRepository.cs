@@ -4,19 +4,19 @@ namespace Umbraco.Community.ContentAudit.Interfaces
 {
     public interface IAuditRepository
     {
-        Task<int?> GetLatestAuditId();
-        Task<IEnumerable<OverviewSchema>> GetLatestAuditOverview(int latestRunId);
-        Task<IEnumerable<PageSchema>> GetPagesByRunId(int runId);
-        Task<IEnumerable<SeoSchema>> GetSeoData(int runId, string url);
-        Task<IEnumerable<ContentAnalysisSchema>> GetContentAnalysisData(int runId, string url);
-        Task<IEnumerable<PerformanceSchema>> GetPerformanceData(int runId, string url);
-        Task<IEnumerable<AccessibilitySchema>> GetAccessibilityData(int runId, string url);
-        Task<IEnumerable<TechnicalSeoSchema>> GetTechnicalSeoData(int runId, string url);
-        Task<IEnumerable<SocialMediaSchema>> GetSocialMediaData(int runId, string url);
-        Task<IEnumerable<ContentQualitySchema>> GetContentQualityData(int runId, string url);
-        Task<IEnumerable<LinkSchema>> GetLinkData(int runId, string foundPage);
-        Task<IEnumerable<ResourceSchema>> GetResourceData(int runId, string foundPage);
-        Task<IEnumerable<ImageSchema>> GetImageData(int runId, string foundPage);
+        Task<Guid?> GetLatestAuditKey();
+        Task<IEnumerable<OverviewSchema>> GetLatestAuditOverview(Guid auditKey);
+        Task<IEnumerable<PageSchema>> GetPagesByAuditKey(Guid auditKey);
+        Task<IEnumerable<SeoSchema>> GetSeoData(Guid auditKey, string url);
+        Task<IEnumerable<ContentAnalysisSchema>> GetContentAnalysisData(Guid auditKey, string url);
+        Task<IEnumerable<PerformanceSchema>> GetPerformanceData(Guid auditKey, string url);
+        Task<IEnumerable<AccessibilitySchema>> GetAccessibilityData(Guid auditKey, string url);
+        Task<IEnumerable<TechnicalSeoSchema>> GetTechnicalSeoData(Guid auditKey, string url);
+        Task<IEnumerable<SocialMediaSchema>> GetSocialMediaData(Guid auditKey, string url);
+        Task<IEnumerable<ContentQualitySchema>> GetContentQualityData(Guid auditKey, string url);
+        Task<IEnumerable<LinkSchema>> GetLinkData(Guid auditKey, string foundPage);
+        Task<IEnumerable<ResourceSchema>> GetResourceData(Guid auditKey, string foundPage);
+        Task<IEnumerable<ImageSchema>> GetImageData(Guid auditKey, string foundPage);
         Task<IEnumerable<OverviewSchema>> GetAllAuditOverviews();
     }
 }

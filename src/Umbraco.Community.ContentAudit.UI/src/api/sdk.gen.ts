@@ -26,6 +26,13 @@ export class AuditService {
         });
     }
     
+    public static getByKey<ThrowOnError extends boolean = true>(options: Options<GetByKeyData, ThrowOnError>) {
+        return (options.client ?? client).get<GetByKeyResponses, unknown, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/audit/{id}',
+            ...options
+        });
+    }
+    
     public static getAllImages<ThrowOnError extends boolean = true>(options?: Options<GetAllImagesData, ThrowOnError>) {
         return (options?.client ?? client).get<GetAllImagesResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/all-images',
@@ -78,13 +85,6 @@ export class AuditService {
     public static getLatestAuditData<ThrowOnError extends boolean = true>(options?: Options<GetLatestAuditDataData, ThrowOnError>) {
         return (options?.client ?? client).get<GetLatestAuditDataResponses, unknown, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/audit/latest-data',
-            ...options
-        });
-    }
-    
-    public static getByKey<ThrowOnError extends boolean = true>(options?: Options<GetByKeyData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetByKeyResponses, unknown, ThrowOnError>({
-            url: '/umbraco/content-audit/management/api/v1/audit/latest-page-data',
             ...options
         });
     }

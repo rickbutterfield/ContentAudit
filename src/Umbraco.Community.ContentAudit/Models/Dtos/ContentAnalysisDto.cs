@@ -10,7 +10,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public ContentAnalysisDto(ContentAnalysisSchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             WordCount = schema.WordCount;
             ParagraphCount = schema.ParagraphCount;
@@ -26,7 +26,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         }
 
         public int Id { get; set; }
-        public int RunId { get; set; }
+        public Guid AuditKey { get; set; }
         public string? Url { get; set; }
         public int WordCount { get; set; }
         public int ParagraphCount { get; set; }

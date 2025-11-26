@@ -10,7 +10,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public SocialMediaDto(SocialMediaSchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             SocialShareButtons = JsonSerializer.Deserialize<List<string>>(schema.SocialShareButtons);
             HasFacebookPixel = schema.HasFacebookPixel;
@@ -21,7 +21,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         }
 
         public int Id { get; set; }
-        public int RunId { get; set; }
+        public Guid AuditKey { get; set; }
         public string? Url { get; set; }
         public List<string>? SocialShareButtons { get; set; }
         public bool HasFacebookPixel { get; set; }

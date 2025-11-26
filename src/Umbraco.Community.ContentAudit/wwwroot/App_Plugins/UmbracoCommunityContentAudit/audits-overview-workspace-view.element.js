@@ -4,13 +4,13 @@ import { r as $ } from "./state.js";
 import { CONTENT_AUDIT_AUDITS_WORKSPACE_CONTEXT as A } from "./audits-workspace.context.js";
 import { html as o, css as E } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles as z } from "@umbraco-cms/backoffice/style";
-var U = Object.defineProperty, C = Object.getOwnPropertyDescriptor, g = (t) => {
+var U = Object.defineProperty, C = Object.getOwnPropertyDescriptor, _ = (t) => {
   throw TypeError(t);
-}, _ = (t, a, e, i) => {
+}, g = (t, a, e, i) => {
   for (var n = i > 1 ? void 0 : i ? C(a, e) : a, u = t.length - 1, v; u >= 0; u--)
     (v = t[u]) && (n = (i ? v(a, e, n) : v(n)) || n);
   return i && n && U(a, e, n), n;
-}, p = (t, a, e) => a.has(t) || g("Cannot " + e), h = (t, a, e) => (p(t, a, "read from private field"), a.get(t)), f = (t, a, e) => a.has(t) ? g("Cannot add the same private member more than once") : a instanceof WeakSet ? a.add(t) : a.set(t, e), R = (t, a, e, i) => (p(t, a, "write to private field"), a.set(t, e), e), r = (t, a, e) => (p(t, a, "access private method"), e), d, s, b, l, m, x, w;
+}, p = (t, a, e) => a.has(t) || _("Cannot " + e), h = (t, a, e) => (p(t, a, "read from private field"), a.get(t)), f = (t, a, e) => a.has(t) ? _("Cannot add the same private member more than once") : a instanceof WeakSet ? a.add(t) : a.set(t, e), R = (t, a, e, i) => (p(t, a, "write to private field"), a.set(t, e), e), r = (t, a, e) => (p(t, a, "access private method"), e), d, s, b, l, m, x, w;
 let c = class extends k {
   constructor() {
     super(), f(this, s), f(this, d), this.consumeContext(A, (t) => {
@@ -48,10 +48,6 @@ m = function() {
 						<div class="info-item">
 							<strong>Run Date:</strong>
 							<span>${this.localize.date(this._data.runDate, { dateStyle: "long", timeStyle: "short" })}</span>
-						</div>
-						<div class="info-item">
-							<strong>Audit ID:</strong>
-							<span>${this._data.id}</span>
 						</div>
 						<div class="info-item">
 							<strong>Audit Key:</strong>
@@ -233,10 +229,10 @@ c.styles = [
 			}
 		`
 ];
-_([
+g([
   $()
 ], c.prototype, "_data", 2);
-c = _([
+c = g([
   y("content-audit-audits-overview-workspace-view")
 ], c);
 const S = c;

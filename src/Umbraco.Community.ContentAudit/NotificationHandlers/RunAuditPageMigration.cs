@@ -73,7 +73,8 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
 
             migrationPlan.From(string.Empty)
                 .To<InitialMigration>("contentaudit-init")
-                .To<AddHealthScoreMigration>("contentaudit-add-healthscore");
+                .To<AddHealthScoreMigration>("contentaudit-add-healthscore")
+                .To<MigrateToAuditKeyMigration>("contentaudit-migrate-to-auditkey");
 
             var upgrader = new Upgrader(migrationPlan);
             await upgrader.ExecuteAsync(

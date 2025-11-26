@@ -15,7 +15,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public ImageSchema(ImageDto dto)
         {
             Id = dto.Id;
-            RunId = dto.RunId;
+            AuditKey = dto.AuditKey;
             Url = dto.Url;
             IsExternal = dto.IsExternal;
             Size = dto.Size;
@@ -31,6 +31,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }
 
+        public Guid AuditKey { get; set; }
         public int RunId { get; set; }
 
         [NullSetting(NullSetting = NullSettings.Null)]

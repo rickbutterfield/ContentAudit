@@ -26,10 +26,10 @@ namespace Umbraco.Community.ContentAudit.Schemas
         /// Initializes a new instance of the PageSchema from a DTO
         /// </summary>
         /// <param name="pageDto">The data transfer object containing page data</param>
-        /// <param name="runId">The audit run identifier</param>
-        public PageSchema(PageDto pageDto, int runId)
+        /// <param name="auditKey">The audit run identifier (GUID)</param>
+        public PageSchema(PageDto pageDto, Guid auditKey)
         {
-            RunId = runId;
+            AuditKey = auditKey;
             Url = pageDto.Url;
             RedirectUrl = pageDto.RedirectUrl;
             Redirect = pageDto.Redirect;
@@ -44,7 +44,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the audit run identifier
+        /// Gets or sets the audit run identifier (GUID)
+        /// </summary>
+        public Guid AuditKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audit run identifier (legacy - kept for migration safety)
         /// </summary>
         public int RunId { get; set; }
 

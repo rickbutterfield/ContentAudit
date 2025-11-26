@@ -3,21 +3,21 @@ var pa = (t) => {
 };
 var ha = (t, e, a) => e.has(t) || pa("Cannot " + a);
 var u = (t, e, a) => (ha(t, e, "read from private field"), a ? a.call(t) : e.get(t)), y = (t, e, a) => e.has(t) ? pa("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), A = (t, e, a, n) => (ha(t, e, "write to private field"), n ? n.call(t, a) : e.set(t, a), a);
-import { UMB_AUTH_CONTEXT as gi } from "@umbraco-cms/backoffice/auth";
+import { UMB_AUTH_CONTEXT as gs } from "@umbraco-cms/backoffice/auth";
 import { UmbElementMixin as ce } from "@umbraco-cms/backoffice/element-api";
 import { LitElement as J, html as m, css as T, property as H, customElement as C, nothing as za, state as d } from "@umbraco-cms/backoffice/external/lit";
 import { UmbControllerBase as qa } from "@umbraco-cms/backoffice/class-api";
-import { UmbContextToken as wi } from "@umbraco-cms/backoffice/context-api";
-import { UMB_WORKSPACE_CONTEXT as Ii, UMB_WORKSPACE_CONDITION_ALIAS as N, UMB_WORKSPACE_MODAL as Le } from "@umbraco-cms/backoffice/workspace";
-import { tryExecute as ee, tryExecuteAndNotify as Oi } from "@umbraco-cms/backoffice/resources";
-import { UmbObjectState as ht, UmbArrayState as _t } from "@umbraco-cms/backoffice/observable-api";
-import { UmbRepositoryBase as Ei } from "@umbraco-cms/backoffice/repository";
-import { UMB_COLLECTION_CONTEXT as D, UMB_COLLECTION_ALIAS_CONDITION as w } from "@umbraco-cms/backoffice/collection";
+import { UmbContextToken as ws } from "@umbraco-cms/backoffice/context-api";
+import { UMB_WORKSPACE_CONTEXT as Is, UMB_WORKSPACE_CONDITION_ALIAS as D, UMB_WORKSPACE_MODAL as Le } from "@umbraco-cms/backoffice/workspace";
+import { tryExecute as ee, tryExecuteAndNotify as Os } from "@umbraco-cms/backoffice/resources";
+import { UmbObjectState as pt, UmbArrayState as ht } from "@umbraco-cms/backoffice/observable-api";
+import { UmbRepositoryBase as Es } from "@umbraco-cms/backoffice/repository";
+import { UMB_COLLECTION_CONTEXT as N, UMB_COLLECTION_ALIAS_CONDITION as w } from "@umbraco-cms/backoffice/collection";
 import { UmbLitElement as P } from "@umbraco-cms/backoffice/lit-element";
-import { UmbTextStyles as Si } from "@umbraco-cms/backoffice/style";
+import { UmbTextStyles as Ss } from "@umbraco-cms/backoffice/style";
 import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN as ke } from "@umbraco-cms/backoffice/document";
 import { UmbModalRouteRegistrationController as Ne } from "@umbraco-cms/backoffice/router";
-const $i = [
+const $s = [
   {
     label: "Opportunity",
     icon: "icon-info",
@@ -36,7 +36,7 @@ const $i = [
     class: "issue",
     color: "danger"
   }
-], Pi = [
+], Ps = [
   {
     label: "Low",
     icon: "icon-navigation-bottom",
@@ -56,10 +56,48 @@ const $i = [
     color: "danger"
   }
 ];
-var Ui = Object.defineProperty, Li = Object.getOwnPropertyDescriptor, Ya = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Li(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Ui(e, a, i), i;
+var Us = Object.defineProperty, Ls = Object.getOwnPropertyDescriptor, Ya = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Ls(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Us(e, a, s), s;
+};
+let Me = class extends ce(J) {
+  constructor() {
+    super(...arguments), this.type = 0;
+  }
+  render() {
+    if (this.type != 0) {
+      const t = $s[this.type - 1];
+      return m`
+                <uui-tag color=${t == null ? void 0 : t.color}>
+                    <uui-icon name="${t == null ? void 0 : t.icon}"></uui-icon>
+                    ${t == null ? void 0 : t.label}
+                </uui-tag>
+            `;
+    }
+  }
+};
+Me.styles = [
+  T`
+            uui-tag {
+                font-size: 14px;
+
+                uui-icon {
+                    margin-right: 4px;
+                }
+            }
+        `
+];
+Ya([
+  H({ attribute: !1 })
+], Me.prototype, "type", 2);
+Me = Ya([
+  C("content-audit-issue-type-label")
+], Me);
+var ks = Object.defineProperty, Ns = Object.getOwnPropertyDescriptor, Ha = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Ns(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && ks(e, a, s), s;
 };
 let je = class extends ce(J) {
   constructor() {
@@ -67,7 +105,7 @@ let je = class extends ce(J) {
   }
   render() {
     if (this.type != 0) {
-      const t = $i[this.type - 1];
+      const t = Ps[this.type - 1];
       return m`
                 <uui-tag color=${t == null ? void 0 : t.color}>
                     <uui-icon name="${t == null ? void 0 : t.icon}"></uui-icon>
@@ -88,54 +126,16 @@ je.styles = [
             }
         `
 ];
-Ya([
-  H({ attribute: !1 })
-], je.prototype, "type", 2);
-je = Ya([
-  C("content-audit-issue-type-label")
-], je);
-var ki = Object.defineProperty, Ni = Object.getOwnPropertyDescriptor, Ha = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Ni(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && ki(e, a, i), i;
-};
-let Be = class extends ce(J) {
-  constructor() {
-    super(...arguments), this.type = 0;
-  }
-  render() {
-    if (this.type != 0) {
-      const t = Pi[this.type - 1];
-      return m`
-                <uui-tag color=${t == null ? void 0 : t.color}>
-                    <uui-icon name="${t == null ? void 0 : t.icon}"></uui-icon>
-                    ${t == null ? void 0 : t.label}
-                </uui-tag>
-            `;
-    }
-  }
-};
-Be.styles = [
-  T`
-            uui-tag {
-                font-size: 14px;
-
-                uui-icon {
-                    margin-right: 4px;
-                }
-            }
-        `
-];
 Ha([
   H({ attribute: !1 })
-], Be.prototype, "type", 2);
-Be = Ha([
+], je.prototype, "type", 2);
+je = Ha([
   C("content-audit-priority-type-label")
-], Be);
-var Di = Object.defineProperty, Ri = Object.getOwnPropertyDescriptor, Ka = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Ri(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Di(e, a, i), i;
+], je);
+var Ds = Object.defineProperty, Rs = Object.getOwnPropertyDescriptor, Ka = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Rs(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Ds(e, a, s), s;
 };
 let gt = class extends ce(J) {
   _getColor(t) {
@@ -151,10 +151,10 @@ Ka([
 gt = Ka([
   C("content-audit-status-code-label")
 ], gt);
-var Vi = Object.defineProperty, Wi = Object.getOwnPropertyDescriptor, Ga = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Wi(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Vi(e, a, i), i;
+var Ws = Object.defineProperty, Vs = Object.getOwnPropertyDescriptor, Ga = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Vs(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Ws(e, a, s), s;
 };
 let wt = class extends ce(J) {
   constructor() {
@@ -179,19 +179,19 @@ wt = Ga([
   C("content-audit-carbon-intensity-label")
 ], wt);
 var Fa = /* @__PURE__ */ ((t) => (t.CLS = "CLS", t.FCP = "FCP", t.FID = "FID", t.INP = "INP", t.LCP = "LCP", t.TTFB = "TTFB", t))(Fa || {}), It = /* @__PURE__ */ ((t) => (t.GOOD = "Good", t.NEEDS_IMPROVEMENT = "NeedsImprovement", t.POOR = "Poor", t))(It || {});
-const xi = {
+const xs = {
   bodySerializer: (t) => JSON.stringify(
     t,
     (e, a) => typeof a == "bigint" ? a.toString() : a
   )
-}, Mi = ({
+}, Ms = ({
   onRequest: t,
   onSseError: e,
   onSseEvent: a,
   responseTransformer: n,
-  responseValidator: i,
+  responseValidator: s,
   sseDefaultRetryDelay: o,
-  sseMaxRetryAttempts: s,
+  sseMaxRetryAttempts: i,
   sseMaxRetryDelay: l,
   sseSleepFn: c,
   url: h,
@@ -223,7 +223,7 @@ const xi = {
           );
         if (!g.body) throw new Error("No body in SSE response");
         const S = g.body.pipeThrough(new TextDecoderStream()).getReader();
-        let pt = "";
+        let dt = "";
         const ra = () => {
           try {
             S.cancel();
@@ -233,18 +233,18 @@ const xi = {
         G.addEventListener("abort", ra);
         try {
           for (; ; ) {
-            const { done: yi, value: Ai } = await S.read();
-            if (yi) break;
-            pt += Ai;
-            const ca = pt.split(`
+            const { done: ys, value: As } = await S.read();
+            if (ys) break;
+            dt += As;
+            const ca = dt.split(`
 
 `);
-            pt = ca.pop() ?? "";
-            for (const Ti of ca) {
-              const vi = Ti.split(`
+            dt = ca.pop() ?? "";
+            for (const Ts of ca) {
+              const vs = Ts.split(`
 `), Re = [];
               let ua;
-              for (const I of vi)
+              for (const I of vs)
                 if (I.startsWith("data:"))
                   Re.push(I.replace(/^data:\s*/, ""));
                 else if (I.startsWith("event:"))
@@ -268,7 +268,7 @@ const xi = {
                   X = I;
                 }
               }
-              ma && (i && await i(X), n && (X = await n(X))), a == null || a({
+              ma && (s && await s(X), n && (X = await n(X))), a == null || a({
                 data: X,
                 event: ua,
                 id: b,
@@ -281,7 +281,7 @@ const xi = {
         }
         break;
       } catch (F) {
-        if (e == null || e(F), s !== void 0 && v >= s)
+        if (e == null || e(F), i !== void 0 && v >= i)
           break;
         const E = Math.min(
           p * 2 ** (v - 1),
@@ -291,7 +291,7 @@ const xi = {
       }
     }
   }() };
-}, ji = (t) => {
+}, js = (t) => {
   switch (t) {
     case "label":
       return ".";
@@ -302,7 +302,7 @@ const xi = {
     default:
       return "&";
   }
-}, Bi = (t) => {
+}, Bs = (t) => {
   switch (t) {
     case "form":
       return ",";
@@ -313,7 +313,7 @@ const xi = {
     default:
       return ",";
   }
-}, zi = (t) => {
+}, zs = (t) => {
   switch (t) {
     case "label":
       return ".";
@@ -329,10 +329,10 @@ const xi = {
   explode: e,
   name: a,
   style: n,
-  value: i
+  value: s
 }) => {
   if (!e) {
-    const l = (t ? i : i.map((c) => encodeURIComponent(c))).join(Bi(n));
+    const l = (t ? s : s.map((c) => encodeURIComponent(c))).join(Bs(n));
     switch (n) {
       case "label":
         return `.${l}`;
@@ -344,13 +344,13 @@ const xi = {
         return `${a}=${l}`;
     }
   }
-  const o = ji(n), s = i.map((l) => n === "label" || n === "simple" ? t ? l : encodeURIComponent(l) : Xe({
+  const o = js(n), i = s.map((l) => n === "label" || n === "simple" ? t ? l : encodeURIComponent(l) : Fe({
     allowReserved: t,
     name: a,
     value: l
   })).join(o);
-  return n === "label" || n === "matrix" ? o + s : s;
-}, Xe = ({
+  return n === "label" || n === "matrix" ? o + i : i;
+}, Fe = ({
   allowReserved: t,
   name: e,
   value: a
@@ -367,14 +367,14 @@ const xi = {
   explode: e,
   name: a,
   style: n,
-  value: i,
+  value: s,
   valueOnly: o
 }) => {
-  if (i instanceof Date)
-    return o ? i.toISOString() : `${a}=${i.toISOString()}`;
+  if (s instanceof Date)
+    return o ? s.toISOString() : `${a}=${s.toISOString()}`;
   if (n !== "deepObject" && !e) {
     let c = [];
-    Object.entries(i).forEach(([r, b]) => {
+    Object.entries(s).forEach(([r, b]) => {
       c = [
         ...c,
         r,
@@ -393,37 +393,37 @@ const xi = {
         return h;
     }
   }
-  const s = zi(n), l = Object.entries(i).map(
-    ([c, h]) => Xe({
+  const i = zs(n), l = Object.entries(s).map(
+    ([c, h]) => Fe({
       allowReserved: t,
       name: n === "deepObject" ? `${a}[${c}]` : c,
       value: h
     })
-  ).join(s);
-  return n === "label" || n === "matrix" ? s + l : l;
-}, qi = /\{[^{}]+\}/g, Yi = ({ path: t, url: e }) => {
+  ).join(i);
+  return n === "label" || n === "matrix" ? i + l : l;
+}, qs = /\{[^{}]+\}/g, Ys = ({ path: t, url: e }) => {
   let a = e;
-  const n = e.match(qi);
+  const n = e.match(qs);
   if (n)
-    for (const i of n) {
-      let o = !1, s = i.substring(1, i.length - 1), l = "simple";
-      s.endsWith("*") && (o = !0, s = s.substring(0, s.length - 1)), s.startsWith(".") ? (s = s.substring(1), l = "label") : s.startsWith(";") && (s = s.substring(1), l = "matrix");
-      const c = t[s];
+    for (const s of n) {
+      let o = !1, i = s.substring(1, s.length - 1), l = "simple";
+      i.endsWith("*") && (o = !0, i = i.substring(0, i.length - 1)), i.startsWith(".") ? (i = i.substring(1), l = "label") : i.startsWith(";") && (i = i.substring(1), l = "matrix");
+      const c = t[i];
       if (c == null)
         continue;
       if (Array.isArray(c)) {
         a = a.replace(
-          i,
-          Xa({ explode: o, name: s, style: l, value: c })
+          s,
+          Xa({ explode: o, name: i, style: l, value: c })
         );
         continue;
       }
       if (typeof c == "object") {
         a = a.replace(
-          i,
+          s,
           Ja({
             explode: o,
-            name: s,
+            name: i,
             style: l,
             value: c,
             valueOnly: !0
@@ -433,9 +433,9 @@ const xi = {
       }
       if (l === "matrix") {
         a = a.replace(
-          i,
-          `;${Xe({
-            name: s,
+          s,
+          `;${Fe({
+            name: i,
             value: c
           })}`
         );
@@ -444,30 +444,30 @@ const xi = {
       const h = encodeURIComponent(
         l === "label" ? `.${c}` : c
       );
-      a = a.replace(i, h);
+      a = a.replace(s, h);
     }
   return a;
-}, Hi = ({
+}, Hs = ({
   baseUrl: t,
   path: e,
   query: a,
   querySerializer: n,
-  url: i
+  url: s
 }) => {
-  const o = i.startsWith("/") ? i : `/${i}`;
-  let s = (t ?? "") + o;
-  e && (s = Yi({ path: e, url: s }));
+  const o = s.startsWith("/") ? s : `/${s}`;
+  let i = (t ?? "") + o;
+  e && (i = Ys({ path: e, url: i }));
   let l = a ? n(a) : "";
-  return l.startsWith("?") && (l = l.substring(1)), l && (s += `?${l}`), s;
+  return l.startsWith("?") && (l = l.substring(1)), l && (i += `?${l}`), i;
 };
-function Ki(t) {
+function Ks(t) {
   const e = t.body !== void 0;
   if (e && t.bodySerializer)
     return "serializedBody" in t ? t.serializedBody !== void 0 && t.serializedBody !== "" ? t.serializedBody : null : t.body !== "" ? t.body : null;
   if (e)
     return t.body;
 }
-const Gi = async (t, e) => {
+const Gs = async (t, e) => {
   const a = typeof e == "function" ? await e(t) : e;
   if (a)
     return t.scheme === "bearer" ? `Bearer ${a}` : t.scheme === "basic" ? `Basic ${btoa(a)}` : a;
@@ -475,17 +475,17 @@ const Gi = async (t, e) => {
   allowReserved: t,
   array: e,
   object: a
-} = {}) => (i) => {
+} = {}) => (s) => {
   const o = [];
-  if (i && typeof i == "object")
-    for (const s in i) {
-      const l = i[s];
+  if (s && typeof s == "object")
+    for (const i in s) {
+      const l = s[i];
       if (l != null)
         if (Array.isArray(l)) {
           const c = Xa({
             allowReserved: t,
             explode: !0,
-            name: s,
+            name: i,
             style: "form",
             value: l,
             ...e
@@ -495,23 +495,23 @@ const Gi = async (t, e) => {
           const c = Ja({
             allowReserved: t,
             explode: !0,
-            name: s,
+            name: i,
             style: "deepObject",
             value: l,
             ...a
           });
           c && o.push(c);
         } else {
-          const c = Xe({
+          const c = Fe({
             allowReserved: t,
-            name: s,
+            name: i,
             value: l
           });
           c && o.push(c);
         }
     }
   return o.join("&");
-}, Fi = (t) => {
+}, Fs = (t) => {
   var a;
   if (!t)
     return "stream";
@@ -528,34 +528,34 @@ const Gi = async (t, e) => {
     if (e.startsWith("text/"))
       return "text";
   }
-}, Xi = (t, e) => {
+}, Xs = (t, e) => {
   var a, n;
   return e ? !!(t.headers.has(e) || (a = t.query) != null && a[e] || (n = t.headers.get("Cookie")) != null && n.includes(`${e}=`)) : !1;
-}, Ji = async ({
+}, Js = async ({
   security: t,
   ...e
 }) => {
   for (const a of t) {
-    if (Xi(e, a.name))
+    if (Xs(e, a.name))
       continue;
-    const n = await Gi(a, e.auth);
+    const n = await Gs(a, e.auth);
     if (!n)
       continue;
-    const i = a.name ?? "Authorization";
+    const s = a.name ?? "Authorization";
     switch (a.in) {
       case "query":
-        e.query || (e.query = {}), e.query[i] = n;
+        e.query || (e.query = {}), e.query[s] = n;
         break;
       case "cookie":
-        e.headers.append("Cookie", `${i}=${n}`);
+        e.headers.append("Cookie", `${s}=${n}`);
         break;
       case "header":
       default:
-        e.headers.set(i, n);
+        e.headers.set(s, n);
         break;
     }
   }
-}, _a = (t) => Hi({
+}, _a = (t) => Hs({
   baseUrl: t.baseUrl,
   path: t.path,
   query: t.query,
@@ -565,7 +565,7 @@ const Gi = async (t, e) => {
   var n;
   const a = { ...t, ...e };
   return (n = a.baseUrl) != null && n.endsWith("/") && (a.baseUrl = a.baseUrl.substring(0, a.baseUrl.length - 1)), a.headers = Za(t.headers, e.headers), a;
-}, Qi = (t) => {
+}, Qs = (t) => {
   const e = [];
   return t.forEach((a, n) => {
     e.push([n, a]);
@@ -575,21 +575,21 @@ const Gi = async (t, e) => {
   for (const a of t) {
     if (!a)
       continue;
-    const n = a instanceof Headers ? Qi(a) : Object.entries(a);
-    for (const [i, o] of n)
+    const n = a instanceof Headers ? Qs(a) : Object.entries(a);
+    for (const [s, o] of n)
       if (o === null)
-        e.delete(i);
+        e.delete(s);
       else if (Array.isArray(o))
-        for (const s of o)
-          e.append(i, s);
+        for (const i of o)
+          e.append(s, i);
       else o !== void 0 && e.set(
-        i,
+        s,
         typeof o == "object" ? JSON.stringify(o) : o
       );
   }
   return e;
 };
-class bt {
+class _t {
   constructor() {
     this.fns = [];
   }
@@ -615,11 +615,11 @@ class bt {
     return this.fns.push(e), this.fns.length - 1;
   }
 }
-const Zi = () => ({
-  error: new bt(),
-  request: new bt(),
-  response: new bt()
-}), es = Qa({
+const Zs = () => ({
+  error: new _t(),
+  request: new _t(),
+  response: new _t()
+}), ei = Qa({
   allowReserved: !1,
   array: {
     explode: !0,
@@ -629,17 +629,17 @@ const Zi = () => ({
     explode: !0,
     style: "deepObject"
   }
-}), ts = {
+}), ti = {
   "Content-Type": "application/json"
 }, en = (t = {}) => ({
-  ...xi,
-  headers: ts,
+  ...xs,
+  headers: ti,
   parseAs: "auto",
-  querySerializer: es,
+  querySerializer: ei,
   ...t
-}), as = (t = {}) => {
+}), ai = (t = {}) => {
   let e = ba(en(), t);
-  const a = () => ({ ...e }), n = (h) => (e = ba(e, h), a()), i = Zi(), o = async (h) => {
+  const a = () => ({ ...e }), n = (h) => (e = ba(e, h), a()), s = Zs(), o = async (h) => {
     const r = {
       ...e,
       ...h,
@@ -647,31 +647,31 @@ const Zi = () => ({
       headers: Za(e.headers, h.headers),
       serializedBody: void 0
     };
-    r.security && await Ji({
+    r.security && await Js({
       ...r,
       security: r.security
     }), r.requestValidator && await r.requestValidator(r), r.body !== void 0 && r.bodySerializer && (r.serializedBody = r.bodySerializer(r.body)), (r.body === void 0 || r.serializedBody === "") && r.headers.delete("Content-Type");
     const b = _a(r);
     return { opts: r, url: b };
-  }, s = async (h) => {
+  }, i = async (h) => {
     const { opts: r, url: b } = await o(h), ue = {
       redirect: "follow",
       ...r,
-      body: Ki(r)
+      body: Ks(r)
     };
     let U = new Request(b, ue);
-    for (const f of i.request.fns)
+    for (const f of s.request.fns)
       f && (U = await f(U, r));
     const De = r.fetch;
     let p = await De(U);
-    for (const f of i.response.fns)
+    for (const f of s.response.fns)
       f && (p = await f(p, U, r));
     const v = {
       request: U,
       response: p
     };
     if (p.ok) {
-      const f = (r.parseAs === "auto" ? Fi(p.headers.get("Content-Type")) : r.parseAs) ?? "json";
+      const f = (r.parseAs === "auto" ? Fs(p.headers.get("Content-Type")) : r.parseAs) ?? "json";
       if (p.status === 204 || p.headers.get("Content-Length") === "0") {
         let S;
         switch (f) {
@@ -724,7 +724,7 @@ const Zi = () => ({
     }
     const F = me ?? G;
     let E = F;
-    for (const f of i.error.fns)
+    for (const f of s.error.fns)
       f && (E = await f(F, p, U, r));
     if (E = E || {}, r.throwOnError)
       throw E;
@@ -732,16 +732,16 @@ const Zi = () => ({
       error: E,
       ...v
     };
-  }, l = (h) => (r) => s({ ...r, method: h }), c = (h) => async (r) => {
+  }, l = (h) => (r) => i({ ...r, method: h }), c = (h) => async (r) => {
     const { opts: b, url: ue } = await o(r);
-    return Mi({
+    return Ms({
       ...b,
       body: b.body,
       headers: b.headers,
       method: h,
       onRequest: async (U, De) => {
         let p = new Request(U, De);
-        for (const v of i.request.fns)
+        for (const v of s.request.fns)
           v && (p = await v(p, b));
         return p;
       },
@@ -755,12 +755,12 @@ const Zi = () => ({
     get: l("GET"),
     getConfig: a,
     head: l("HEAD"),
-    interceptors: i,
+    interceptors: s,
     options: l("OPTIONS"),
     patch: l("PATCH"),
     post: l("POST"),
     put: l("PUT"),
-    request: s,
+    request: i,
     setConfig: n,
     sse: {
       connect: c("CONNECT"),
@@ -775,14 +775,20 @@ const Zi = () => ({
     },
     trace: l("TRACE")
   };
-}, _ = as(en({
+}, _ = ai(en({
   baseUrl: "http://localhost:26291",
   throwOnError: !0
 }));
-class Ve {
+class We {
   static getCollection(e) {
     return ((e == null ? void 0 : e.client) ?? _).get({
       url: "/umbraco/content-audit/management/api/v1/audit",
+      ...e
+    });
+  }
+  static getByKey(e) {
+    return (e.client ?? _).get({
+      url: "/umbraco/content-audit/management/api/v1/audit/{id}",
       ...e
     });
   }
@@ -834,12 +840,6 @@ class Ve {
       ...e
     });
   }
-  static getByKey(e) {
-    return ((e == null ? void 0 : e.client) ?? _).get({
-      url: "/umbraco/content-audit/management/api/v1/audit/latest-page-data",
-      ...e
-    });
-  }
   static getPagesWithMissingMetadata(e) {
     return ((e == null ? void 0 : e.client) ?? _).get({
       url: "/umbraco/content-audit/management/api/v1/audit/missing-metadata",
@@ -865,7 +865,7 @@ class Ve {
     });
   }
 }
-class ic {
+class sc {
   static startCrawl(e) {
     return ((e == null ? void 0 : e.client) ?? _).sse.get({
       url: "/umbraco/content-audit/management/api/v1/crawl",
@@ -887,7 +887,7 @@ class tn {
     });
   }
 }
-class ns {
+class ni {
   static getSettings(e) {
     return ((e == null ? void 0 : e.client) ?? _).get({
       url: "/umbraco/content-audit/management/api/v1/settings",
@@ -895,12 +895,12 @@ class ns {
     });
   }
 }
-var is = Object.defineProperty, ss = Object.getOwnPropertyDescriptor, an = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? ss(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && is(e, a, i), i;
+var si = Object.defineProperty, ii = Object.getOwnPropertyDescriptor, an = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? ii(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && si(e, a, s), s;
 };
-let ze = class extends ce(J) {
+let Be = class extends ce(J) {
   _getColour() {
     return this.value != null ? this.value.rating == It.POOR ? "danger" : this.value.rating == It.NEEDS_IMPROVEMENT ? "warning" : "positive" : "positive";
   }
@@ -916,7 +916,7 @@ let ze = class extends ce(J) {
             `;
   }
 };
-ze.styles = [
+Be.styles = [
   T`
             uui-tag {
                 font-size: 14px;
@@ -925,11 +925,11 @@ ze.styles = [
 ];
 an([
   H({ attribute: !1 })
-], ze.prototype, "value", 2);
-ze = an([
+], Be.prototype, "value", 2);
+Be = an([
   C("content-audit-metric-label")
-], ze);
-class sc extends Event {
+], Be);
+class ic extends Event {
   constructor() {
     super("selected", { bubbles: !0, composed: !0 });
   }
@@ -944,18 +944,18 @@ class lc extends Event {
     super("ordered", { bubbles: !0, composed: !0 });
   }
 }
-const qe = "Umb.Workspace.ContentAudit", os = "Umb.Context.ContentAudit", nn = "content-audit";
+const ze = "Umb.Workspace.ContentAudit", oi = "Umb.Context.ContentAudit", nn = "content-audit";
 var L;
-class ls {
+class li {
   constructor(e) {
     y(this, L);
     A(this, L, e);
   }
   async getLatestAuditOverview() {
-    return await ee(u(this, L), Ve.getLatestAuditOverview());
+    return await ee(u(this, L), We.getLatestAuditOverview());
   }
   async getPagesWithMissingMetadata() {
-    return await ee(u(this, L), Ve.getPagesWithMissingMetadata());
+    return await ee(u(this, L), We.getPagesWithMissingMetadata());
   }
   async getTopIssues() {
     return await ee(u(this, L), tn.getAllIssues({
@@ -963,33 +963,33 @@ class ls {
     }));
   }
   async getHealthScore() {
-    return await ee(u(this, L), Ve.getHealthScore());
+    return await ee(u(this, L), We.getHealthScore());
   }
   async getAuditOverviews() {
-    return await ee(u(this, L), Ve.getCollection({
+    return await ee(u(this, L), We.getCollection({
       query: { skip: 0, take: 5 }
     }));
   }
 }
 L = new WeakMap();
 var Se;
-class rs {
+class ri {
   constructor(e) {
     y(this, Se);
     A(this, Se, e);
   }
   async getSettings() {
-    return await Oi(u(this, Se), ns.getSettings());
+    return await Os(u(this, Se), ni.getSettings());
   }
 }
 Se = new WeakMap();
 var k, $e;
-class cs extends qa {
+class ci extends qa {
   constructor(a) {
     super(a);
     y(this, k);
     y(this, $e);
-    A(this, k, new ls(this)), A(this, $e, new rs(this));
+    A(this, k, new li(this)), A(this, $e, new ri(this));
   }
   async getLatestAuditOverview() {
     return u(this, k).getLatestAuditOverview();
@@ -1011,18 +1011,18 @@ class cs extends qa {
   }
 }
 k = new WeakMap(), $e = new WeakMap();
-var $, ne, ie, se, oe, le, re;
+var $, ne, se, ie, oe, le, re;
 class Ot extends qa {
   constructor(a) {
     super(a);
     y(this, $);
     y(this, ne);
-    y(this, ie);
     y(this, se);
+    y(this, ie);
     y(this, oe);
     y(this, le);
     y(this, re);
-    this.workspaceAlias = qe, A(this, ne, new ht(void 0)), this.latestAuditOverview = u(this, ne).asObservable(), A(this, ie, new _t([], (n) => n.key)), this.auditOverviews = u(this, ie).asObservable(), A(this, se, new _t([], (n) => n.unique)), this.pagesWithMissingMetadata = u(this, se).asObservable(), A(this, oe, new _t([], (n) => n.name)), this.topIssues = u(this, oe).asObservable(), A(this, le, new ht(void 0)), this.healthScore = u(this, le).asObservable(), A(this, re, new ht(void 0)), this.settings = u(this, re).asObservable(), this.provideContext(Ii, this), this.provideContext(sn, this), A(this, $, new cs(this));
+    this.workspaceAlias = ze, A(this, ne, new pt(void 0)), this.latestAuditOverview = u(this, ne).asObservable(), A(this, se, new ht([], (n) => n.key)), this.auditOverviews = u(this, se).asObservable(), A(this, ie, new ht([], (n) => n.unique)), this.pagesWithMissingMetadata = u(this, ie).asObservable(), A(this, oe, new ht([], (n) => n.name)), this.topIssues = u(this, oe).asObservable(), A(this, le, new pt(void 0)), this.healthScore = u(this, le).asObservable(), A(this, re, new pt(void 0)), this.settings = u(this, re).asObservable(), this.provideContext(Is, this), this.provideContext(sn, this), A(this, $, new ci(this));
   }
   getEntityType() {
     return nn;
@@ -1034,16 +1034,16 @@ class Ot extends qa {
   async getAuditOverviews() {
     const { data: a } = await u(this, $).getAuditOverviews();
     if (a && a.items) {
-      const n = a.items.sort((i, o) => {
-        const s = i.runDate ? new Date(i.runDate).getTime() : 0;
-        return (o.runDate ? new Date(o.runDate).getTime() : 0) - s;
+      const n = a.items.sort((s, o) => {
+        const i = s.runDate ? new Date(s.runDate).getTime() : 0;
+        return (o.runDate ? new Date(o.runDate).getTime() : 0) - i;
       });
-      u(this, ie).setValue(n);
+      u(this, se).setValue(n);
     }
   }
   async getPagesWithMissingMetadata() {
     const { data: a } = await u(this, $).getPagesWithMissingMetadata();
-    a && u(this, se).setValue(a.items);
+    a && u(this, ie).setValue(a.items);
   }
   async getTopIssues() {
     const { data: a } = await u(this, $).getTopIssues();
@@ -1058,10 +1058,10 @@ class Ot extends qa {
     a && u(this, re).setValue(a);
   }
 }
-$ = new WeakMap(), ne = new WeakMap(), ie = new WeakMap(), se = new WeakMap(), oe = new WeakMap(), le = new WeakMap(), re = new WeakMap();
-const sn = new wi(
+$ = new WeakMap(), ne = new WeakMap(), se = new WeakMap(), ie = new WeakMap(), oe = new WeakMap(), le = new WeakMap(), re = new WeakMap();
+const sn = new ws(
   "ContentAuditContext"
-), us = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+), ui = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   CONTENT_AUDIT_CONTEXT_TOKEN: sn,
   ContentAuditContext: Ot,
@@ -1072,7 +1072,7 @@ const sn = new wi(
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ms = (t) => (e, a) => {
+const mi = (t) => (e, a) => {
   a !== void 0 ? a.addInitializer(() => {
     customElements.define(t, e);
   }) : customElements.define(t, e);
@@ -1082,8 +1082,8 @@ const ms = (t) => (e, a) => {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const xe = globalThis, kt = xe.ShadowRoot && (xe.ShadyCSS === void 0 || xe.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, on = Symbol(), Ca = /* @__PURE__ */ new WeakMap();
-let ds = class {
+const Ve = globalThis, kt = Ve.ShadowRoot && (Ve.ShadyCSS === void 0 || Ve.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, on = Symbol(), Ca = /* @__PURE__ */ new WeakMap();
+let di = class {
   constructor(e, a, n) {
     if (this._$cssResult$ = !0, n !== on) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = a;
@@ -1101,26 +1101,26 @@ let ds = class {
     return this.cssText;
   }
 };
-const ps = (t) => new ds(typeof t == "string" ? t : t + "", void 0, on), hs = (t, e) => {
+const pi = (t) => new di(typeof t == "string" ? t : t + "", void 0, on), hi = (t, e) => {
   if (kt) t.adoptedStyleSheets = e.map((a) => a instanceof CSSStyleSheet ? a : a.styleSheet);
   else for (const a of e) {
-    const n = document.createElement("style"), i = xe.litNonce;
-    i !== void 0 && n.setAttribute("nonce", i), n.textContent = a.cssText, t.appendChild(n);
+    const n = document.createElement("style"), s = Ve.litNonce;
+    s !== void 0 && n.setAttribute("nonce", s), n.textContent = a.cssText, t.appendChild(n);
   }
 }, fa = kt ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let a = "";
   for (const n of e.cssRules) a += n.cssText;
-  return ps(a);
+  return pi(a);
 })(t) : t;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: _s, defineProperty: bs, getOwnPropertyDescriptor: Cs, getOwnPropertyNames: fs, getOwnPropertySymbols: ys, getPrototypeOf: As } = Object, R = globalThis, ya = R.trustedTypes, Ts = ya ? ya.emptyScript : "", Ct = R.reactiveElementPolyfillSupport, pe = (t, e) => t, Et = { toAttribute(t, e) {
+const { is: _i, defineProperty: bi, getOwnPropertyDescriptor: Ci, getOwnPropertyNames: fi, getOwnPropertySymbols: yi, getPrototypeOf: Ai } = Object, R = globalThis, ya = R.trustedTypes, Ti = ya ? ya.emptyScript : "", bt = R.reactiveElementPolyfillSupport, pe = (t, e) => t, Et = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
-      t = t ? Ts : null;
+      t = t ? Ti : null;
       break;
     case Object:
     case Array:
@@ -1145,7 +1145,7 @@ const { is: _s, defineProperty: bs, getOwnPropertyDescriptor: Cs, getOwnProperty
       }
   }
   return a;
-} }, ln = (t, e) => !_s(t, e), Aa = { attribute: !0, type: String, converter: Et, reflect: !1, useDefault: !1, hasChanged: ln };
+} }, ln = (t, e) => !_i(t, e), Aa = { attribute: !0, type: String, converter: Et, reflect: !1, useDefault: !1, hasChanged: ln };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), R.litPropertyMetadata ?? (R.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 class de extends HTMLElement {
   static addInitializer(e) {
@@ -1156,19 +1156,19 @@ class de extends HTMLElement {
   }
   static createProperty(e, a = Aa) {
     if (a.state && (a.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((a = Object.create(a)).wrapped = !0), this.elementProperties.set(e, a), !a.noAccessor) {
-      const n = Symbol(), i = this.getPropertyDescriptor(e, n, a);
-      i !== void 0 && bs(this.prototype, e, i);
+      const n = Symbol(), s = this.getPropertyDescriptor(e, n, a);
+      s !== void 0 && bi(this.prototype, e, s);
     }
   }
   static getPropertyDescriptor(e, a, n) {
-    const { get: i, set: o } = Cs(this.prototype, e) ?? { get() {
+    const { get: s, set: o } = Ci(this.prototype, e) ?? { get() {
       return this[a];
-    }, set(s) {
-      this[a] = s;
+    }, set(i) {
+      this[a] = i;
     } };
-    return { get: i, set(s) {
-      const l = i == null ? void 0 : i.call(this);
-      o == null || o.call(this, s), this.requestUpdate(e, l, n);
+    return { get: s, set(i) {
+      const l = s == null ? void 0 : s.call(this);
+      o == null || o.call(this, i), this.requestUpdate(e, l, n);
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
@@ -1176,24 +1176,24 @@ class de extends HTMLElement {
   }
   static _$Ei() {
     if (this.hasOwnProperty(pe("elementProperties"))) return;
-    const e = As(this);
+    const e = Ai(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(pe("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(pe("properties"))) {
-      const a = this.properties, n = [...fs(a), ...ys(a)];
-      for (const i of n) this.createProperty(i, a[i]);
+      const a = this.properties, n = [...fi(a), ...yi(a)];
+      for (const s of n) this.createProperty(s, a[s]);
     }
     const e = this[Symbol.metadata];
     if (e !== null) {
       const a = litPropertyMetadata.get(e);
-      if (a !== void 0) for (const [n, i] of a) this.elementProperties.set(n, i);
+      if (a !== void 0) for (const [n, s] of a) this.elementProperties.set(n, s);
     }
     this._$Eh = /* @__PURE__ */ new Map();
     for (const [a, n] of this.elementProperties) {
-      const i = this._$Eu(a, n);
-      i !== void 0 && this._$Eh.set(i, a);
+      const s = this._$Eu(a, n);
+      s !== void 0 && this._$Eh.set(s, a);
     }
     this.elementStyles = this.finalizeStyles(this.styles);
   }
@@ -1201,7 +1201,7 @@ class de extends HTMLElement {
     const a = [];
     if (Array.isArray(e)) {
       const n = new Set(e.flat(1 / 0).reverse());
-      for (const i of n) a.unshift(fa(i));
+      for (const s of n) a.unshift(fa(s));
     } else e !== void 0 && a.push(fa(e));
     return a;
   }
@@ -1231,7 +1231,7 @@ class de extends HTMLElement {
   }
   createRenderRoot() {
     const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return hs(e, this.constructor.elementStyles), e;
+    return hi(e, this.constructor.elementStyles), e;
   }
   connectedCallback() {
     var e;
@@ -1254,31 +1254,31 @@ class de extends HTMLElement {
   }
   _$ET(e, a) {
     var o;
-    const n = this.constructor.elementProperties.get(e), i = this.constructor._$Eu(e, n);
-    if (i !== void 0 && n.reflect === !0) {
-      const s = (((o = n.converter) == null ? void 0 : o.toAttribute) !== void 0 ? n.converter : Et).toAttribute(a, n.type);
-      this._$Em = e, s == null ? this.removeAttribute(i) : this.setAttribute(i, s), this._$Em = null;
+    const n = this.constructor.elementProperties.get(e), s = this.constructor._$Eu(e, n);
+    if (s !== void 0 && n.reflect === !0) {
+      const i = (((o = n.converter) == null ? void 0 : o.toAttribute) !== void 0 ? n.converter : Et).toAttribute(a, n.type);
+      this._$Em = e, i == null ? this.removeAttribute(s) : this.setAttribute(s, i), this._$Em = null;
     }
   }
   _$AK(e, a) {
-    var o, s;
-    const n = this.constructor, i = n._$Eh.get(e);
-    if (i !== void 0 && this._$Em !== i) {
-      const l = n.getPropertyOptions(i), c = typeof l.converter == "function" ? { fromAttribute: l.converter } : ((o = l.converter) == null ? void 0 : o.fromAttribute) !== void 0 ? l.converter : Et;
-      this._$Em = i, this[i] = c.fromAttribute(a, l.type) ?? ((s = this._$Ej) == null ? void 0 : s.get(i)) ?? null, this._$Em = null;
+    var o, i;
+    const n = this.constructor, s = n._$Eh.get(e);
+    if (s !== void 0 && this._$Em !== s) {
+      const l = n.getPropertyOptions(s), c = typeof l.converter == "function" ? { fromAttribute: l.converter } : ((o = l.converter) == null ? void 0 : o.fromAttribute) !== void 0 ? l.converter : Et;
+      this._$Em = s, this[s] = c.fromAttribute(a, l.type) ?? ((i = this._$Ej) == null ? void 0 : i.get(s)) ?? null, this._$Em = null;
     }
   }
   requestUpdate(e, a, n) {
-    var i;
+    var s;
     if (e !== void 0) {
-      const o = this.constructor, s = this[e];
-      if (n ?? (n = o.getPropertyOptions(e)), !((n.hasChanged ?? ln)(s, a) || n.useDefault && n.reflect && s === ((i = this._$Ej) == null ? void 0 : i.get(e)) && !this.hasAttribute(o._$Eu(e, n)))) return;
+      const o = this.constructor, i = this[e];
+      if (n ?? (n = o.getPropertyOptions(e)), !((n.hasChanged ?? ln)(i, a) || n.useDefault && n.reflect && i === ((s = this._$Ej) == null ? void 0 : s.get(e)) && !this.hasAttribute(o._$Eu(e, n)))) return;
       this.C(e, a, n);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
   }
-  C(e, a, { useDefault: n, reflect: i, wrapped: o }, s) {
-    n && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, s ?? a ?? this[e]), o !== !0 || s !== void 0) || (this._$AL.has(e) || (this.hasUpdated || n || (a = void 0), this._$AL.set(e, a)), i === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
+  C(e, a, { useDefault: n, reflect: s, wrapped: o }, i) {
+    n && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, i ?? a ?? this[e]), o !== !0 || i !== void 0) || (this._$AL.has(e) || (this.hasUpdated || n || (a = void 0), this._$AL.set(e, a)), s === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
   }
   async _$EP() {
     this.isUpdatePending = !0;
@@ -1298,24 +1298,24 @@ class de extends HTMLElement {
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this._$Ep) {
-        for (const [o, s] of this._$Ep) this[o] = s;
+        for (const [o, i] of this._$Ep) this[o] = i;
         this._$Ep = void 0;
       }
-      const i = this.constructor.elementProperties;
-      if (i.size > 0) for (const [o, s] of i) {
-        const { wrapped: l } = s, c = this[o];
-        l !== !0 || this._$AL.has(o) || c === void 0 || this.C(o, void 0, s, c);
+      const s = this.constructor.elementProperties;
+      if (s.size > 0) for (const [o, i] of s) {
+        const { wrapped: l } = i, c = this[o];
+        l !== !0 || this._$AL.has(o) || c === void 0 || this.C(o, void 0, i, c);
       }
     }
     let e = !1;
     const a = this._$AL;
     try {
-      e = this.shouldUpdate(a), e ? (this.willUpdate(a), (n = this._$EO) == null || n.forEach((i) => {
+      e = this.shouldUpdate(a), e ? (this.willUpdate(a), (n = this._$EO) == null || n.forEach((s) => {
         var o;
-        return (o = i.hostUpdate) == null ? void 0 : o.call(i);
+        return (o = s.hostUpdate) == null ? void 0 : o.call(s);
       }), this.update(a)) : this._$EM();
-    } catch (i) {
-      throw e = !1, this._$EM(), i;
+    } catch (s) {
+      throw e = !1, this._$EM(), s;
     }
     e && this._$AE(a);
   }
@@ -1324,8 +1324,8 @@ class de extends HTMLElement {
   _$AE(e) {
     var a;
     (a = this._$EO) == null || a.forEach((n) => {
-      var i;
-      return (i = n.hostUpdated) == null ? void 0 : i.call(n);
+      var s;
+      return (s = n.hostUpdated) == null ? void 0 : s.call(n);
     }), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(e)), this.updated(e);
   }
   _$EM() {
@@ -1348,13 +1348,13 @@ class de extends HTMLElement {
   firstUpdated(e) {
   }
 }
-de.elementStyles = [], de.shadowRootOptions = { mode: "open" }, de[pe("elementProperties")] = /* @__PURE__ */ new Map(), de[pe("finalized")] = /* @__PURE__ */ new Map(), Ct == null || Ct({ ReactiveElement: de }), (R.reactiveElementVersions ?? (R.reactiveElementVersions = [])).push("2.1.0");
-var vs = Object.getOwnPropertyDescriptor, gs = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? vs(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = s(i) || i);
-  return i;
+de.elementStyles = [], de.shadowRootOptions = { mode: "open" }, de[pe("elementProperties")] = /* @__PURE__ */ new Map(), de[pe("finalized")] = /* @__PURE__ */ new Map(), bt == null || bt({ ReactiveElement: de }), (R.reactiveElementVersions ?? (R.reactiveElementVersions = [])).push("2.1.0");
+var vi = Object.getOwnPropertyDescriptor, gi = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? vi(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = i(s) || s);
+  return s;
 };
-let Ye = class extends ce(J) {
+let qe = class extends ce(J) {
   constructor() {
     super(), this._workspaceContext = new Ot(this);
   }
@@ -1365,18 +1365,18 @@ let Ye = class extends ce(J) {
 		`;
   }
 };
-Ye = gs([
-  ms("content-audit-workspace-root")
-], Ye);
-const ws = Ye, Is = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+qe = gi([
+  mi("content-audit-workspace-root")
+], qe);
+const wi = qe, Ii = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get ContentAuditWorkspaceRootElement() {
-    return Ye;
+    return qe;
   },
-  default: ws
-}, Symbol.toStringTag, { value: "Module" })), K = "Umb.Menu.ContentAudit", Je = "Umb.Menu.ContentMetadata", Qe = "Umb.Menu.ContentPerformance", Nt = "Umb.Menu.ContentTools", Dt = "Umb.Collection.ContentAudit.Issues", Os = "Umb.CollectionView.ContentAudit.Issues.Table", rn = "Umb.Repository.ContentAuditIssuesCollection";
+  default: wi
+}, Symbol.toStringTag, { value: "Module" })), K = "Umb.Menu.ContentAudit", Xe = "Umb.Menu.ContentMetadata", Je = "Umb.Menu.ContentPerformance", Nt = "Umb.Menu.ContentTools", Dt = "Umb.Collection.ContentAudit.Issues", Oi = "Umb.CollectionView.ContentAudit.Issues.Table", rn = "Umb.Repository.ContentAuditIssuesCollection";
 var Pe;
-class Es {
+class Ei {
   constructor(e) {
     y(this, Pe);
     A(this, Pe, e);
@@ -1387,34 +1387,34 @@ class Es {
       return { error: n };
     if (!a)
       return { data: { items: [], total: 0 } };
-    const { items: i, total: o } = a;
-    return { data: { items: i, total: o } };
+    const { items: s, total: o } = a;
+    return { data: { items: s, total: o } };
   }
 }
 Pe = new WeakMap();
 var Ue;
-class Ta extends Ei {
+class Ta extends Es {
   constructor(a) {
     super(a);
     y(this, Ue);
-    A(this, Ue, new Es(a));
+    A(this, Ue, new Ei(a));
   }
   async requestCollection(a) {
     return u(this, Ue).getCollection(a);
   }
 }
 Ue = new WeakMap();
-const Ss = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Si = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   ContentAuditIssuesCollectionRepository: Ta,
   default: Ta
 }, Symbol.toStringTag, { value: "Module" }));
-var $s = Object.defineProperty, Ps = Object.getOwnPropertyDescriptor, cn = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Ps(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && $s(e, a, i), i;
+var $i = Object.defineProperty, Pi = Object.getOwnPropertyDescriptor, cn = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Pi(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && $i(e, a, s), s;
 };
-let He = class extends J {
+let Ye = class extends J {
   render() {
     return this.value ? m`
 			<span>
@@ -1426,8 +1426,8 @@ let He = class extends J {
 		` : za;
   }
 };
-He.styles = [
-  Si,
+Ye.styles = [
+  Ss,
   T`
 			span {
 				display: block;
@@ -1437,17 +1437,17 @@ He.styles = [
 ];
 cn([
   H({ attribute: !1 })
-], He.prototype, "value", 2);
-He = cn([
+], Ye.prototype, "value", 2);
+Ye = cn([
   C("content-audit-issues-table-name-column-layout")
-], He);
-var Us = Object.defineProperty, Ls = Object.getOwnPropertyDescriptor, un = (t) => {
+], Ye);
+var Ui = Object.defineProperty, Li = Object.getOwnPropertyDescriptor, un = (t) => {
   throw TypeError(t);
 }, Q = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Ls(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Us(e, a, i), i;
-}, Rt = (t, e, a) => e.has(t) || un("Cannot " + a), va = (t, e, a) => (Rt(t, e, "read from private field"), e.get(t)), ga = (t, e, a) => e.has(t) ? un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), ks = (t, e, a, n) => (Rt(t, e, "write to private field"), e.set(t, a), a), Me = (t, e, a) => (Rt(t, e, "access private method"), a), he, te, mn, Vt, dn;
+  for (var s = n > 1 ? void 0 : n ? Li(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Ui(e, a, s), s;
+}, Rt = (t, e, a) => e.has(t) || un("Cannot " + a), va = (t, e, a) => (Rt(t, e, "read from private field"), e.get(t)), ga = (t, e, a) => e.has(t) ? un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), ki = (t, e, a, n) => (Rt(t, e, "write to private field"), e.set(t, a), a), xe = (t, e, a) => (Rt(t, e, "access private method"), a), he, te, mn, Wt, dn;
 let O = class extends P {
   constructor() {
     super(), ga(this, te), this.data = [], this.hideSummary = !1, this._issues = [], this._tableConfig = {
@@ -1475,17 +1475,17 @@ let O = class extends P {
         name: "Percentage of all pages",
         alias: "percentOfTotal"
       }
-    ], this._tableItems = [], ga(this, he), this.consumeContext(D, (t) => {
-      ks(this, he, t), Me(this, te, mn).call(this);
+    ], this._tableItems = [], ga(this, he), this.consumeContext(N, (t) => {
+      ki(this, he, t), xe(this, te, mn).call(this);
     });
   }
   updated(t) {
-    t.has("data") && this.data.length !== 0 && (this._issues = this.data, Me(this, te, Vt).call(this, this.data));
+    t.has("data") && this.data.length !== 0 && (this._issues = this.data, xe(this, te, Wt).call(this, this.data));
   }
   render() {
     if (this._tableItems.length !== 0)
       return m`
-                ${Me(this, te, dn).call(this)}
+                ${xe(this, te, dn).call(this)}
 			    <umb-table
                     .config=${this._tableConfig}
                     .columns=${this._tableColumns}
@@ -1498,10 +1498,10 @@ he = /* @__PURE__ */ new WeakMap();
 te = /* @__PURE__ */ new WeakSet();
 mn = function() {
   va(this, he) && this.observe(va(this, he).items, (t) => {
-    this._issues = t, Me(this, te, Vt).call(this, t);
+    this._issues = t, xe(this, te, Wt).call(this, t);
   }, "umbCollectionItemsObserver");
 };
-Vt = function(t) {
+Wt = function(t) {
   this._tableItems = t.map((e) => ({
     id: e.unique,
     entityType: "issue-type",
@@ -1633,23 +1633,23 @@ Q([
 O = Q([
   C("content-audit-issues-table-collection-view")
 ], O);
-const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ni = O, Di = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get ContentAuditIssuesTableCollectionViewElement() {
     return O;
   },
-  default: Ns
-}, Symbol.toStringTag, { value: "Module" })), Wt = "Umb.Collection.ContentAudit.Audits", Rs = "Umb.CollectionView.ContentAudit.Audits.Table", pn = "Umb.Repository.ContentAuditAuditsCollection", Vs = [
+  default: Ni
+}, Symbol.toStringTag, { value: "Module" })), Vt = "Umb.Collection.ContentAudit.Audits", Ri = "Umb.CollectionView.ContentAudit.Audits.Table", pn = "Umb.Repository.ContentAuditAuditsCollection", Wi = [
   {
     type: "repository",
     alias: pn,
     name: "Audits Collection Repository",
     api: () => import("./audits-collection.repository.js")
   }
-], Ws = [
+], Vi = [
   {
     type: "collectionView",
-    alias: Rs,
+    alias: Ri,
     name: "Audits Table Collection View",
     js: () => import("./audits-table-collection-view.element.js"),
     meta: {
@@ -1660,24 +1660,24 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: w,
-        match: Wt
+        match: Vt
       }
     ]
   }
-], xs = [
+], xi = [
   {
     type: "collection",
     kind: "default",
-    alias: Wt,
+    alias: Vt,
     name: "Audits Collection",
     element: () => import("./audits.element.js"),
     meta: {
       repositoryAlias: pn
     }
   },
-  ...Vs,
-  ...Ws
-], Ms = {
+  ...Wi,
+  ...Vi
+], Mi = {
   type: "menuItem",
   kind: "tree",
   alias: "Umb.MenuItem.ContentAudit.Audits",
@@ -1689,7 +1689,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     treeAlias: "Umb.Tree.ContentAudit.Audits",
     menus: [K]
   }
-}, js = [Ms], Bs = "audits", hn = "audits-root", zs = [
+}, ji = [Mi], Bi = "audits", hn = "audits-root", zi = [
   {
     type: "repository",
     alias: "Umb.Repository.ContentAudit.Audits",
@@ -1710,13 +1710,13 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     kind: "default",
     alias: "Umb.TreeItem.ContentAudit.Audits",
     name: "Content Audit Audits Tree Item",
-    forEntityTypes: [Bs, hn]
+    forEntityTypes: [Bi, hn]
   }
-], We = "Umb.Workspace.ContentAudit.Audits", qs = [
+], Ct = "Umb.Workspace.ContentAudit.Audits", qi = [
   {
     type: "workspace",
     kind: "routable",
-    alias: We,
+    alias: Ct,
     name: "Audits Workspace",
     api: () => import("./audits-workspace.context.js"),
     meta: {
@@ -1736,29 +1736,29 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
-        match: We
+        alias: D,
+        match: Ct
       }
     ]
   },
-  {
-    type: "workspaceView",
-    alias: "Umb.WorkspaceView.ContentAudit.Audits.Details",
-    name: "Audits Workspace Details View",
-    js: () => import("./audits-details-workspace-view.element.js"),
-    weight: 90,
-    meta: {
-      label: "Details",
-      pathname: "details",
-      icon: "icon-info"
-    },
-    conditions: [
-      {
-        alias: N,
-        match: We
-      }
-    ]
-  },
+  //{
+  //	type: 'workspaceView',
+  //	alias: 'Umb.WorkspaceView.ContentAudit.Audits.Details',
+  //	name: 'Audits Workspace Details View',
+  //	js: () => import('./views/audits-details-workspace-view.element'),
+  //	weight: 90,
+  //	meta: {
+  //		label: 'Details',
+  //		pathname: 'details',
+  //		icon: 'icon-info',
+  //	},
+  //	conditions: [
+  //		{
+  //			alias: UMB_WORKSPACE_CONDITION_ALIAS,
+  //			match: CONTENT_AUDIT_AUDITS_WORKSPACE_ALIAS,
+  //		},
+  //	],
+  //},
   {
     type: "workspaceView",
     alias: "Umb.WorkspaceView.ContentAudit.Audits.Issues",
@@ -1772,12 +1772,12 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
-        match: We
+        alias: D,
+        match: Ct
       }
     ]
   }
-], wa = "Umb.Workspace.ContentAudit.AuditsRoot", Ys = [
+], wa = "Umb.Workspace.ContentAudit.AuditsRoot", Yi = [
   {
     type: "workspace",
     kind: "default",
@@ -1797,7 +1797,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       label: "Collection",
       icon: "icon-layers",
       pathname: "collection",
-      collectionAlias: Wt
+      collectionAlias: Vt
     },
     conditions: [
       {
@@ -1806,15 +1806,15 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       }
     ]
   }
-], Hs = [
-  ...qs,
-  ...Ys
-], Ks = [
-  ...xs,
-  ...js,
-  ...zs,
-  ...Hs
-], _n = "all-pages-root", Gs = {
+], Hi = [
+  ...qi,
+  ...Yi
+], Ki = [
+  ...xi,
+  ...ji,
+  ...zi,
+  ...Hi
+], _n = "all-pages-root", Gi = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.AllPages",
   name: "All Pages Menu Item",
@@ -1825,7 +1825,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     entityType: _n,
     menus: [K]
   }
-}, Fs = [Gs], Ia = "Umb.Workspace.ContentAudit.AllPagesRoot", Z = "Umb.Workspace.ContentAudit.AllPages", Xs = [
+}, Fi = [Gi], Ia = "Umb.Workspace.ContentAudit.AllPagesRoot", Z = "Umb.Workspace.ContentAudit.AllPages", Xi = [
   {
     type: "workspace",
     kind: "routable",
@@ -1849,7 +1849,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
+        alias: D,
         match: Z
       }
     ]
@@ -1867,7 +1867,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
+        alias: D,
         match: Z
       }
     ]
@@ -1885,7 +1885,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
+        alias: D,
         match: Z
       }
     ]
@@ -1903,7 +1903,7 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
+        alias: D,
         match: Z
       }
     ]
@@ -1921,22 +1921,22 @@ const Ns = O, Ds = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
+        alias: D,
         match: Z
       }
     ]
   }
-], xt = "Umb.Collection.ContentAudit.AllPages", Js = "Umb.CollectionView.ContentAudit.AllPages.Table", bn = "Umb.Repository.ContentAuditAllPagesCollection";
-var Qs = Object.defineProperty, Zs = Object.getOwnPropertyDescriptor, Cn = (t) => {
+], xt = "Umb.Collection.ContentAudit.AllPages", Ji = "Umb.CollectionView.ContentAudit.AllPages.Table", bn = "Umb.Repository.ContentAuditAllPagesCollection";
+var Qi = Object.defineProperty, Zi = Object.getOwnPropertyDescriptor, Cn = (t) => {
   throw TypeError(t);
-}, Ze = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Zs(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Qs(e, a, i), i;
-}, Mt = (t, e, a) => e.has(t) || Cn("Cannot " + a), Oa = (t, e, a) => (Mt(t, e, "read from private field"), e.get(t)), Ea = (t, e, a) => e.has(t) ? Cn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), eo = (t, e, a, n) => (Mt(t, e, "write to private field"), e.set(t, a), a), fn = (t, e, a) => (Mt(t, e, "access private method"), a), _e, Ke, yn, An;
-let V = class extends P {
+}, Qe = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Zi(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Qi(e, a, s), s;
+}, Mt = (t, e, a) => e.has(t) || Cn("Cannot " + a), Oa = (t, e, a) => (Mt(t, e, "read from private field"), e.get(t)), Ea = (t, e, a) => e.has(t) ? Cn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), eo = (t, e, a, n) => (Mt(t, e, "write to private field"), e.set(t, a), a), fn = (t, e, a) => (Mt(t, e, "access private method"), a), _e, He, yn, An;
+let W = class extends P {
   constructor() {
-    super(), Ea(this, Ke), this._tableConfig = {
+    super(), Ea(this, He), this._tableConfig = {
       allowSelection: !1,
       hideIcon: !0
     }, this._tableColumns = [
@@ -1956,8 +1956,8 @@ let V = class extends P {
         name: "Redirected",
         alias: "redirect"
       }
-    ], this._tableItems = [], Ea(this, _e), this.consumeContext(D, (t) => {
-      eo(this, _e, t), fn(this, Ke, yn).call(this);
+    ], this._tableItems = [], Ea(this, _e), this.consumeContext(N, (t) => {
+      eo(this, _e, t), fn(this, He, yn).call(this);
     });
   }
   render() {
@@ -1972,13 +1972,13 @@ let V = class extends P {
   }
 };
 _e = /* @__PURE__ */ new WeakMap();
-Ke = /* @__PURE__ */ new WeakSet();
+He = /* @__PURE__ */ new WeakSet();
 yn = function() {
-  Oa(this, _e) && this.observe(Oa(this, _e).items, (t) => fn(this, Ke, An).call(this, t), "umbCollectionItemsObserver");
+  Oa(this, _e) && this.observe(Oa(this, _e).items, (t) => fn(this, He, An).call(this, t), "umbCollectionItemsObserver");
 };
 An = function(t) {
   this._tableItems = t.map((e) => {
-    var a, n, i;
+    var a, n, s;
     return {
       id: e == null ? void 0 : e.unique,
       entityType: e == null ? void 0 : e.entityType,
@@ -1994,7 +1994,7 @@ An = function(t) {
         },
         {
           columnAlias: "statusCode",
-          value: m`<content-audit-status-code-label .statusCode=${(i = e.pageData) == null ? void 0 : i.statusCode}></content-audit-status-code-label>`
+          value: m`<content-audit-status-code-label .statusCode=${(s = e.pageData) == null ? void 0 : s.statusCode}></content-audit-status-code-label>`
         },
         {
           columnAlias: "redirect",
@@ -2004,7 +2004,7 @@ An = function(t) {
     };
   });
 };
-V.styles = [
+W.styles = [
   T`
 			:host {
 				display: flex;
@@ -2012,22 +2012,22 @@ V.styles = [
 			}
 		`
 ];
-Ze([
+Qe([
   d()
-], V.prototype, "_tableConfig", 2);
-Ze([
+], W.prototype, "_tableConfig", 2);
+Qe([
   d()
-], V.prototype, "_tableColumns", 2);
-Ze([
+], W.prototype, "_tableColumns", 2);
+Qe([
   d()
-], V.prototype, "_tableItems", 2);
-V = Ze([
+], W.prototype, "_tableItems", 2);
+W = Qe([
   C("content-audit-all-pages-table-collection-view")
-], V);
-const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+], W);
+const to = W, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get ContentAuditAllPagesTableCollectionViewElement() {
-    return V;
+    return W;
   },
   default: to
 }, Symbol.toStringTag, { value: "Module" })), no = [
@@ -2059,7 +2059,7 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       }
     ]
   }
-], io = [...Xs, ...no], so = [
+], so = [...Xi, ...no], io = [
   {
     type: "repository",
     alias: bn,
@@ -2069,7 +2069,7 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 ], oo = [
   {
     type: "collectionView",
-    alias: Js,
+    alias: Ji,
     name: "All Pages Table Collection View",
     js: () => Promise.resolve().then(() => ao),
     meta: {
@@ -2095,7 +2095,7 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       repositoryAlias: bn
     }
   },
-  ...so,
+  ...io,
   ...oo
 ], ro = "Umb.Repository.ContentAudit.AllPages.Detail", co = "Umb.Store.ContentAudit.AllPages.Detail", uo = [
   {
@@ -2111,8 +2111,8 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     api: () => import("./all-pages-detail.store.js")
   }
 ], mo = [...uo], po = [
-  ...io,
-  ...Fs,
+  ...so,
+  ...Fi,
   ...lo,
   ...mo
 ], Tn = "issues-root", ho = {
@@ -2150,7 +2150,7 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     },
     conditions: [
       {
-        alias: N,
+        alias: D,
         match: $a
       }
     ]
@@ -2189,14 +2189,14 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     type: "repository",
     alias: rn,
     name: "Issue Collection Repository",
-    api: () => Promise.resolve().then(() => Ss)
+    api: () => Promise.resolve().then(() => Si)
   }
 ], Ao = [
   {
     type: "collectionView",
-    alias: Os,
+    alias: Oi,
     name: "Issues Table Collection View",
-    js: () => Promise.resolve().then(() => Ds),
+    js: () => Promise.resolve().then(() => Di),
     meta: {
       label: "Table",
       icon: "icon-list",
@@ -2254,12 +2254,12 @@ const to = V, ao = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, So = [Eo], jt = "Umb.Collection.ContentAudit.StatusCodes", $o = "Umb.CollectionView.ContentAudit.StatusCodes.Table", gn = "Umb.Repository.ContentAuditStatusCodesCollection";
 var Po = Object.defineProperty, Uo = Object.getOwnPropertyDescriptor, wn = (t) => {
   throw TypeError(t);
-}, et = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Uo(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Po(e, a, i), i;
-}, Bt = (t, e, a) => e.has(t) || wn("Cannot " + a), St = (t, e, a) => (Bt(t, e, "read from private field"), e.get(t)), ft = (t, e, a) => e.has(t) ? wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), In = (t, e, a, n) => (Bt(t, e, "write to private field"), e.set(t, a), a), zt = (t, e, a) => (Bt(t, e, "access private method"), a), be, tt, Ce, On, En, Sn;
-let W = class extends P {
+}, Ze = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Uo(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Po(e, a, s), s;
+}, Bt = (t, e, a) => e.has(t) || wn("Cannot " + a), St = (t, e, a) => (Bt(t, e, "read from private field"), e.get(t)), ft = (t, e, a) => e.has(t) ? wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), In = (t, e, a, n) => (Bt(t, e, "write to private field"), e.set(t, a), a), zt = (t, e, a) => (Bt(t, e, "access private method"), a), be, et, Ce, On, En, Sn;
+let V = class extends P {
   constructor() {
     super(), ft(this, Ce), this._tableConfig = {
       allowSelection: !1,
@@ -2277,7 +2277,7 @@ let W = class extends P {
         name: "Status Code",
         alias: "statusCode"
       }
-    ], this._tableItems = [], ft(this, be), ft(this, tt), this.consumeContext(D, (t) => {
+    ], this._tableItems = [], ft(this, be), ft(this, et), this.consumeContext(N, (t) => {
       In(this, be, t);
     }), zt(this, Ce, On).call(this);
   }
@@ -2293,21 +2293,21 @@ let W = class extends P {
   }
 };
 be = /* @__PURE__ */ new WeakMap();
-tt = /* @__PURE__ */ new WeakMap();
+et = /* @__PURE__ */ new WeakMap();
 Ce = /* @__PURE__ */ new WeakSet();
 On = function() {
   new Ne(this, Le).addAdditionalPath(":entityType").onSetup((t) => ({ data: { entityType: t.entityType, preset: {} } })).observeRouteBuilder((t) => {
-    In(this, tt, t), zt(this, Ce, En).call(this);
+    In(this, et, t), zt(this, Ce, En).call(this);
   });
 };
 En = function() {
   St(this, be) && this.observe(St(this, be).items, (t) => zt(this, Ce, Sn).call(this, t), "umbCollectionItemsObserver");
 };
 Sn = function(t) {
-  const e = St(this, tt);
+  const e = St(this, et);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
-    var i, o, s;
+    var s, o, i;
     const n = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a == null ? void 0 : a.unique,
@@ -2316,7 +2316,7 @@ Sn = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${n}>${(i = a.pageData) == null ? void 0 : i.url}</a>`
+          value: m`<a href=${n}>${(s = a.pageData) == null ? void 0 : s.url}</a>`
         },
         {
           columnAlias: "contentType",
@@ -2324,13 +2324,13 @@ Sn = function(t) {
         },
         {
           columnAlias: "statusCode",
-          value: m`<content-audit-status-code-label .statusCode=${(s = a.pageData) == null ? void 0 : s.statusCode}></content-audit-status-code-label>`
+          value: m`<content-audit-status-code-label .statusCode=${(i = a.pageData) == null ? void 0 : i.statusCode}></content-audit-status-code-label>`
         }
       ]
     };
   });
 };
-W.styles = [
+V.styles = [
   T`
 			:host {
 				display: flex;
@@ -2338,22 +2338,22 @@ W.styles = [
 			}
 		`
 ];
-et([
+Ze([
   d()
-], W.prototype, "_tableConfig", 2);
-et([
+], V.prototype, "_tableConfig", 2);
+Ze([
   d()
-], W.prototype, "_tableColumns", 2);
-et([
+], V.prototype, "_tableColumns", 2);
+Ze([
   d()
-], W.prototype, "_tableItems", 2);
-W = et([
+], V.prototype, "_tableItems", 2);
+V = Ze([
   C("content-audit-status-codes-table-collection-view")
-], W);
-const Lo = W, ko = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+], V);
+const Lo = V, ko = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get ContentAuditStatusCodesTableCollectionViewElement() {
-    return W;
+    return V;
   },
   default: Lo
 }, Symbol.toStringTag, { value: "Module" })), Pa = "Umb.Workspace.ContentAudit.StatusCodes", No = [
@@ -2410,7 +2410,7 @@ const Lo = W, ko = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       }
     ]
   }
-], Vo = [
+], Wo = [
   {
     type: "collection",
     kind: "default",
@@ -2423,10 +2423,10 @@ const Lo = W, ko = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   },
   ...Do,
   ...Ro
-], Wo = [
+], Vo = [
   ...No,
   ...So,
-  ...Vo
+  ...Wo
 ], $n = "orphaned-pages-root", xo = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.OrphanedPages",
@@ -2436,16 +2436,16 @@ const Lo = W, ko = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     label: "Orphaned Pages",
     icon: "icon-tactics",
     entityType: $n,
-    menus: [Je]
+    menus: [Xe]
   }
 }, Mo = [xo], qt = "Umb.Collection.ContentAudit.OrphanedPages", jo = "Umb.CollectionView.ContentAudit.OrphanedPages.Table", Pn = "Umb.Repository.ContentAuditOrphanedPagesCollection";
 var Bo = Object.defineProperty, zo = Object.getOwnPropertyDescriptor, Un = (t) => {
   throw TypeError(t);
-}, at = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? zo(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Bo(e, a, i), i;
-}, Yt = (t, e, a) => e.has(t) || Un("Cannot " + a), $t = (t, e, a) => (Yt(t, e, "read from private field"), e.get(t)), yt = (t, e, a) => e.has(t) ? Un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), Ln = (t, e, a, n) => (Yt(t, e, "write to private field"), e.set(t, a), a), Ht = (t, e, a) => (Yt(t, e, "access private method"), a), fe, nt, ye, kn, Nn, Dn;
+}, tt = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? zo(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Bo(e, a, s), s;
+}, Yt = (t, e, a) => e.has(t) || Un("Cannot " + a), $t = (t, e, a) => (Yt(t, e, "read from private field"), e.get(t)), yt = (t, e, a) => e.has(t) ? Un("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), Ln = (t, e, a, n) => (Yt(t, e, "write to private field"), e.set(t, a), a), Ht = (t, e, a) => (Yt(t, e, "access private method"), a), fe, at, ye, kn, Nn, Dn;
 let x = class extends P {
   constructor() {
     super(), yt(this, ye), this._tableConfig = {
@@ -2456,7 +2456,7 @@ let x = class extends P {
         name: "URL",
         alias: "url"
       }
-    ], this._tableItems = [], yt(this, fe), yt(this, nt), this.consumeContext(D, (t) => {
+    ], this._tableItems = [], yt(this, fe), yt(this, at), this.consumeContext(N, (t) => {
       Ln(this, fe, t);
     }), Ht(this, ye, kn).call(this);
   }
@@ -2472,18 +2472,18 @@ let x = class extends P {
   }
 };
 fe = /* @__PURE__ */ new WeakMap();
-nt = /* @__PURE__ */ new WeakMap();
+at = /* @__PURE__ */ new WeakMap();
 ye = /* @__PURE__ */ new WeakSet();
 kn = function() {
   new Ne(this, Le).addAdditionalPath(":entityType").onSetup((t) => ({ data: { entityType: t.entityType, preset: {} } })).observeRouteBuilder((t) => {
-    Ln(this, nt, t), Ht(this, ye, Nn).call(this);
+    Ln(this, at, t), Ht(this, ye, Nn).call(this);
   });
 };
 Nn = function() {
   $t(this, fe) && this.observe($t(this, fe).items, (t) => Ht(this, ye, Dn).call(this, t), "umbCollectionItemsObserver");
 };
 Dn = function(t) {
-  const e = $t(this, nt);
+  const e = $t(this, at);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
     const n = e({ entityType: "document" }) + ke.generateLocal({ unique: a.unique });
@@ -2508,16 +2508,16 @@ x.styles = [
 			}
 		`
 ];
-at([
+tt([
   d()
 ], x.prototype, "_tableConfig", 2);
-at([
+tt([
   d()
 ], x.prototype, "_tableColumns", 2);
-at([
+tt([
   d()
 ], x.prototype, "_tableItems", 2);
-x = at([
+x = tt([
   C("content-audit-orphaned-pages-table-collection-view")
 ], x);
 const qo = x, Yo = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -2606,16 +2606,16 @@ const qo = x, Yo = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     label: "Alt Text",
     icon: "icon-picture",
     entityType: Rn,
-    menus: [Je]
+    menus: [Xe]
   }
-}, Qo = [Jo], Kt = "Umb.Collection.ContentAudit.ImagesAltText", Zo = "Umb.CollectionView.ContentAudit.ImagesAltText.Table", Vn = "Umb.Repository.ContentAuditImagesAltTextCollection";
-var el = Object.defineProperty, tl = Object.getOwnPropertyDescriptor, Wn = (t) => {
+}, Qo = [Jo], Kt = "Umb.Collection.ContentAudit.ImagesAltText", Zo = "Umb.CollectionView.ContentAudit.ImagesAltText.Table", Wn = "Umb.Repository.ContentAuditImagesAltTextCollection";
+var el = Object.defineProperty, tl = Object.getOwnPropertyDescriptor, Vn = (t) => {
   throw TypeError(t);
-}, it = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? tl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && el(e, a, i), i;
-}, Gt = (t, e, a) => e.has(t) || Wn("Cannot " + a), Pt = (t, e, a) => (Gt(t, e, "read from private field"), e.get(t)), At = (t, e, a) => e.has(t) ? Wn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), xn = (t, e, a, n) => (Gt(t, e, "write to private field"), e.set(t, a), a), Ft = (t, e, a) => (Gt(t, e, "access private method"), a), Ae, st, Te, Mn, jn, Bn;
+}, nt = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? tl(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && el(e, a, s), s;
+}, Gt = (t, e, a) => e.has(t) || Vn("Cannot " + a), Pt = (t, e, a) => (Gt(t, e, "read from private field"), e.get(t)), At = (t, e, a) => e.has(t) ? Vn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), xn = (t, e, a, n) => (Gt(t, e, "write to private field"), e.set(t, a), a), Ft = (t, e, a) => (Gt(t, e, "access private method"), a), Ae, st, Te, Mn, jn, Bn;
 let M = class extends P {
   constructor() {
     super(), At(this, Te), this._tableConfig = {
@@ -2634,7 +2634,7 @@ let M = class extends P {
         name: "Alt text",
         alias: "altText"
       }
-    ], this._tableItems = [], At(this, Ae), At(this, st), this.consumeContext(D, (t) => {
+    ], this._tableItems = [], At(this, Ae), At(this, st), this.consumeContext(N, (t) => {
       xn(this, Ae, t);
     }), Ft(this, Te, Mn).call(this);
   }
@@ -2694,16 +2694,16 @@ M.styles = [
 			}
 		`
 ];
-it([
+nt([
   d()
 ], M.prototype, "_tableConfig", 2);
-it([
+nt([
   d()
 ], M.prototype, "_tableColumns", 2);
-it([
+nt([
   d()
 ], M.prototype, "_tableItems", 2);
-M = it([
+M = nt([
   C("content-audit-images-alt-text-table-collection-view")
 ], M);
 const al = M, nl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -2712,7 +2712,7 @@ const al = M, nl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     return M;
   },
   default: al
-}, Symbol.toStringTag, { value: "Module" })), La = "Umb.Workspace.ContentAudit.ImagesAltText", il = [
+}, Symbol.toStringTag, { value: "Module" })), La = "Umb.Workspace.ContentAudit.ImagesAltText", sl = [
   {
     type: "workspace",
     kind: "default",
@@ -2741,10 +2741,10 @@ const al = M, nl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       }
     ]
   }
-], sl = [
+], il = [
   {
     type: "repository",
-    alias: Vn,
+    alias: Wn,
     name: "Images Alt Text Collection Repository",
     api: () => import("./images-alt-text-collection.repository.js")
   }
@@ -2774,13 +2774,13 @@ const al = M, nl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Images Alt Text Pages Collection",
     element: () => import("./images-alt-text.element.js"),
     meta: {
-      repositoryAlias: Vn
+      repositoryAlias: Wn
     }
   },
-  ...sl,
+  ...il,
   ...ol
 ], rl = [
-  ...il,
+  ...sl,
   ...Qo,
   ...ll
 ], zn = "outbound-links-root", cl = {
@@ -2797,14 +2797,14 @@ const al = M, nl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, ul = [cl], Xt = "Umb.Collection.ContentAudit.OutboundLinks", ml = "Umb.CollectionView.ContentAudit.OutboundLinks.Table", qn = "Umb.Repository.ContentAuditOutboundLinksCollection";
 var dl = Object.defineProperty, pl = Object.getOwnPropertyDescriptor, Yn = (t) => {
   throw TypeError(t);
-}, ot = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? pl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && dl(e, a, i), i;
-}, Jt = (t, e, a) => e.has(t) || Yn("Cannot " + a), ka = (t, e, a) => (Jt(t, e, "read from private field"), e.get(t)), Na = (t, e, a) => e.has(t) ? Yn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hl = (t, e, a, n) => (Jt(t, e, "write to private field"), e.set(t, a), a), Hn = (t, e, a) => (Jt(t, e, "access private method"), a), ve, Ge, Kn, Gn;
+}, it = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? pl(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && dl(e, a, s), s;
+}, Jt = (t, e, a) => e.has(t) || Yn("Cannot " + a), ka = (t, e, a) => (Jt(t, e, "read from private field"), e.get(t)), Na = (t, e, a) => e.has(t) ? Yn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hl = (t, e, a, n) => (Jt(t, e, "write to private field"), e.set(t, a), a), Hn = (t, e, a) => (Jt(t, e, "access private method"), a), ve, Ke, Kn, Gn;
 let j = class extends P {
   constructor() {
-    super(), Na(this, Ge), this._tableConfig = {
+    super(), Na(this, Ke), this._tableConfig = {
       allowSelection: !1,
       hideIcon: !0
     }, this._tableColumns = [
@@ -2824,8 +2824,8 @@ let j = class extends P {
         name: "Outlinks",
         alias: "outlinks"
       }
-    ], this._tableItems = [], Na(this, ve), this.consumeContext(D, (t) => {
-      hl(this, ve, t), Hn(this, Ge, Kn).call(this);
+    ], this._tableItems = [], Na(this, ve), this.consumeContext(N, (t) => {
+      hl(this, ve, t), Hn(this, Ke, Kn).call(this);
     });
   }
   render() {
@@ -2840,9 +2840,9 @@ let j = class extends P {
   }
 };
 ve = /* @__PURE__ */ new WeakMap();
-Ge = /* @__PURE__ */ new WeakSet();
+Ke = /* @__PURE__ */ new WeakSet();
 Kn = function() {
-  ka(this, ve) && this.observe(ka(this, ve).items, (t) => Hn(this, Ge, Gn).call(this, t), "umbCollectionItemsObserver");
+  ka(this, ve) && this.observe(ka(this, ve).items, (t) => Hn(this, Ke, Gn).call(this, t), "umbCollectionItemsObserver");
 };
 Gn = function(t) {
   this._tableItems = t.map((e) => {
@@ -2878,16 +2878,16 @@ j.styles = [
 			}
 		`
 ];
-ot([
+it([
   d()
 ], j.prototype, "_tableConfig", 2);
-ot([
+it([
   d()
 ], j.prototype, "_tableColumns", 2);
-ot([
+it([
   d()
 ], j.prototype, "_tableItems", 2);
-j = ot([
+j = it([
   C("content-audit-outbound-links-table-collection-view")
 ], j);
 const _l = j, bl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -2981,14 +2981,14 @@ const _l = j, bl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, gl = [vl], Qt = "Umb.Collection.ContentAudit.InboundLinks", wl = "Umb.CollectionView.ContentAudit.InboundLinks.Table", Xn = "Umb.Repository.ContentAuditInboundLinksCollection";
 var Il = Object.defineProperty, Ol = Object.getOwnPropertyDescriptor, Jn = (t) => {
   throw TypeError(t);
-}, lt = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Ol(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Il(e, a, i), i;
-}, Zt = (t, e, a) => e.has(t) || Jn("Cannot " + a), Ra = (t, e, a) => (Zt(t, e, "read from private field"), e.get(t)), Va = (t, e, a) => e.has(t) ? Jn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), El = (t, e, a, n) => (Zt(t, e, "write to private field"), e.set(t, a), a), Qn = (t, e, a) => (Zt(t, e, "access private method"), a), ge, Fe, Zn, ei;
+}, ot = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Ol(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Il(e, a, s), s;
+}, Zt = (t, e, a) => e.has(t) || Jn("Cannot " + a), Ra = (t, e, a) => (Zt(t, e, "read from private field"), e.get(t)), Wa = (t, e, a) => e.has(t) ? Jn("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), El = (t, e, a, n) => (Zt(t, e, "write to private field"), e.set(t, a), a), Qn = (t, e, a) => (Zt(t, e, "access private method"), a), ge, Ge, Zn, es;
 let B = class extends P {
   constructor() {
-    super(), Va(this, Fe), this._tableConfig = {
+    super(), Wa(this, Ge), this._tableConfig = {
       allowSelection: !1,
       hideIcon: !0
     }, this._tableColumns = [
@@ -3008,8 +3008,8 @@ let B = class extends P {
         name: "Inlinks",
         alias: "inlinks"
       }
-    ], this._tableItems = [], Va(this, ge), this.consumeContext(D, (t) => {
-      El(this, ge, t), Qn(this, Fe, Zn).call(this);
+    ], this._tableItems = [], Wa(this, ge), this.consumeContext(N, (t) => {
+      El(this, ge, t), Qn(this, Ge, Zn).call(this);
     });
   }
   render() {
@@ -3024,11 +3024,11 @@ let B = class extends P {
   }
 };
 ge = /* @__PURE__ */ new WeakMap();
-Fe = /* @__PURE__ */ new WeakSet();
+Ge = /* @__PURE__ */ new WeakSet();
 Zn = function() {
-  Ra(this, ge) && this.observe(Ra(this, ge).items, (t) => Qn(this, Fe, ei).call(this, t), "umbCollectionItemsObserver");
+  Ra(this, ge) && this.observe(Ra(this, ge).items, (t) => Qn(this, Ge, es).call(this, t), "umbCollectionItemsObserver");
 };
-ei = function(t) {
+es = function(t) {
   this._tableItems = t.map((e) => {
     var a;
     return {
@@ -3062,16 +3062,16 @@ B.styles = [
 			}
 		`
 ];
-lt([
+ot([
   d()
 ], B.prototype, "_tableConfig", 2);
-lt([
+ot([
   d()
 ], B.prototype, "_tableColumns", 2);
-lt([
+ot([
   d()
 ], B.prototype, "_tableItems", 2);
-B = lt([
+B = ot([
   C("content-audit-inbound-links-table-collection-view")
 ], B);
 const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -3080,11 +3080,11 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     return B;
   },
   default: Sl
-}, Symbol.toStringTag, { value: "Module" })), Wa = "Umb.Workspace.ContentAudit.InboundLinks", Pl = [
+}, Symbol.toStringTag, { value: "Module" })), Va = "Umb.Workspace.ContentAudit.InboundLinks", Pl = [
   {
     type: "workspace",
     kind: "default",
-    alias: Wa,
+    alias: Va,
     name: "Inbound Links Root Workspace",
     meta: {
       entityType: Fn,
@@ -3105,7 +3105,7 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: "Umb.Condition.WorkspaceAlias",
-        match: Wa
+        match: Va
       }
     ]
   }
@@ -3151,7 +3151,7 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ...Pl,
   ...gl,
   ...kl
-], ti = "metadata-root", Dl = {
+], ts = "metadata-root", Dl = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.Metadata",
   name: "Metadata Menu Item",
@@ -3159,17 +3159,17 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Metadata",
     icon: "icon-tags",
-    entityType: ti,
+    entityType: ts,
     menus: ["Umb.Menu.ContentMetadata"]
   }
-}, Rl = [Dl], ea = "Umb.Collection.ContentAudit.Metadata", Vl = "Umb.CollectionView.ContentAudit.Metadata.Table", xa = "Umb.Workspace.ContentAudit.Metadata", Wl = [
+}, Rl = [Dl], ea = "Umb.Collection.ContentAudit.Metadata", Wl = "Umb.CollectionView.ContentAudit.Metadata.Table", xa = "Umb.Workspace.ContentAudit.Metadata", Vl = [
   {
     type: "workspace",
     kind: "default",
     alias: xa,
     name: "Metadata Root Workspace",
     meta: {
-      entityType: ti,
+      entityType: ts,
       headline: "Metadata"
     }
   },
@@ -3191,17 +3191,17 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       }
     ]
   }
-], ai = "Umb.Repository.ContentAuditMetadataCollection", xl = [
+], as = "Umb.Repository.ContentAuditMetadataCollection", xl = [
   {
     type: "repository",
-    alias: ai,
+    alias: as,
     name: "Metadata Collection Repository",
     api: () => import("./metadata-collection.repository.js")
   }
 ], Ml = [
   {
     type: "collectionView",
-    alias: Vl,
+    alias: Wl,
     name: "Metadata Table Collection View",
     js: () => import("./metadata-table-collection-view.element.js"),
     meta: {
@@ -3224,20 +3224,20 @@ const Sl = B, $l = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Metadata Collection",
     element: () => import("./metadata.element.js"),
     meta: {
-      repositoryAlias: ai
+      repositoryAlias: as
     }
   },
   ...xl,
   ...Ml
 ], Bl = [
-  ...Wl,
+  ...Vl,
   ...Rl,
   ...jl
-], zl = [], ta = "Umb.Collection.ContentAudit.DuplicateContent", ql = "Umb.CollectionView.ContentAudit.DuplicateContent.Table", ni = "Umb.Repository.ContentAuditDuplicateContentCollection";
-var Yl = Object.defineProperty, Hl = Object.getOwnPropertyDescriptor, rt = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Hl(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && Yl(e, a, i), i;
+], zl = [], ta = "Umb.Collection.ContentAudit.DuplicateContent", ql = "Umb.CollectionView.ContentAudit.DuplicateContent.Table", ns = "Umb.Repository.ContentAuditDuplicateContentCollection";
+var Yl = Object.defineProperty, Hl = Object.getOwnPropertyDescriptor, lt = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Hl(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && Yl(e, a, s), s;
 };
 let z = class extends P {
   //#collectionContext?: UmbDefaultCollectionContext<InternalPageGroupDto>;
@@ -3315,16 +3315,16 @@ z.styles = [
 			}
 		`
 ];
-rt([
+lt([
   d()
 ], z.prototype, "_tableConfig", 2);
-rt([
+lt([
   d()
 ], z.prototype, "_tableColumns", 2);
-rt([
+lt([
   d()
 ], z.prototype, "_tableItems", 2);
-z = rt([
+z = lt([
   C("content-audit-duplicate-content-table-collection-view")
 ], z);
 const Kl = z, Gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -3365,7 +3365,7 @@ const Kl = z, Gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 ], Jl = [
   {
     type: "repository",
-    alias: ni,
+    alias: ns,
     name: "Duplicate Content Collection Repository",
     api: () => import("./duplicate-content-collection.repository.js")
   }
@@ -3395,7 +3395,7 @@ const Kl = z, Gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Duplicate Content Collection",
     element: () => import("./duplicate-content.element.js"),
     meta: {
-      repositoryAlias: ni
+      repositoryAlias: ns
     }
   },
   ...Jl,
@@ -3404,7 +3404,7 @@ const Kl = z, Gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ...Xl,
   ...zl,
   ...Zl
-], ii = "carbon-rating-root", tr = {
+], ss = "carbon-rating-root", tr = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.CarbonRating",
   name: "Carbon Rating Menu Item",
@@ -3412,17 +3412,17 @@ const Kl = z, Gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Carbon Rating",
     icon: "icon-eco",
-    entityType: ii,
-    menus: [Qe]
+    entityType: ss,
+    menus: [Je]
   }
-}, ar = [tr], aa = "Umb.Collection.ContentAudit.CarbonRating", nr = "Umb.CollectionView.ContentAudit.CarbonRating.Table", si = "Umb.Repository.ContentAuditCarbonRatingCollection";
-var ir = Object.defineProperty, sr = Object.getOwnPropertyDescriptor, oi = (t) => {
+}, ar = [tr], aa = "Umb.Collection.ContentAudit.CarbonRating", nr = "Umb.CollectionView.ContentAudit.CarbonRating.Table", is = "Umb.Repository.ContentAuditCarbonRatingCollection";
+var sr = Object.defineProperty, ir = Object.getOwnPropertyDescriptor, os = (t) => {
   throw TypeError(t);
-}, ct = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? sr(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && ir(e, a, i), i;
-}, na = (t, e, a) => e.has(t) || oi("Cannot " + a), Ut = (t, e, a) => (na(t, e, "read from private field"), e.get(t)), Tt = (t, e, a) => e.has(t) ? oi("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), li = (t, e, a, n) => (na(t, e, "write to private field"), e.set(t, a), a), ia = (t, e, a) => (na(t, e, "access private method"), a), we, ut, Ie, ri, ci, ui;
+}, rt = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? ir(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && sr(e, a, s), s;
+}, na = (t, e, a) => e.has(t) || os("Cannot " + a), Ut = (t, e, a) => (na(t, e, "read from private field"), e.get(t)), Tt = (t, e, a) => e.has(t) ? os("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), ls = (t, e, a, n) => (na(t, e, "write to private field"), e.set(t, a), a), sa = (t, e, a) => (na(t, e, "access private method"), a), we, ct, Ie, rs, cs, us;
 let q = class extends P {
   constructor() {
     super(), Tt(this, Ie), this._tableConfig = {
@@ -3450,9 +3450,9 @@ let q = class extends P {
         name: "Emissions Per Page View",
         alias: "emissionsPerPageView"
       }
-    ], this._tableItems = [], Tt(this, we), Tt(this, ut), this.consumeContext(D, (t) => {
-      li(this, we, t);
-    }), ia(this, Ie, ri).call(this);
+    ], this._tableItems = [], Tt(this, we), Tt(this, ct), this.consumeContext(N, (t) => {
+      ls(this, we, t);
+    }), sa(this, Ie, rs).call(this);
   }
   render() {
     if (this._tableItems.length !== 0)
@@ -3466,21 +3466,21 @@ let q = class extends P {
   }
 };
 we = /* @__PURE__ */ new WeakMap();
-ut = /* @__PURE__ */ new WeakMap();
+ct = /* @__PURE__ */ new WeakMap();
 Ie = /* @__PURE__ */ new WeakSet();
-ri = function() {
+rs = function() {
   new Ne(this, Le).addAdditionalPath(":entityType").onSetup((t) => ({ data: { entityType: t.entityType, preset: {} } })).observeRouteBuilder((t) => {
-    li(this, ut, t), ia(this, Ie, ci).call(this);
+    ls(this, ct, t), sa(this, Ie, cs).call(this);
   });
 };
-ci = function() {
-  Ut(this, we) && this.observe(Ut(this, we).items, (t) => ia(this, Ie, ui).call(this, t), "umbCollectionItemsObserver");
+cs = function() {
+  Ut(this, we) && this.observe(Ut(this, we).items, (t) => sa(this, Ie, us).call(this, t), "umbCollectionItemsObserver");
 };
-ui = function(t) {
-  const e = Ut(this, ut);
+us = function(t) {
+  const e = Ut(this, ct);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.map((a) => {
-    var i, o, s;
+    var s, o, i;
     const n = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a == null ? void 0 : a.unique,
@@ -3489,7 +3489,7 @@ ui = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${n}>${(i = a.pageData) == null ? void 0 : i.url}</a>`
+          value: m`<a href=${n}>${(s = a.pageData) == null ? void 0 : s.url}</a>`
         },
         {
           columnAlias: "contentType",
@@ -3497,7 +3497,7 @@ ui = function(t) {
         },
         {
           columnAlias: "pageSize",
-          value: m`${Math.round(((s = a.performanceData) == null ? void 0 : s.totalBytes) / 1024)}KB`
+          value: m`${Math.round(((i = a.performanceData) == null ? void 0 : i.totalBytes) / 1024)}KB`
         },
         {
           columnAlias: "carbonRating",
@@ -3519,16 +3519,16 @@ q.styles = [
 			}
 		`
 ];
-ct([
+rt([
   d()
 ], q.prototype, "_tableConfig", 2);
-ct([
+rt([
   d()
 ], q.prototype, "_tableColumns", 2);
-ct([
+rt([
   d()
 ], q.prototype, "_tableItems", 2);
-q = ct([
+q = rt([
   C("content-audit-carbon-rating-table-collection-view")
 ], q);
 const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -3544,7 +3544,7 @@ const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     alias: ja,
     name: "Carbon Rating Root Workspace",
     meta: {
-      entityType: ii,
+      entityType: ss,
       headline: "Carbon Rating"
     }
   },
@@ -3569,7 +3569,7 @@ const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 ], cr = [
   {
     type: "repository",
-    alias: si,
+    alias: is,
     name: "Carbon Rating Collection Repository",
     api: () => import("./carbon-rating-collection.repository.js")
   }
@@ -3599,7 +3599,7 @@ const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Carbon Rating Collection",
     element: () => import("./carbon-rating.element.js"),
     meta: {
-      repositoryAlias: si
+      repositoryAlias: is
     }
   },
   ...cr,
@@ -3608,7 +3608,7 @@ const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ...rr,
   ...ar,
   ...mr
-], mi = "core-web-vitals-root", pr = {
+], ms = "core-web-vitals-root", pr = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.CoreWebVitals",
   name: "Core Web Vitals Menu Item",
@@ -3616,17 +3616,17 @@ const or = q, lr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Core Web Vitals",
     icon: "icon-speed-gauge",
-    entityType: mi,
-    menus: [Qe]
+    entityType: ms,
+    menus: [Je]
   }
-}, hr = [pr], sa = "Umb.Collection.ContentAudit.CoreWebVitals", _r = "Umb.CollectionView.ContentAudit.CoreWebVitals.Table", di = "Umb.Repository.ContentAuditCoreWebVitalsCollection";
-var br = Object.defineProperty, Cr = Object.getOwnPropertyDescriptor, pi = (t) => {
+}, hr = [pr], ia = "Umb.Collection.ContentAudit.CoreWebVitals", _r = "Umb.CollectionView.ContentAudit.CoreWebVitals.Table", ds = "Umb.Repository.ContentAuditCoreWebVitalsCollection";
+var br = Object.defineProperty, Cr = Object.getOwnPropertyDescriptor, ps = (t) => {
   throw TypeError(t);
-}, mt = (t, e, a, n) => {
-  for (var i = n > 1 ? void 0 : n ? Cr(e, a) : e, o = t.length - 1, s; o >= 0; o--)
-    (s = t[o]) && (i = (n ? s(e, a, i) : s(i)) || i);
-  return n && i && br(e, a, i), i;
-}, oa = (t, e, a) => e.has(t) || pi("Cannot " + a), Lt = (t, e, a) => (oa(t, e, "read from private field"), e.get(t)), vt = (t, e, a) => e.has(t) ? pi("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hi = (t, e, a, n) => (oa(t, e, "write to private field"), e.set(t, a), a), la = (t, e, a) => (oa(t, e, "access private method"), a), Oe, dt, Ee, _i, bi, Ci;
+}, ut = (t, e, a, n) => {
+  for (var s = n > 1 ? void 0 : n ? Cr(e, a) : e, o = t.length - 1, i; o >= 0; o--)
+    (i = t[o]) && (s = (n ? i(e, a, s) : i(s)) || s);
+  return n && s && br(e, a, s), s;
+}, oa = (t, e, a) => e.has(t) || ps("Cannot " + a), Lt = (t, e, a) => (oa(t, e, "read from private field"), e.get(t)), vt = (t, e, a) => e.has(t) ? ps("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), hs = (t, e, a, n) => (oa(t, e, "write to private field"), e.set(t, a), a), la = (t, e, a) => (oa(t, e, "access private method"), a), Oe, mt, Ee, _s, bs, Cs;
 let Y = class extends P {
   constructor() {
     super(), vt(this, Ee), this._tableConfig = {
@@ -3662,9 +3662,9 @@ let Y = class extends P {
         alias: "timeToFirstByte",
         elementName: "content-audit-metric-label"
       }
-    ], this._tableItems = [], vt(this, Oe), vt(this, dt), this.consumeContext(D, (t) => {
-      hi(this, Oe, t);
-    }), la(this, Ee, _i).call(this);
+    ], this._tableItems = [], vt(this, Oe), vt(this, mt), this.consumeContext(N, (t) => {
+      hs(this, Oe, t);
+    }), la(this, Ee, _s).call(this);
   }
   render() {
     if (this._tableItems.length !== 0)
@@ -3678,21 +3678,21 @@ let Y = class extends P {
   }
 };
 Oe = /* @__PURE__ */ new WeakMap();
-dt = /* @__PURE__ */ new WeakMap();
+mt = /* @__PURE__ */ new WeakMap();
 Ee = /* @__PURE__ */ new WeakSet();
-_i = function() {
+_s = function() {
   new Ne(this, Le).addAdditionalPath(":entityType").onSetup((t) => ({ data: { entityType: t.entityType, preset: {} } })).observeRouteBuilder((t) => {
-    hi(this, dt, t), la(this, Ee, bi).call(this);
+    hs(this, mt, t), la(this, Ee, bs).call(this);
   });
 };
-bi = function() {
-  Lt(this, Oe) && this.observe(Lt(this, Oe).items, (t) => la(this, Ee, Ci).call(this, t), "umbCollectionItemsObserver");
+bs = function() {
+  Lt(this, Oe) && this.observe(Lt(this, Oe).items, (t) => la(this, Ee, Cs).call(this, t), "umbCollectionItemsObserver");
 };
-Ci = function(t) {
-  const e = Lt(this, dt);
+Cs = function(t) {
+  const e = Lt(this, mt);
   if (!e) throw new Error("Route builder not ready");
   this._tableItems = t.filter((a) => a.pageData.statusCode === 200).map((a) => {
-    var i;
+    var s;
     const n = e({ entityType: a.entityType }) + ke.generateLocal({ unique: a.unique });
     return {
       id: a == null ? void 0 : a.unique,
@@ -3701,7 +3701,7 @@ Ci = function(t) {
       data: [
         {
           columnAlias: "url",
-          value: m`<a href=${n}>${(i = a.pageData) == null ? void 0 : i.url}</a>`
+          value: m`<a href=${n}>${(s = a.pageData) == null ? void 0 : s.url}</a>`
         },
         {
           columnAlias: "cumulativeLayoutShift",
@@ -3735,16 +3735,16 @@ Y.styles = [
 			}
 		`
 ];
-mt([
+ut([
   d()
 ], Y.prototype, "_tableConfig", 2);
-mt([
+ut([
   d()
 ], Y.prototype, "_tableColumns", 2);
-mt([
+ut([
   d()
 ], Y.prototype, "_tableItems", 2);
-Y = mt([
+Y = ut([
   C("content-audit-core-web-vitals-table-collection-view")
 ], Y);
 const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -3760,7 +3760,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     alias: Ba,
     name: "Core Web Vitals Root Workspace",
     meta: {
-      entityType: mi,
+      entityType: ms,
       headline: "Core Web Vitals"
     }
   },
@@ -3773,7 +3773,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
       label: "Collection",
       icon: "icon-layers",
       pathname: "collection",
-      collectionAlias: sa
+      collectionAlias: ia
     },
     conditions: [
       {
@@ -3785,7 +3785,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 ], Tr = [
   {
     type: "repository",
-    alias: di,
+    alias: ds,
     name: "Core Web Vitals Collection Repository",
     api: () => import("./core-web-vitals-collection.repository.js")
   }
@@ -3803,7 +3803,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: w,
-        match: sa
+        match: ia
       }
     ]
   }
@@ -3811,11 +3811,11 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   {
     type: "collection",
     kind: "default",
-    alias: sa,
+    alias: ia,
     name: "Core Web Vitals Collection",
     element: () => import("./core-web-vitals.element.js"),
     meta: {
-      repositoryAlias: di
+      repositoryAlias: ds
     }
   },
   ...Tr,
@@ -3824,7 +3824,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ...Ar,
   ...hr,
   ...gr
-], fi = "export-root", Ir = {
+], fs = "export-root", Ir = {
   type: "menuItem",
   alias: "Umb.MenuItem.ContentAudit.Export",
   name: "Export Menu Item",
@@ -3832,7 +3832,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   meta: {
     label: "Export",
     icon: "icon-download",
-    entityType: fi,
+    entityType: fs,
     menus: [Nt]
   }
 }, Or = [Ir], Er = "Umb.Workspace.ContentAudit.Export", Sr = [
@@ -3843,7 +3843,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Export Root Workspace",
     element: () => import("./export.element.js"),
     meta: {
-      entityType: fi,
+      entityType: fs,
       headline: "Export"
     }
   }
@@ -3882,12 +3882,12 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   },
   {
     type: "menu",
-    alias: Je,
+    alias: Xe,
     name: "Content Menu"
   },
   {
     type: "menu",
-    alias: Qe,
+    alias: Je,
     name: "Performance Menu"
   },
   {
@@ -3919,7 +3919,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Content Sidebar Menu",
     meta: {
       label: "Content",
-      menu: Je
+      menu: Xe
     },
     conditions: [
       {
@@ -3935,7 +3935,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     name: "Content Performance Sidebar Menu",
     meta: {
       label: "Performance",
-      menu: Qe
+      menu: Je
     },
     conditions: [
       {
@@ -3965,10 +3965,10 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   Ur,
   ...Lr,
   ...kr,
-  ...Ks,
+  ...Ki,
   ...po,
   ...Oo,
-  ...Wo,
+  ...Vo,
   ...Xo,
   ...rl,
   ...Tl,
@@ -3980,9 +3980,9 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ...$r
 ], Dr = {
   type: "workspace",
-  alias: qe,
+  alias: ze,
   name: "Content Audit Workspace",
-  element: () => Promise.resolve().then(() => Is),
+  element: () => Promise.resolve().then(() => Ii),
   meta: {
     entityType: nn
   }
@@ -4000,7 +4000,7 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: "Umb.Condition.WorkspaceAlias",
-        match: qe
+        match: ze
       }
     ]
   },
@@ -4017,14 +4017,14 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
     conditions: [
       {
         alias: "Umb.Condition.WorkspaceAlias",
-        match: qe
+        match: ze
       }
     ]
   }
-], Vr = [
+], Wr = [
   Dr,
   ...Rr
-], Wr = [
+], Vr = [
   {
     type: "modal",
     alias: "Umb.ContentAudit.Modal.RunWarning",
@@ -4061,68 +4061,68 @@ const fr = Y, yr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   ]
 }, jr = [Mr], Br = {
   type: "globalContext",
-  alias: os,
+  alias: oi,
   name: "Content Audit Workspace Context",
-  js: () => Promise.resolve().then(() => us)
+  js: () => Promise.resolve().then(() => ui)
 }, cc = async (t, e) => {
   e.registerMany([
     Br,
     ...Nr,
-    ...Vr,
     ...Wr,
+    ...Vr,
     ...xr,
     ...jr
-  ]), t.consumeContext(gi, async (a) => {
+  ]), t.consumeContext(gs, async (a) => {
     if (!a) return;
     const n = a.getOpenApiConfiguration();
     _.setConfig({
       baseUrl: (n == null ? void 0 : n.base) ?? "",
       auth: (n == null ? void 0 : n.token) ?? void 0,
       credentials: (n == null ? void 0 : n.credentials) ?? "same-origin"
-    }), _.interceptors.request.use(async (i, o) => {
-      const s = await n.token();
-      return i.headers.set("Authorization", `Bearer ${s}`), i;
+    }), _.interceptors.request.use(async (s, o) => {
+      const i = await n.token();
+      return s.headers.set("Authorization", `Bearer ${i}`), s;
     });
   });
 };
 export {
-  Ve as A,
-  Qe as B,
+  We as A,
+  Je as B,
   sn as C,
   Nt as D,
   Dt as E,
-  Os as F,
+  Oi as F,
   rn as G,
   Ta as H,
   tn as I,
-  Es as J,
+  Ei as J,
   O as K,
-  sc as U,
-  ic as a,
-  Bs as b,
+  ic as U,
+  sc as a,
+  Bi as b,
   hn as c,
-  We as d,
+  Ct as d,
   Z as e,
   ln as f,
   $a as g,
-  je as h,
-  Be as i,
+  Me as h,
+  je as i,
   gt as j,
   wt as k,
-  ze as l,
+  Be as l,
   oc as m,
   lc as n,
   cc as o,
-  $i as p,
-  Pi as q,
+  $s as p,
+  Ps as q,
   Ot as r,
-  Ye as s,
-  ms as t,
+  qe as s,
+  mi as t,
   Et as u,
-  qe as v,
-  os as w,
+  ze as v,
+  oi as w,
   nn as x,
   K as y,
-  Je as z
+  Xe as z
 };
 //# sourceMappingURL=index.js.map

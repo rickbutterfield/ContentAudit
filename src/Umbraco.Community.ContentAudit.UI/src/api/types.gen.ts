@@ -6,7 +6,7 @@ export type ClientOptions = {
 
 export type AccessibilityDto = {
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     accessibilityIssues?: Array<string> | null;
     ariaLabelCount: number;
@@ -35,7 +35,7 @@ export type AuditTreeItemResponseModel = {
 
 export type ContentAnalysisDto = {
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     wordCount: number;
     paragraphCount: number;
@@ -63,7 +63,7 @@ export type ContentAuditSettings = {
 
 export type ContentQualityDto = {
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     hasDuplicateContent: boolean;
     duplicateContentUrls?: Array<string> | null;
@@ -101,7 +101,7 @@ export type HealthScoreDto = {
 export type ImageDto = {
     entityType: string;
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     isExternal: boolean;
     size?: number | null;
@@ -147,7 +147,7 @@ export type LinkDto = {
     unique: string;
     entityType: string;
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     isExternal: boolean;
     foundPage?: string | null;
@@ -222,7 +222,7 @@ export type PageAnalysisDto = {
 export type PageDto = {
     entityType: string;
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     redirect: boolean;
     redirectUrl?: string | null;
@@ -267,7 +267,7 @@ export type PagedPageDtoModel = {
 
 export type PerformanceDto = {
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     pageLoadTime?: number | null;
     cumulativeLayoutShift?: MetricDto | null;
@@ -288,7 +288,7 @@ export type ReferenceByIdModel = {
 export type ResourceDto = {
     entityType: string;
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     isExternal: boolean;
     size?: number | null;
@@ -308,7 +308,7 @@ export type ResourceTimingDto = {
 };
 
 export type SeoDto = {
-    runId: number;
+    auditKey: string;
     url?: string | null;
     title?: string | null;
     metaDescription?: string | null;
@@ -331,7 +331,7 @@ export type SeoDto = {
 
 export type SocialMediaDto = {
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     socialShareButtons?: Array<string> | null;
     hasFacebookPixel: boolean;
@@ -343,7 +343,7 @@ export type SocialMediaDto = {
 
 export type TechnicalSeoDto = {
     id: number;
-    runId: number;
+    auditKey: string;
     url?: string | null;
     contentType?: string | null;
     charset?: string | null;
@@ -399,6 +399,24 @@ export type GetCollectionResponses = {
 };
 
 export type GetCollectionResponse = GetCollectionResponses[keyof GetCollectionResponses];
+
+export type GetByKeyData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/audit/{id}';
+};
+
+export type GetByKeyResponses = {
+    /**
+     * OK
+     */
+    200: PageAnalysisDto;
+};
+
+export type GetByKeyResponse = GetByKeyResponses[keyof GetByKeyResponses];
 
 export type GetAllImagesData = {
     body?: never;
@@ -548,24 +566,6 @@ export type GetLatestAuditDataResponses = {
 };
 
 export type GetLatestAuditDataResponse = GetLatestAuditDataResponses[keyof GetLatestAuditDataResponses];
-
-export type GetByKeyData = {
-    body?: never;
-    path?: never;
-    query?: {
-        unique?: string;
-    };
-    url: '/umbraco/content-audit/management/api/v1/audit/latest-page-data';
-};
-
-export type GetByKeyResponses = {
-    /**
-     * OK
-     */
-    200: PageAnalysisDto;
-};
-
-export type GetByKeyResponse = GetByKeyResponses[keyof GetByKeyResponses];
 
 export type GetPagesWithMissingMetadataData = {
     body?: never;

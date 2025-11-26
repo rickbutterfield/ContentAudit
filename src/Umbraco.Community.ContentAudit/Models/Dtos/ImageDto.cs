@@ -11,7 +11,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public ImageDto(ResourceDto dto)
         {
             Id = dto.Id;
-            RunId = dto.RunId;
+            AuditKey = dto.AuditKey;
             Url = dto.Url;
             IsExternal = dto.IsExternal;
             Size = dto.Size;
@@ -25,7 +25,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public ImageDto(ImageSchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             IsExternal = schema.IsExternal;
             Size = schema.Size;
@@ -43,8 +43,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }
 
-        [JsonPropertyName("runId")]
-        public int RunId { get; set; }
+        [JsonPropertyName("auditKey")]
+        public Guid AuditKey { get; set; }
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }

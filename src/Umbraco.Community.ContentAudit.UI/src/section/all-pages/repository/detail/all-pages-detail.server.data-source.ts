@@ -15,7 +15,7 @@ export class ContentAuditAllPagesServerDataSource implements UmbReadDetailDataSo
 
 		const { data, error } = await tryExecute(
 			this.#host,
-			AuditService.getByKey({ query: { unique: unique } })
+			AuditService.getByKey({ path: { id: unique } })
 		);
 
 		if (error || !data) {

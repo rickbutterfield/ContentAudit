@@ -29,7 +29,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public SocialMediaSchema(SocialMediaDto dto)
         {
             Id = dto.Id;
-            RunId = dto.RunId;
+            AuditKey = dto.AuditKey;
             Url = dto.Url;
             SocialShareButtons = JsonSerializer.Serialize(dto.SocialShareButtons);
             HasFacebookPixel = dto.HasFacebookPixel;
@@ -45,7 +45,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the audit run identifier
+        /// Gets or sets the audit run identifier (GUID)
+        /// </summary>
+        public Guid AuditKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audit run identifier (legacy - kept for migration safety)
         /// </summary>
         public int RunId { get; set; }
 

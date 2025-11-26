@@ -18,12 +18,12 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         /// <summary>
         /// Returns page analysis for the given unique identifier.
         /// </summary>
-        /// <param name="unique">Page unique identifier.</param>
-        [HttpGet("latest-page-data")]
+        /// <param name="id">Page unique identifier.</param>
+        [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(PageAnalysisDto), 200)]
-        public async Task<PageAnalysisDto> GetByKey(Guid unique)
+        public async Task<PageAnalysisDto> GetByKey(Guid id)
         {
-            var latestData = await DataService.GetLatestPageAuditData(unique);
+            var latestData = await DataService.GetAuditPageAnalysisByKey(id);
             return latestData;
         }
     }

@@ -29,7 +29,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public TechnicalSeoSchema(TechnicalSeoDto dto)
         {
             Id = dto.Id;
-            RunId = dto.RunId;
+            AuditKey = dto.AuditKey;
             Url = dto.Url;
             ContentType = dto.ContentType;
             Charset = dto.Charset;
@@ -49,7 +49,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the audit run identifier
+        /// Gets or sets the audit run identifier (GUID)
+        /// </summary>
+        public Guid AuditKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audit run identifier (legacy - kept for migration safety)
         /// </summary>
         public int RunId { get; set; }
 

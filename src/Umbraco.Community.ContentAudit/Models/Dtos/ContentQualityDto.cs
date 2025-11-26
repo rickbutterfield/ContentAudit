@@ -10,7 +10,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public ContentQualityDto(ContentQualitySchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             HasDuplicateContent = schema.HasDuplicateContent;
             DuplicateContentUrls = JsonSerializer.Deserialize<List<string>>(schema.DuplicateContentUrls);
@@ -22,7 +22,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         }
 
         public int Id { get; set; }
-        public int RunId { get; set; }
+        public Guid AuditKey { get; set; }
         public string? Url { get; set; }
         public bool HasDuplicateContent { get; set; }
         public List<string>? DuplicateContentUrls { get; set; }

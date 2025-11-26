@@ -11,7 +11,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public LinkDto(LinkSchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             IsExternal = schema.IsExternal;
             FoundPage = schema.FoundPage;
@@ -24,8 +24,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         [PrimaryKeyColumn(AutoIncrement = true, IdentitySeed = 1)]
         public int Id { get; set; }
 
-        [JsonPropertyName("runId")]
-        public int RunId { get; set; }
+        [JsonPropertyName("auditKey")]
+        public Guid AuditKey { get; set; }
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }

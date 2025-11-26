@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Cache;
+﻿using Lucene.Net.Search;
+using Microsoft.AspNetCore.Http;
+using Umbraco.Cms.Core.Cache;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -44,11 +46,11 @@ namespace Umbraco.Community.ContentAudit.Services
         public async Task<OverviewDto> GetLatestAuditOverview()
         {
             var auditOverview = new OverviewDto();
-            var latestRunId = await _auditRepository.GetLatestAuditId();
+            var latestAuditKey = await _auditRepository.GetLatestAuditKey();
 
-            if (latestRunId.HasValue)
+            if (latestAuditKey.HasValue)
             {
-                var latestAudit = await _auditRepository.GetLatestAuditOverview(latestRunId.Value);
+                var latestAudit = await _auditRepository.GetLatestAuditOverview(latestAuditKey.Value);
                 var firstAudit = latestAudit?.FirstOrDefault();
                 if (firstAudit != null)
                 {
@@ -57,6 +59,17 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return auditOverview;
+        }
+
+        /// <summary>
+        /// Gets the audit overview for a specific audit run.
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit run.</param>
+        /// <returns>An <see cref="OverviewDto"/> containing the audit overview.</returns>
+        public async Task<PageAnalysisDto> GetAuditPageAnalysisByKey(Guid auditKey)
+        {
+            var data = await GetLatestAuditDataInternal("", 0, auditKey);
+            return data.FirstOrDefault() ?? new PageAnalysisDto();
         }
 
         /// <summary>
@@ -76,18 +89,19 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <param name="filter">Optional filter string to search URLs.</param>
         /// <param name="statusCode">Optional HTTP status code filter.</param>
         /// <returns>A list of <see cref="PageAnalysisDto"/> containing page analysis data.</returns>
-        private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0)
+        private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0, Guid? auditKey = default)
         {
             var results = new List<PageAnalysisDto>();
-            var latestRunId = await _auditRepository.GetLatestAuditId();
+            if (!auditKey.HasValue)
+                auditKey = await _auditRepository.GetLatestAuditKey();
 
-            if (!latestRunId.HasValue)
+            if (!auditKey.HasValue)
                 return results;
 
             var pageData = await _runtimeCache.GetCacheItemAsync(Constants.Cache.Key,
                 async () =>
                 {
-                    return await _auditRepository.GetPagesByRunId(latestRunId.Value);
+                    return await _auditRepository.GetPagesByAuditKey(auditKey.Value);
                 }, TimeSpan.FromMinutes(30));
 
             if (pageData != null && pageData.Any())
@@ -106,7 +120,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 foreach (var page in filteredData)
                 {
-                    var result = await PopulatePageAnalysisData(page, latestRunId.Value);
+                    var result = await PopulatePageAnalysisData(page, auditKey.Value);
                     results.Add(result);
                 }
             }
@@ -118,9 +132,9 @@ namespace Umbraco.Community.ContentAudit.Services
         /// Populates comprehensive analysis data for a single page.
         /// </summary>
         /// <param name="page">The page schema to populate data for.</param>
-        /// <param name="latestRunId">The ID of the latest audit run.</param>
+        /// <param name="auditKey">The Guid key of the audit run.</param>
         /// <returns>A <see cref="PageAnalysisDto"/> containing comprehensive page analysis data.</returns>
-        private async Task<PageAnalysisDto> PopulatePageAnalysisData(PageSchema page, int latestRunId)
+        private async Task<PageAnalysisDto> PopulatePageAnalysisData(PageSchema page, Guid auditKey)
         {
             var result = new PageAnalysisDto();
             result.PageData = new PageDto(page);
@@ -131,7 +145,7 @@ namespace Umbraco.Community.ContentAudit.Services
             // Get SEO data
             if (!string.IsNullOrEmpty(page.Url))
             {
-                var seoData = await _auditRepository.GetSeoData(latestRunId, page.Url);
+                var seoData = await _auditRepository.GetSeoData(auditKey, page.Url);
                 var firstSeoData = seoData?.FirstOrDefault();
                 if (firstSeoData != null)
                 {
@@ -139,7 +153,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get content analysis data
-                var contentAnalysisData = await _auditRepository.GetContentAnalysisData(latestRunId, page.Url);
+                var contentAnalysisData = await _auditRepository.GetContentAnalysisData(auditKey, page.Url);
                 var firstContentAnalysis = contentAnalysisData?.FirstOrDefault();
                 if (firstContentAnalysis != null)
                 {
@@ -147,7 +161,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get performance data
-                var performanceData = await _auditRepository.GetPerformanceData(latestRunId, page.Url);
+                var performanceData = await _auditRepository.GetPerformanceData(auditKey, page.Url);
                 var firstPerformanceData = performanceData?.FirstOrDefault();
                 if (firstPerformanceData != null)
                 {
@@ -167,7 +181,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get accessibility data
-                var accessibilityData = await _auditRepository.GetAccessibilityData(latestRunId, page.Url);
+                var accessibilityData = await _auditRepository.GetAccessibilityData(auditKey, page.Url);
                 var firstAccessibilityData = accessibilityData?.FirstOrDefault();
                 if (firstAccessibilityData != null)
                 {
@@ -175,7 +189,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get technical SEO data
-                var technicalSeoData = await _auditRepository.GetTechnicalSeoData(latestRunId, page.Url);
+                var technicalSeoData = await _auditRepository.GetTechnicalSeoData(auditKey, page.Url);
                 var firstTechnicalSeoData = technicalSeoData?.FirstOrDefault();
                 if (firstTechnicalSeoData != null)
                 {
@@ -183,7 +197,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get social media data
-                var socialMediaData = await _auditRepository.GetSocialMediaData(latestRunId, page.Url);
+                var socialMediaData = await _auditRepository.GetSocialMediaData(auditKey, page.Url);
                 var firstSocialMediaData = socialMediaData?.FirstOrDefault();
                 if (firstSocialMediaData != null)
                 {
@@ -191,7 +205,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get content quality data
-                var contentQualityData = await _auditRepository.GetContentQualityData(latestRunId, page.Url);
+                var contentQualityData = await _auditRepository.GetContentQualityData(auditKey, page.Url);
                 var firstContentQualityData = contentQualityData?.FirstOrDefault();
                 if (firstContentQualityData != null)
                 {
@@ -199,21 +213,21 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 // Get links
-                var linksData = await _auditRepository.GetLinkData(latestRunId, page.Url);
+                var linksData = await _auditRepository.GetLinkData(auditKey, page.Url);
                 if (linksData != null)
                 {
                     result.Links = linksData.Select(x => new LinkDto(x)).ToList();
                 }
 
                 // Get resources
-                var resourcesData = await _auditRepository.GetResourceData(latestRunId, page.Url);
+                var resourcesData = await _auditRepository.GetResourceData(auditKey, page.Url);
                 if (resourcesData != null)
                 {
                     result.Resources = resourcesData.Select(x => new ResourceDto(x)).ToList();
                 }
 
                 // Get images
-                var imagesData = await _auditRepository.GetImageData(latestRunId, page.Url);
+                var imagesData = await _auditRepository.GetImageData(auditKey, page.Url);
                 if (imagesData != null)
                 {
                     result.Images = imagesData.Select(x => new ImageDto(x)).ToList();

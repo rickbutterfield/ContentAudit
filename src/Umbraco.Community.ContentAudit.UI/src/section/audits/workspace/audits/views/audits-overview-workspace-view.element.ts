@@ -58,10 +58,6 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 							<span>${this.localize.date(this._data.runDate, { dateStyle: 'long', timeStyle: 'short' })}</span>
 						</div>
 						<div class="info-item">
-							<strong>Audit ID:</strong>
-							<span>${this._data.id}</span>
-						</div>
-						<div class="info-item">
 							<strong>Audit Key:</strong>
 							<span>${this._data.key}</span>
 						</div>

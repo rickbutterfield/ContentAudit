@@ -10,7 +10,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public PerformanceDto(PerformanceSchema schema)
         {
             Id = schema.Id;
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             PageLoadTime = schema.PageLoadTime;
             if (!string.IsNullOrEmpty(schema.CumulativeLayoutShift))
@@ -40,7 +40,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         }
 
         public int Id { get; set; }
-        public int RunId { get; set; }
+        public Guid AuditKey { get; set; }
         public string? Url { get; set; }
         public long? PageLoadTime { get; set; }
         public MetricDto? CumulativeLayoutShift { get; set; }

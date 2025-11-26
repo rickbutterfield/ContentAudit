@@ -8,7 +8,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         public SeoDto(SeoSchema schema)
         {
-            RunId = schema.RunId;
+            AuditKey = schema.AuditKey;
             Url = schema.Url;
             Title = schema.Title;
             MetaDescription = schema.MetaDescription;
@@ -29,7 +29,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             CreatedDate = schema.CreatedDate;
         }
 
-        public int RunId { get; set; }
+        public Guid AuditKey { get; set; }
 
         public string? Url { get; set; }
 

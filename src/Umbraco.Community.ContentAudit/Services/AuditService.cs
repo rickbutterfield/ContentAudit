@@ -539,76 +539,76 @@ namespace Umbraco.Community.ContentAudit.Services
                 HealthScore = healthScore
             };
 
-            var runData = await scope.Database.InsertAsync(overview);
+            await scope.Database.InsertAsync(overview);
 
-            if (int.TryParse(runData.ToString(), out int runId))
+            // Use the Guid Key from the overview as the audit identifier
+            var auditKey = overview.Key;
+
+            foreach (var seoData in _seoDtos)
             {
-                foreach (var seoData in _seoDtos)
-                {
-                    seoData.RunId = runId;
+                seoData.AuditKey = auditKey;
 
-                    seoData.IsOrphaned = internalLinks.Any(x => seoData.Url?.Contains(x.Url) == true) == false;
-                    await scope.Database.InsertAsync(new SeoSchema(seoData));
-                }
+                seoData.IsOrphaned = internalLinks.Any(x => seoData.Url?.Contains(x.Url) == true) == false;
+                await scope.Database.InsertAsync(new SeoSchema(seoData));
+            }
 
-                foreach (var contentAnalysisData in _contentAnalysisDtos)
-                {
-                    contentAnalysisData.RunId = runId;
-                    await scope.Database.InsertAsync(new ContentAnalysisSchema(contentAnalysisData));
-                }
+            foreach (var contentAnalysisData in _contentAnalysisDtos)
+            {
+                contentAnalysisData.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new ContentAnalysisSchema(contentAnalysisData));
+            }
 
-                foreach (var performanceData in _performanceDtos)
-                {
-                    performanceData.RunId = runId;
-                    await scope.Database.InsertAsync(new PerformanceSchema(performanceData));
-                }
+            foreach (var performanceData in _performanceDtos)
+            {
+                performanceData.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new PerformanceSchema(performanceData));
+            }
 
-                foreach (var accessibilityData in _accessibilityDtos)
-                {
-                    accessibilityData.RunId = runId;
-                    await scope.Database.InsertAsync(new AccessibilitySchema(accessibilityData));
-                }
+            foreach (var accessibilityData in _accessibilityDtos)
+            {
+                accessibilityData.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new AccessibilitySchema(accessibilityData));
+            }
 
-                foreach (var technicalSeoData in _technicalSeoDtos)
-                {
-                    technicalSeoData.RunId = runId;
-                    await scope.Database.InsertAsync(new TechnicalSeoSchema(technicalSeoData));
-                }
+            foreach (var technicalSeoData in _technicalSeoDtos)
+            {
+                technicalSeoData.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new TechnicalSeoSchema(technicalSeoData));
+            }
 
-                foreach (var socialMediaData in _socialMediaDtos)
-                {
-                    socialMediaData.RunId = runId;
-                    await scope.Database.InsertAsync(new SocialMediaSchema(socialMediaData));
-                }
+            foreach (var socialMediaData in _socialMediaDtos)
+            {
+                socialMediaData.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new SocialMediaSchema(socialMediaData));
+            }
 
-                foreach (var contentQualityData in _contentQualityDtos)
-                {
-                    contentQualityData.RunId = runId;
-                    await scope.Database.InsertAsync(new ContentQualitySchema(contentQualityData));
-                }
+            foreach (var contentQualityData in _contentQualityDtos)
+            {
+                contentQualityData.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new ContentQualitySchema(contentQualityData));
+            }
 
-                foreach (var page in _pageDtos)
-                {
-                    await scope.Database.InsertAsync(new PageSchema(page, runId));
-                }
+            foreach (var page in _pageDtos)
+            {
+                await scope.Database.InsertAsync(new PageSchema(page, auditKey));
+            }
 
-                foreach (var image in _imageDtos)
-                {
-                    image.RunId = runId;
-                    await scope.Database.InsertAsync(new ImageSchema(image));
-                }
+            foreach (var image in _imageDtos)
+            {
+                image.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new ImageSchema(image));
+            }
 
-                foreach (var resource in _resourceDtos)
-                {
-                    resource.RunId = runId;
-                    await scope.Database.InsertAsync(new ResourceSchema(resource));
-                }
+            foreach (var resource in _resourceDtos)
+            {
+                resource.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new ResourceSchema(resource));
+            }
 
-                foreach (var link in _linkDtos)
-                {
-                    link.RunId = runId;
-                    await scope.Database.InsertAsync(new LinkSchema(link));
-                }
+            foreach (var link in _linkDtos)
+            {
+                link.AuditKey = auditKey;
+                await scope.Database.InsertAsync(new LinkSchema(link));
             }
 
             scope.Complete();
