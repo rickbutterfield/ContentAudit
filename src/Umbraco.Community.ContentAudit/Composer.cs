@@ -14,8 +14,15 @@ using Umbraco.Community.ContentAudit.Services;
 
 namespace Umbraco.Community.ContentAudit
 {
+    /// <summary>
+    /// Registers ContentAudit services, options, and authorization policies.
+    /// </summary>
     public class Composer : IComposer
     {
+        /// <summary>
+        /// Configures dependency injection and runtime policies for ContentAudit.
+        /// </summary>
+        /// <param name="builder">The Umbraco builder.</param>
         public void Compose(IUmbracoBuilder builder)
         {
             string value = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -55,7 +62,9 @@ namespace Umbraco.Community.ContentAudit
                 config.AddPolicy(AuthorizationPolicies.SectionAccessContentAudit, policy =>
                 {
                     policy.AuthenticationSchemes.Add(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-                    policy.RequireClaim(Cms.Core.Constants.Security.AllowedApplicationsClaimType, Constants.SectionAlias);
+#pragma warning disable CS0618 // Type or member is obsolete
+                    policy.RequireClaim(Cms.Core.Constants.Security.AllowedApplicationsClaimType, new[] { Constants.SectionAlias });
+#pragma warning restore CS0618 // Type or member is obsolete
                 });
             });
         }

@@ -9,22 +9,24 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
     /// <summary>
     /// Exports audit data to a CSV file.
     /// </summary>
-    public class ExportAuditDataController : AuditControllerBase
+    public class ExportByKeyAuditController : AuditControllerBase
     {
         /// <summary>
         /// Initializes a new instance of the controller.
         /// </summary>
         /// <param name="dataService">Audit data service.</param>
-        public ExportAuditDataController(IDataService dataService) : base(dataService) { }
+        public ExportByKeyAuditController(IDataService dataService) : base(dataService) { }
 
         /// <summary>
-        /// Returns a CSV export of the audit data.
+        /// Returns a CSV export of all audit data.
         /// </summary>
-        [HttpGet("export")]
+        [HttpGet("{id:guid}/export")]
         [ProducesResponseType(typeof(FileResult), 200, "text/csv")]
-        public async Task<FileResult> Export()
+        public async Task<FileResult> ExportByKey(
+            CancellationToken cancellationToken,
+            Guid id)
         {
-            var data = await DataService.GetExportData();
+            var data = await DataService.GetExportData(id);
 
             using (var memoryStream = new MemoryStream())
             {

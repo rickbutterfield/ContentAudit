@@ -1,46 +1,40 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Xml.Linq;
+using Umbraco.Cms.Web.Common.AspNetCore;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
-    /// <summary>
-    /// Service for fetching and parsing XML sitemaps to extract URLs for crawling.
-    /// </summary>
+    /// <inheritdoc/>
     public class SitemapService : ISitemapService
     {
         private readonly HttpClient _httpClient;
         private readonly ContentAuditSettings _contentAuditSettings;
         private readonly IRobotsService _robotsService;
+        private readonly ILogger<SitemapService> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SitemapService"/> class.
+        /// Initializes a new instance of the <see cref="SitemapService"/> class
         /// </summary>
-        /// <param name="httpClient">The HTTP client for fetching sitemap content.</param>
-        /// <param name="optionsMonitor">The options monitor for accessing Content Audit settings.</param>
-        /// <param name="robotsService">The robots service for discovering sitemap URLs from robots.txt.</param>
+        /// <param name="httpClient">The HTTP client for fetching sitemap content</param>
+        /// <param name="optionsMonitor">The options monitor for accessing Content Audit settings</param>
+        /// <param name="robotsService">The robots service for discovering sitemap URLs from robots.txt</param>
+        /// <param name="logger">The logger instance</param>
         public SitemapService(
             HttpClient httpClient,
             IOptionsMonitor<ContentAuditSettings> optionsMonitor,
-            IRobotsService robotsService)
+            IRobotsService robotsService,
+            ILogger<SitemapService> logger)
         {
             _httpClient = httpClient;
             _contentAuditSettings = optionsMonitor.CurrentValue;
             _robotsService = robotsService;
+            _logger = logger;
         }
 
-        /// <summary>
-        /// Fetches and parses a sitemap (or sitemap index) to extract all URLs.
-        /// </summary>
-        /// <param name="baseUrl">The base URL of the website.</param>
-        /// <returns>A list of URLs extracted from the sitemap(s), or the base URL if no sitemap is found or parseable.</returns>
-        /// <remarks>
-        /// This method supports both regular sitemaps and sitemap index files. If a sitemap index is detected,
-        /// all nested sitemaps are fetched and parsed. If the SitemapUrl is not configured in settings, 
-        /// the method will attempt to discover sitemap URLs from robots.txt. If any error occurs or no URLs are found, 
-        /// the base URL is returned as a fallback.
-        /// </remarks>
+        /// <inheritdoc/>
         public async Task<List<string>> GetSitemapUrlAsync(string baseUrl)
         {
             string sitemapUrl = string.Empty;
@@ -55,13 +49,13 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (sitemapUrlsFromRobots.Any())
                 {
                     sitemapUrl = sitemapUrlsFromRobots.First();
-                    Console.WriteLine($"Discovered sitemap URL from robots.txt: {sitemapUrl}");
+                    _logger.LogInformation("Discovered sitemap URL from robots.txt: {SitemapUrl}", sitemapUrl);
                 }
             }
 
             if (string.IsNullOrEmpty(sitemapUrl))
             {
-                Console.WriteLine("No sitemap URL configured or discovered. Defaulting to base URL crawling.");
+                _logger.LogInformation("No sitemap URL configured or discovered. Defaulting to base URL crawling.");
                 return new List<string> { baseUrl };
             }
 
@@ -72,7 +66,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 // Validate if the content is likely XML
                 if (!IsXmlContent(sitemapContent))
                 {
-                    Console.WriteLine("Sitemap content is not valid XML. Defaulting to base URL crawling.");
+                    _logger.LogWarning("Sitemap content from {SitemapUrl} is not valid XML. Defaulting to base URL crawling.", sitemapUrl);
                     return new List<string> { baseUrl };
                 }
 
@@ -88,12 +82,16 @@ namespace Umbraco.Community.ContentAudit.Services
                             string nestedContent = await _httpClient.GetStringAsync(nestedSitemapUrl);
                             if (IsXmlContent(nestedContent))
                             {
-                                allUrls.AddRange(ParseSitemap(nestedContent));
+                                var sitemapUrls = ParseSitemap(nestedContent);
+                                if (sitemapUrls.Any())
+                                {
+                                    allUrls.AddRange(sitemapUrls!);
+                                }
                             }
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error fetching nested sitemap {nestedSitemapUrl}: {ex.Message}");
+                            _logger.LogError(ex, "Error fetching nested sitemap {NestedSitemapUrl}", nestedSitemapUrl);
                         }
                     }
 
@@ -108,7 +106,7 @@ namespace Umbraco.Community.ContentAudit.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Could not fetch or parse sitemap.xml: {ex.Message}. Defaulting to base URL crawling.");
+                _logger.LogError(ex, "Could not fetch or parse sitemap.xml from {SitemapUrl}. Defaulting to base URL crawling.", sitemapUrl);
                 return new List<string>();
             }
         }
@@ -163,16 +161,29 @@ namespace Umbraco.Community.ContentAudit.Services
                 XDocument sitemap = XDocument.Parse(content);
                 XNamespace? ns = sitemap.Root?.GetDefaultNamespace();
 
-                var urls = sitemap.Descendants(ns + "url")
-                                  .Select(x => x.Element(ns + "loc")?.Value)
-                                  .Where(x => !string.IsNullOrWhiteSpace(x))
-                                  .ToList();
+                List<string> sitemapUrls = new();
+                if (ns == null)
+                {
+                    sitemapUrls = sitemap
+                        .Descendants("url")
+                        .Select(x => x.Element("loc")?.Value)
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .ToList()!;
+                }
 
-                return urls!;
+                else {
+                    sitemapUrls = sitemap
+                        .Descendants(ns + "url")
+                        .Select(x => x.Element(ns + "loc")?.Value)
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .ToList()!;
+                }
+
+                return sitemapUrls;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error parsing sitemap content: {ex.Message}");
+                _logger.LogError(ex, "Error parsing sitemap content");
                 return new List<string>();
             }
         }
@@ -195,16 +206,30 @@ namespace Umbraco.Community.ContentAudit.Services
                 XDocument sitemapIndex = XDocument.Parse(content);
                 XNamespace? ns = sitemapIndex.Root?.GetDefaultNamespace();
 
-                var sitemapUrls = sitemapIndex.Descendants(ns + "sitemap")
-                                    .Select(x => x.Element(ns + "loc")?.Value)
-                                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                                    .ToList();
+                List<string> sitemapUrls = new();
 
-                return sitemapUrls!;
+                if (ns == null)
+                {
+                    sitemapUrls = sitemapIndex
+                        .Descendants("sitemap")
+                        .Select(x => x.Element("loc")?.Value)
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .ToList()!;
+                }
+                else
+                {
+                    sitemapUrls = sitemapIndex
+                        .Descendants(ns + "sitemap")
+                        .Select(x => x.Element(ns + "loc")?.Value)
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .ToList()!;
+                }
+
+                return sitemapUrls;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing sitemap index: {ex.Message}.");
+                _logger.LogError(ex, "Error processing sitemap index");
                 return allUrls;
             }
         }

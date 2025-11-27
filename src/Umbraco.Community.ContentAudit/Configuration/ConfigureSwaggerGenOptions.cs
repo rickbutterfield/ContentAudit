@@ -5,8 +5,15 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Umbraco.Community.ContentAudit.Configuration
 {
+    /// <summary>
+    /// Configures SwaggerGen for the ContentAudit API.
+    /// </summary>
     public class ConfigureSwaggerGenOptions : IConfigureOptions<SwaggerGenOptions>
     {
+        /// <summary>
+        /// Applies operation ids and API document metadata.
+        /// </summary>
+        /// <param name="options">The SwaggerGen options to configure.</param>
         public void Configure(SwaggerGenOptions options)
         {
             options.CustomOperationIds(e => $"{e.ActionDescriptor.RouteValues["action"]}");

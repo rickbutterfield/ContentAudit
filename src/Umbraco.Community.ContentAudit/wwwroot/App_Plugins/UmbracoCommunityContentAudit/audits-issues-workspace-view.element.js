@@ -65,38 +65,41 @@ _ = function() {
   }, "issuesObserver"));
 };
 b = function(e) {
-  this._tableItems = e.map((t) => ({
-    id: t.unique,
-    entityType: "issue-type",
-    icon: "icon-alert",
-    data: [
-      {
-        columnAlias: "name",
-        value: {
-          unique: t.unique,
-          name: t.name,
-          category: t.category,
-          description: t.description
+  this._tableItems = e.map((t) => {
+    var s;
+    return {
+      id: t.unique,
+      entityType: "issue-type",
+      icon: "icon-alert",
+      data: [
+        {
+          columnAlias: "name",
+          value: {
+            unique: t.unique,
+            name: t.name,
+            category: t.category,
+            description: t.description
+          }
+        },
+        {
+          columnAlias: "type",
+          value: o`<content-audit-issue-type-label .type=${t.type}></content-audit-issue-type-label>`
+        },
+        {
+          columnAlias: "priority",
+          value: o`<content-audit-priority-type-label .type=${t.priority}></content-audit-priority-type-label>`
+        },
+        {
+          columnAlias: "numberOfUrls",
+          value: t.numberOfUrls
+        },
+        {
+          columnAlias: "percentOfTotal",
+          value: `${(s = t.percentOfTotal) == null ? void 0 : s.toFixed(0)}%`
         }
-      },
-      {
-        columnAlias: "type",
-        value: o`<content-audit-issue-type-label .type=${t.type}></content-audit-issue-type-label>`
-      },
-      {
-        columnAlias: "priority",
-        value: o`<content-audit-priority-type-label .type=${t.priority}></content-audit-priority-type-label>`
-      },
-      {
-        columnAlias: "numberOfUrls",
-        value: t.numberOfUrls
-      },
-      {
-        columnAlias: "percentOfTotal",
-        value: `${t.percentOfTotal.toFixed(0)}%`
-      }
-    ]
-  }));
+      ]
+    };
+  });
 };
 g = function() {
   if (!this._data || !this._issues.length) return;

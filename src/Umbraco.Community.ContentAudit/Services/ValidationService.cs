@@ -6,25 +6,17 @@ using Umbraco.Community.ContentAudit.Models.Validation;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
-    /// <summary>
-    /// Service for validating HTML content or webpages using the W3C Nu HTML Checker (validator.w3.org).
-    /// </summary>
-    /// <remarks>
-    /// Uses an internal <see cref="HttpClient"/> instance unless one is provided via the constructor.
-    /// Results are deserialized into <see cref="ValidationResult"/>.
-    /// </remarks>
+    /// <inheritdoc/>
     public class ValidationService : IValidationService
     {
         private readonly HttpClient _httpClient;
         private const string ValidatorUrl = "https://validator.w3.org/nu/";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ValidationService"/> class.
+        /// Initializes a new instance of the <see cref="ValidationService"/> class
         /// </summary>
-        /// <param name="httpClient">
-        /// Optional <see cref="HttpClient"/> to use for requests. If null, a new instance will be created.
-        /// </param>
-        public ValidationService(HttpClient httpClient = null)
+        /// <param name="httpClient">Optional HTTP client to use for requests; if null, a new instance will be created</param>
+        public ValidationService(HttpClient? httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();
 
@@ -33,15 +25,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
         }
 
-        /// <summary>
-        /// Validates HTML content directly by posting the markup to the W3C validator.
-        /// </summary>
-        /// <param name="htmlContent">The HTML markup to validate.</param>
-        /// <returns>
-        /// A <see cref="ValidationResult"/> containing validation messages and source information,
-        /// or null if deserialization fails.
-        /// </returns>
-        /// <exception cref="HttpRequestException">Thrown when the validator response indicates a non-success status code.</exception>
+        /// <inheritdoc/>
         public async Task<ValidationResult?> ValidateHtmlAsync(string htmlContent)
         {
             using var client = new HttpClient();
@@ -74,15 +58,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return JsonSerializer.Deserialize<ValidationResult>(jsonResponse, options);
         }
 
-        /// <summary>
-        /// Validates a webpage by URL using the W3C validator service.
-        /// </summary>
-        /// <param name="url">The absolute URL of the webpage to validate.</param>
-        /// <returns>
-        /// A <see cref="ValidationResult"/> containing validation messages and source information,
-        /// or null if deserialization fails.
-        /// </returns>
-        /// <exception cref="HttpRequestException">Thrown when the validator response indicates a non-success status code.</exception>
+        /// <inheritdoc/>
         public async Task<ValidationResult?> ValidateUrlAsync(string url)
         {
             using var content = new MultipartFormDataContent();

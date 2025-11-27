@@ -27,7 +27,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         public IssuePriority Priority => IssuePriority.Medium;
 
         /// <inheritdoc />
-        public IEnumerable<AuditIssueProperty> ExposedProperties => default;
+        public IEnumerable<AuditIssueProperty>? ExposedProperties => default;
         
         /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)

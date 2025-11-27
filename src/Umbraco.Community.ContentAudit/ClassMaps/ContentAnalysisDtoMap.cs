@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="ContentAnalysisDto"/>.
+    /// </summary>
     public class ContentAnalysisDtoMap : ClassMap<ContentAnalysisDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public ContentAnalysisDtoMap()
         {
             Map(x => x.WordCount).Name("Word Count");

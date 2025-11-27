@@ -4,13 +4,19 @@ using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Repositories
 {
+    /// <inheritdoc/>
     public class AuditRepository : IAuditRepository
     {
         private readonly IScopeProvider _scopeProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuditRepository"/> class
+        /// </summary>
+        /// <param name="scopeProvider">The Umbraco scope provider for database access</param>
         public AuditRepository(IScopeProvider scopeProvider)
             => _scopeProvider = scopeProvider;
 
+        /// <inheritdoc/>
         public async Task<Guid?> GetLatestAuditKey()
         {
             using var scope = _scopeProvider.CreateScope();
@@ -34,7 +40,8 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return Guid.Empty;
         }
 
-        public async Task<IEnumerable<OverviewSchema>> GetAllAuditOverviews()
+        /// <inheritdoc/>
+        public async Task<IEnumerable<OverviewSchema>> GetAuditOverviews()
         {
             using var scope = _scopeProvider.CreateScope();
 
@@ -46,7 +53,8 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return auditOverviews;
         }
 
-        public async Task<IEnumerable<OverviewSchema>> GetLatestAuditOverview(Guid auditKey)
+        /// <inheritdoc/>
+        public async Task<OverviewSchema> GetAuditOverview(Guid auditKey)
         {
             using var scope = _scopeProvider.CreateScope();
 
@@ -55,9 +63,10 @@ namespace Umbraco.Community.ContentAudit.Repositories
 
             scope.Complete();
 
-            return latestAudit;
+            return latestAudit.First();
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<PageSchema>> GetPagesByAuditKey(Guid auditKey)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -74,6 +83,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return pageData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<SeoSchema>> GetSeoData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -86,6 +96,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return seoData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ContentAnalysisSchema>> GetContentAnalysisData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -98,6 +109,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return contentAnalysisData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<PerformanceSchema>> GetPerformanceData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -110,6 +122,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return performanceData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<AccessibilitySchema>> GetAccessibilityData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -122,6 +135,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return accessibilityData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<TechnicalSeoSchema>> GetTechnicalSeoData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -134,6 +148,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return technicalSeoData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<SocialMediaSchema>> GetSocialMediaData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -146,6 +161,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return socialMediaData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ContentQualitySchema>> GetContentQualityData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -158,6 +174,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return contentQualityData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<LinkSchema>> GetLinkData(Guid auditKey, string foundPage)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -170,6 +187,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return linksData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ResourceSchema>> GetResourceData(Guid auditKey, string foundPage)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -182,6 +200,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             return resourcesData;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ImageSchema>> GetImageData(Guid auditKey, string foundPage)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -192,6 +211,36 @@ namespace Umbraco.Community.ContentAudit.Repositories
             scope.Complete();
 
             return imagesData;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteAuditByKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var db = scope.Database;
+
+            try
+            {
+                await db.ExecuteAsync($"DELETE FROM [{LinkSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{ResourceSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{ImageSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{ContentQualitySchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{SocialMediaSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{TechnicalSeoSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{AccessibilitySchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{PerformanceSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{ContentAnalysisSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{SeoSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{PageSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
+                await db.ExecuteAsync($"DELETE FROM [{OverviewSchema.TableName}] WHERE [Key] = @0", new object[] { auditKey });
+
+                scope.Complete();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="PerformanceDto"/>.
+    /// </summary>
     public class PerformanceDtoMap : ClassMap<PerformanceDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public PerformanceDtoMap()
         {
             Map(m => m.PageLoadTime).Name("Page Load Time (ms)");

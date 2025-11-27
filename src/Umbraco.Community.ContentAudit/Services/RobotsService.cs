@@ -1,32 +1,26 @@
-﻿using Umbraco.Community.ContentAudit.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Umbraco.Community.ContentAudit.Interfaces;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
-    /// <summary>
-    /// Service for parsing and processing robots.txt files to determine disallowed paths.
-    /// </summary>
+    /// <inheritdoc/>
     public class RobotsService : IRobotsService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<RobotsService> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RobotsService"/> class.
+        /// Initializes a new instance of the <see cref="RobotsService"/> class
         /// </summary>
-        /// <param name="httpClient">The HTTP client for fetching robots.txt content.</param>
-        public RobotsService(HttpClient httpClient)
+        /// <param name="httpClient">The HTTP client for fetching robots.txt content</param>
+        /// <param name="logger">The logger instance</param>
+        public RobotsService(HttpClient httpClient, ILogger<RobotsService> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
-        /// <summary>
-        /// Fetches and parses the robots.txt file from a given base URL to extract disallowed paths.
-        /// </summary>
-        /// <param name="baseUrl">The base URL of the website to fetch robots.txt from.</param>
-        /// <returns>A list of absolute URLs that are disallowed according to the robots.txt file.</returns>
-        /// <remarks>
-        /// If the robots.txt file cannot be fetched or parsed, an empty list is returned and a message is logged to the console.
-        /// Only "Disallow:" directives are processed; other directives like "Allow:" are ignored.
-        /// </remarks>
+        /// <inheritdoc/>
         public async Task<List<string>> GetDisallowedPathsAsync(string baseUrl)
         {
             var disallowedPaths = new List<string>();
@@ -37,23 +31,15 @@ namespace Umbraco.Community.ContentAudit.Services
                 string robotsContent = await _httpClient.GetStringAsync(robotsUrl);
                 disallowedPaths.AddRange(ParseRobotsTxt(robotsContent, baseUrl));
             }
-            catch
+            catch (Exception ex)
             {
-                Console.WriteLine("Could not fetch or parse robots.txt. Defaulting to no disallowed paths.");
+                _logger.LogWarning(ex, "Could not fetch or parse robots.txt from {RobotsUrl}. Defaulting to no disallowed paths.", robotsUrl);
             }
 
             return disallowedPaths;
         }
 
-        /// <summary>
-        /// Fetches and parses the robots.txt file from a given base URL to extract sitemap URLs.
-        /// </summary>
-        /// <param name="baseUrl">The base URL of the website to fetch robots.txt from.</param>
-        /// <returns>A list of sitemap URLs found in the robots.txt file.</returns>
-        /// <remarks>
-        /// If the robots.txt file cannot be fetched or parsed, an empty list is returned.
-        /// Processes "Sitemap:" directives according to Google's robots.txt specification.
-        /// </remarks>
+        /// <inheritdoc/>
         public async Task<List<string>> GetSitemapUrlsAsync(string baseUrl)
         {
             var sitemapUrls = new List<string>();
@@ -64,9 +50,9 @@ namespace Umbraco.Community.ContentAudit.Services
                 string robotsContent = await _httpClient.GetStringAsync(robotsUrl);
                 sitemapUrls.AddRange(ParseSitemapUrls(robotsContent));
             }
-            catch
+            catch (Exception ex)
             {
-                Console.WriteLine("Could not fetch or parse robots.txt for sitemap URLs.");
+                _logger.LogError(ex, "Could not fetch or parse robots.txt from {RobotsUrl} for sitemap URLs.", robotsUrl);
             }
 
             return sitemapUrls;

@@ -25,8 +25,8 @@ namespace Umbraco.Community.ContentAudit.Services
     /// <inheritdoc />
     public class AuditService : IAuditService
     {
-        private string _baseUrl;
-        private Uri _baseUri;
+        private string? _baseUrl;
+        private Uri? _baseUri;
 
         private ConcurrentQueue<UrlQueueItem> _urlQueue = new ConcurrentQueue<UrlQueueItem>();
 
@@ -241,10 +241,12 @@ namespace Umbraco.Community.ContentAudit.Services
             string url = queueItem.Url;
             bool isExternal = queueItem.IsExternal;
             bool isAsset = queueItem.IsAsset;
+            bool semaphoreAcquired = false;
 
             try
             {
                 await _crawlSemaphore.WaitAsync(cancellationToken);
+                semaphoreAcquired = true;
 
                 _logger.LogInformation("Started processing URL: {0}", url);
 
@@ -291,7 +293,10 @@ namespace Umbraco.Community.ContentAudit.Services
             }
             finally
             {
-                _crawlSemaphore.Release();
+                if (semaphoreAcquired)
+                {
+                    _crawlSemaphore.Release();
+                }
                 _logger.LogInformation("Finished processing URL: {0}", url);
             }
         }
@@ -368,7 +373,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger.LogInformation("Found {0} links and {1} resources on page {2}",
                 pageAnalysis.Links.Count(), pageAnalysis.Resources.Count(), url);
 
-            if (!pageAnalysis.SeoData.HasNoFollow)
+            if (pageAnalysis.SeoData?.HasNoFollow == false)
             {
                 foreach (var link in pageAnalysis.Links)
                 {
@@ -548,7 +553,7 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 seoData.AuditKey = auditKey;
 
-                seoData.IsOrphaned = internalLinks.Any(x => seoData.Url?.Contains(x.Url) == true) == false;
+                seoData.IsOrphaned = internalLinks.Any(x => seoData.Url?.Contains(x.Url!) == true) == false;
                 await scope.Database.InsertAsync(new SeoSchema(seoData));
             }
 
@@ -629,13 +634,13 @@ namespace Umbraco.Community.ContentAudit.Services
                 var pageAnalysis = new PageAnalysisDto
                 {
                     PageData = page,
-                    SeoData = _seoDtos.FirstOrDefault(s => s.Url == page.Url),
-                    ContentAnalysis = _contentAnalysisDtos.FirstOrDefault(c => c.Url == page.Url),
-                    PerformanceData = _performanceDtos.FirstOrDefault(p => p.Url == page.Url),
-                    AccessibilityData = _accessibilityDtos.FirstOrDefault(a => a.Url == page.Url),
-                    TechnicalSeoData = _technicalSeoDtos.FirstOrDefault(t => t.Url == page.Url),
-                    SocialMediaData = _socialMediaDtos.FirstOrDefault(s => s.Url == page.Url),
-                    ContentQualityData = _contentQualityDtos.FirstOrDefault(c => c.Url == page.Url),
+                    SeoData = _seoDtos.FirstOrDefault(s => s.Url == page.Url)!,
+                    ContentAnalysis = _contentAnalysisDtos.FirstOrDefault(c => c.Url == page.Url)!,
+                    PerformanceData = _performanceDtos.FirstOrDefault(p => p.Url == page.Url)!,
+                    AccessibilityData = _accessibilityDtos.FirstOrDefault(a => a.Url == page.Url)!,
+                    TechnicalSeoData = _technicalSeoDtos.FirstOrDefault(t => t.Url == page.Url)!,
+                    SocialMediaData = _socialMediaDtos.FirstOrDefault(s => s.Url == page.Url)!,
+                    ContentQualityData = _contentQualityDtos.FirstOrDefault(c => c.Url == page.Url)!,
                     Links = _linkDtos.Where(l => l.FoundPage == page.Url).ToList(),
                     Resources = _resourceDtos.Where(r => r.FoundPage == page.Url).ToList(),
                     Images = _imageDtos.Where(i => i.FoundPage == page.Url).ToList()
@@ -676,7 +681,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger.LogInformation("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
             if (_contentAuditSettings.UseSitemapXml)
             {
-                var sitemapUrls = await _sitemapService.GetSitemapUrlAsync(_baseUrl);
+                var sitemapUrls = await _sitemapService.GetSitemapUrlAsync(_baseUrl!);
                 sitemapUrls.ForEach(x =>
                 {
                     EnqueueUrl(new UrlQueueItem
@@ -692,7 +697,7 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 EnqueueUrl(new UrlQueueItem
                 {
-                    Url = _baseUrl,
+                    Url = _baseUrl!,
                     IsExternal = false,
                     IsAsset = false
                 });
@@ -705,7 +710,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger.LogInformation("Should we attempt to use robots.txt? {0}", _contentAuditSettings.RespectRobotsTxt);
             if (_contentAuditSettings.RespectRobotsTxt)
             {
-                var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(_baseUrl);
+                var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(_baseUrl!);
                 if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
                     robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.Add(x));
             }

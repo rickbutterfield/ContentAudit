@@ -1,5 +1,5 @@
 ﻿<Project>
 	<ItemGroup>
-		<UmbracoJsonSchemaFiles Include="$(MSBuildThisFileDirectory)..\appsettings-schema.contentaudit.json" Weight="-40" />
+		<UmbracoJsonSchemaFiles Include="$(MSBuildThisFileDirectory)..\appsettings-schema.ContentAudit.json" Weight="-40" />
 	</ItemGroup>
 </Project>

@@ -28,7 +28,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// Gets the unique identifier for this audit issue.
         /// </summary>
         /// <inheritdoc />
-        public Guid Id => new Guid("cccb0159-f35f-45be-a32d-b2f7832eb242");
+        public Guid Id => new("cccb0159-f35f-45be-a32d-b2f7832eb242");
 
         /// <summary>
         /// Gets the display name of this audit issue.
@@ -64,7 +64,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
         /// <inheritdoc />
-        public IEnumerable<AuditIssueProperty> ExposedProperties => default;
+        public IEnumerable<AuditIssueProperty>? ExposedProperties => default;
 
         /// <summary>
         /// Checks pages to identify those with canonical URLs pointing to different URLs.

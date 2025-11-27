@@ -12,13 +12,7 @@ using Umbraco.Community.ContentAudit.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
-    /// <summary>
-    /// Service for crawling and analyzing web pages using Microsoft Playwright.
-    /// </summary>
-    /// <remarks>
-    /// This service uses a headless Chromium browser to navigate pages and extract comprehensive
-    /// analysis data including SEO, performance, accessibility, content quality, and technical metrics.
-    /// </remarks>
+    /// <inheritdoc/>
     public class CrawlService : ICrawlService, IDisposable
     {
         private readonly ILogger<CrawlService> _logger;
@@ -29,10 +23,11 @@ namespace Umbraco.Community.ContentAudit.Services
         private Uri? _baseUri;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CrawlService"/> class.
+        /// Initializes a new instance of the <see cref="CrawlService"/> class
         /// </summary>
-        /// <param name="logger">The logger for diagnostic information.</param>
-        /// <param name="playwright">The Playwright instance for browser automation.</param>
+        /// <param name="logger">The logger for diagnostic information</param>
+        /// <param name="playwright">The Playwright instance for browser automation</param>
+        /// <param name="validationService">The validation service for HTML validation</param>
         public CrawlService(
             ILogger<CrawlService> logger,
             IPlaywright playwright,
@@ -73,25 +68,7 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
-        /// <summary>
-        /// Performs comprehensive analysis of a web page including SEO, performance, accessibility, and content metrics.
-        /// </summary>
-        /// <param name="url">The URL of the page to analyze.</param>
-        /// <param name="baseUri">The base URI of the website for determining internal vs external links.</param>
-        /// <param name="nodeKey">The Umbraco node key associated with this page.</param>
-        /// <returns>A <see cref="PageAnalysisDto"/> containing comprehensive page analysis data, or null if the page cannot be analyzed.</returns>
-        /// <remarks>
-        /// This method:
-        /// - Navigates to the page using a headless browser
-        /// - Captures all resources (scripts, stylesheets, images)
-        /// - Extracts SEO metadata (title, description, canonical URL, etc.)
-        /// - Analyzes content (word count, readability, keyword density)
-        /// - Measures performance metrics (Core Web Vitals, load times)
-        /// - Checks accessibility (ARIA labels, heading structure, color contrast)
-        /// - Evaluates technical SEO (charset, compression, HTTPS)
-        /// - Identifies social media integration
-        /// - Assesses content quality and identifies gaps
-        /// </remarks>
+        /// <inheritdoc/>
         public async Task<PageAnalysisDto?> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey)
         {
             try
@@ -272,7 +249,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         foreach (var image in pageImages)
                         {
-                            var existingImage = pageAnalysis.Images.FirstOrDefault(i => i.Url.Contains(image.Url));
+                            var existingImage = pageAnalysis.Images.FirstOrDefault(i => i.Url?.Contains(image.Url!) == true);
                             if (existingImage != null)
                             {
                                 existingImage.IsBackground = false;
@@ -425,7 +402,7 @@ namespace Umbraco.Community.ContentAudit.Services
                             HasBrowserCaching = response.Headers.ContainsKey("cache-control") && response.Headers["cache-control"].Contains("max-age"),
                             HasHttps = url.StartsWith("https://"),
                             HasValidHtml = validHtml?.IsValid() == true,
-                            HtmlValidationErrors = validHtml?.GetErrors().ToList() ?? new List<ValidationMessage>(),
+                            HtmlValidationErrors = validHtml?.GetErrors()?.ToList() ?? new List<ValidationMessage>(),
                         };
                     }
                     catch (Exception ex)
@@ -496,7 +473,7 @@ namespace Umbraco.Community.ContentAudit.Services
             if (string.IsNullOrEmpty(url))
                 return false;
 
-            return !url.StartsWith(_baseUri.AbsolutePath);
+            return !url.StartsWith(_baseUri?.AbsolutePath!);
         }
 
         private int CountWords(string text)
@@ -856,7 +833,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 strengths.Add("Images have alt text");
 
             // Check for internal links
-            var internalLinkCount = await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length");
+            var internalLinkCount = await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => link.href?.startsWith('" + _baseUri?.AbsoluteUri + "')).length");
             if (internalLinkCount > 0)
                 strengths.Add("Good internal linking");
 
@@ -867,7 +844,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return strengths;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public async Task<HeadResponseDto> GetHeadResponse(string url)
         {
             var result = new HeadResponseDto();
@@ -888,6 +865,7 @@ namespace Umbraco.Community.ContentAudit.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error performing HEAD request for {0}", url);
                 result.StatusCode = 0;
             }
 

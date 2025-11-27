@@ -3,6 +3,7 @@
         <IsPackable>false</IsPackable>
         <EnablePackageValidation>false</EnablePackageValidation>
         <RootNamespace>Umbraco.Community.ContentAudit.TestSite</RootNamespace>
+        <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,14 +18,13 @@
         <ProjectReference Include="..\..\src\Umbraco.Community.ContentAudit\Umbraco.Community.ContentAudit.csproj" />
     </ItemGroup>
 
+    <!-- This is needed because unlike PackageReference, ProjectReference does not run the buildTransitive targets -->
+    <Import Project="..\..\src\Umbraco.Community.ContentAudit\buildTransitive\Umbraco.Community.ContentAudit.targets" />
+    
     <ItemGroup>
         <!-- Opt-in to app-local ICU to ensure consistent globalization APIs across different platforms -->
         <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" VersionOverride="72.1.0.3" />
         <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" Condition="$(RuntimeIdentifier.StartsWith('linux')) or $(RuntimeIdentifier.StartsWith('win')) or ('$(RuntimeIdentifier)' == '' and !$([MSBuild]::IsOSPlatform('osx')))" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="wwwroot\" />
     </ItemGroup>
 
     <PropertyGroup>

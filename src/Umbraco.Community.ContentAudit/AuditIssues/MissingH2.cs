@@ -34,7 +34,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
 
         /// <inheritdoc />
         /// <inheritdoc />
-        public IEnumerable<AuditIssueProperty> ExposedProperties => default;
+        public IEnumerable<AuditIssueProperty>? ExposedProperties => default;
 
         /// <inheritdoc />
         /// <inheritdoc />

@@ -39,8 +39,7 @@ export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 
 	async load(unique: string) {
 		// Load audit overview data by unique identifier (key)
-		// For now, we'll load the latest audit overview as a placeholder
-		const { data } = await tryExecute(this, AuditService.getLatestAuditOverview());
+		const { data } = await tryExecute(this, AuditService.overviewByKey({ path: { id: unique } }));
 		
 		if (data && data.key === unique) {
 			this.#data.setValue(data);
@@ -54,7 +53,7 @@ export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 		
 		if (data && data.items) {
 			// Sort by priority score descending
-			const sortedIssues = data.items.sort((a, b) => b.priorityScore - a.priorityScore);
+			const sortedIssues = data.items.sort((a, b) => b.priorityScore! - a.priorityScore!);
 			this.#issues.setValue(sortedIssues);
 		}
 	}

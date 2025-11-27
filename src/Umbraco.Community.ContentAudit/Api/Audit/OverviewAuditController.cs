@@ -7,22 +7,22 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
     /// <summary>
     /// Gets the latest audit overview containing summary statistics.
     /// </summary>
-    public class GetLatestAuditOverviewController : AuditControllerBase
+    public class OverviewAuditController : AuditControllerBase
     {
         /// <summary>
         /// Initializes a new instance of the controller.
         /// </summary>
         /// <param name="dataService">Audit data service.</param>
-        public GetLatestAuditOverviewController(IDataService dataService) : base(dataService) { }
+        public OverviewAuditController(IDataService dataService) : base(dataService) { }
 
         /// <summary>
         /// Returns the latest audit overview.
         /// </summary>
-        [HttpGet("latest-audit")]
+        [HttpGet("overview")]
         [ProducesResponseType(typeof(OverviewDto), 200)]
-        public async Task<OverviewDto> GetLatestAuditOverview()
+        public async Task<OverviewDto> Overview()
         {
-            return await DataService.GetLatestAuditOverview();
+            return await DataService.GetAuditOverview();
         }
     }
 }

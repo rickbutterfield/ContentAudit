@@ -42,6 +42,6 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// <summary>
         /// Gets the properties exposed by this audit issue
         /// </summary>
-        IEnumerable<AuditIssueProperty> ExposedProperties { get; }
+        IEnumerable<AuditIssueProperty>? ExposedProperties { get; }
     }
 }

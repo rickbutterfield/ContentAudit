@@ -5,6 +5,8 @@ import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
+import { UmbRequestReloadChildrenOfEntityEvent } from "@umbraco-cms/backoffice/entity-action";
+import { UMB_ACTION_EVENT_CONTEXT } from '@umbraco-cms/backoffice/action';
 
 @customElement('content-audit-scan-view')
 export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
@@ -110,19 +112,26 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
 
             // Completed normally
-            debugger;
             this.#notificationContext?.peek("default", {
                 data: { headline: 'Crawl completed', message: 'You can now view the results.' }
             });
         } catch (err) {
-            debugger;
             this.#notificationContext?.peek("danger", {
                 data: { headline: 'Crawl failed', message: (err as Error).message ?? 'Unknown error' }
             });
         } finally {
-            debugger;
             this.scanRunning = false;
-            this.#init(); // refresh latest audit + scores
+            this.#init();
+
+            const eventContext = await this.getContext(UMB_ACTION_EVENT_CONTEXT);
+            if (!eventContext) {
+                throw new Error('Could not get the action event context');
+            }
+            const event = new UmbRequestReloadChildrenOfEntityEvent({
+                entityType: 'audits-root',
+                unique: null,
+            });
+            eventContext.dispatchEvent(event);
         }
     }
 
@@ -257,73 +266,112 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     }
 
     #renderAuditHistory() {
-        if (this._auditOverviews.length === 0) return nothing;
+        if (this._auditOverviews.length <= 1) return nothing;
 
-        // Get the most recent 5 audits
-        const recentAudits = this._auditOverviews.slice(0, 5).reverse();
-        
-        // Calculate max value for scaling
-        const maxTotal = Math.max(...recentAudits.map(a => a.total || 0));
+        // Get the most recent 10 audits
+        const recentAudits = this._auditOverviews.slice(0, 10).reverse();
+
         const chartHeight = 150;
         const chartWidth = 100; // percentage
 
-        // Calculate points for the line
+        // Calculate points for the line (health score is 0-100)
         const points = recentAudits.map((audit, index) => {
             const x = (index / (recentAudits.length - 1)) * chartWidth;
-            const y = chartHeight - ((audit.total || 0) / maxTotal) * chartHeight;
+            const y = chartHeight - ((audit.healthScore || 0) / 100) * chartHeight;
             return `${x},${y}`;
         }).join(' ');
 
+        // Get color based on latest health score
+        const latestScore = recentAudits[recentAudits.length - 1]?.healthScore || 0;
+        const lineColor = latestScore >= 90
+            ? 'var(--uui-color-positive)'
+            : latestScore >= 50
+                ? 'var(--uui-color-warning)'
+                : 'var(--uui-color-danger)';
+
         return html`
-            <uui-box headline="Audit History" class="span-3">
+            <uui-box headline="Health Score Trend" class="span-3">
                 <div class="chart-container">
                     <svg class="chart" viewBox="0 0 100 ${chartHeight}" preserveAspectRatio="none">
-                        <!-- Grid lines -->
-                        ${[0, 25, 50, 75, 100].map(percent => html`
-                            <line 
-                                x1="0" 
-                                y1="${(percent / 100) * chartHeight}" 
-                                x2="100" 
-                                y2="${(percent / 100) * chartHeight}" 
-                                class="chart-grid-line"
-                            />
-                        `)}
-                        
+                        <!-- Grid lines with labels -->
+                        ${[100, 90, 75, 50, 25, 0].map(value => {
+                            const y = chartHeight - (value / 100) * chartHeight;
+                            const isThreshold = value === 90 || value === 50;
+                            return html`
+                                <line
+                                    x1="0"
+                                    y1="${y}"
+                                    x2="100"
+                                    y2="${y}"
+                                    class="chart-grid-line ${isThreshold ? 'chart-grid-line--threshold' : ''}"
+                                />
+                                <text x="1" y="${y - 0.5}" class="chart-grid-label">${value}</text>
+                            `;
+                        })}
+
+                        <!-- Gradient fill under the line -->
+                        <defs>
+                            <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:${lineColor};stop-opacity:0.2" />
+                                <stop offset="100%" style="stop-color:${lineColor};stop-opacity:0" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Area fill -->
+                        <path
+                            d="M ${points.split(' ')[0]} L ${points} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z"
+                            fill="url(#chartGradient)"
+                        />
+
                         <!-- Line chart -->
                         <polyline
                             points="${points}"
                             class="chart-line"
                             fill="none"
-                            stroke="var(--uui-color-interactive)"
+                            stroke="${lineColor}"
                             stroke-width="0.5"
                         />
-                        
+
                         <!-- Data points -->
                         ${recentAudits.map((audit, index) => {
                             const x = (index / (recentAudits.length - 1)) * chartWidth;
-                            const y = chartHeight - ((audit.total || 0) / maxTotal) * chartHeight;
+                            const y = chartHeight - ((audit.healthScore || 0) / 100) * chartHeight;
+                            const score = audit.healthScore || 0;
+                            const pointColor = score >= 90
+                                ? 'var(--uui-color-positive)'
+                                : score >= 50
+                                    ? 'var(--uui-color-warning)'
+                                    : 'var(--uui-color-danger)';
                             return html`
                                 <circle
                                     cx="${x}"
                                     cy="${y}"
                                     r="1"
                                     class="chart-point"
-                                    fill="var(--uui-color-interactive)"
+                                    fill="${pointColor}"
                                 />
                             `;
                         })}
                     </svg>
-                    
+
                     <!-- Labels -->
                     <div class="chart-labels">
-                        ${recentAudits.map(audit => html`
-                            <div class="chart-label">
-                                <div class="chart-label-date">
-                                    ${audit.runDate ? this.localize.date(audit.runDate, { dateStyle: 'short' }) : 'N/A'}
+                        ${recentAudits.map(audit => {
+                            const score = audit.healthScore || 0;
+                            const scoreClass = score >= 90
+                                ? 'chart-label-score--success'
+                                : score >= 50
+                                    ? 'chart-label-score--warning'
+                                    : 'chart-label-score--danger';
+                            return html`
+                                <div class="chart-label">
+                                    <div class="chart-label-date">
+                                        ${audit.runDate ? this.localize.date(audit.runDate, { dateStyle: 'short' }) : 'N/A'}
+                                    </div>
+                                    <div class="chart-label-score ${scoreClass}">${score.toFixed(0)}</div>
                                 </div>
-                                <div class="chart-label-value">${audit.total || 0} pages</div>
-                            </div>
-                        `)}
+                            `;
+                        })}
                     </div>
                 </div>
             </uui-box>
@@ -482,12 +530,25 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 stroke-dasharray: 1, 1;
             }
 
+            .chart-grid-line--threshold {
+                stroke: var(--uui-color-border-emphasis);
+                stroke-width: 0.15;
+                stroke-dasharray: 2, 2;
+            }
+
+            .chart-grid-label {
+                font-size: 3px;
+                fill: var(--uui-color-text-alt);
+                dominant-baseline: text-after-edge;
+            }
+
             .chart-line {
                 stroke-width: 0.5;
             }
 
             .chart-point {
                 cursor: pointer;
+                transition: r 0.2s ease;
             }
 
             .chart-point:hover {
@@ -512,8 +573,21 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 margin-bottom: var(--uui-size-space-1);
             }
 
-            .chart-label-value {
-                color: var(--uui-color-text-alt);
+            .chart-label-score {
+                font-weight: 700;
+                font-size: 0.875rem;
+            }
+
+            .chart-label-score--success {
+                color: var(--uui-color-positive);
+            }
+
+            .chart-label-score--warning {
+                color: var(--uui-color-warning);
+            }
+
+            .chart-label-score--danger {
+                color: var(--uui-color-danger);
             }
         `
     ]

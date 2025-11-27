@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="AccessibilityDto"/>.
+    /// </summary>
     public class AccessibilityDtoMap : ClassMap<AccessibilityDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public AccessibilityDtoMap()
         {
             Map(m => m.AccessibilityIssues).Name("Accessibility Issues");

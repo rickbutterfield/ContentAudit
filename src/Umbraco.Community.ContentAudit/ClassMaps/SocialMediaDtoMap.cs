@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="SocialMediaDto"/>.
+    /// </summary>
     public class SocialMediaDtoMap : ClassMap<SocialMediaDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public SocialMediaDtoMap()
         {
             Map(m => m.SocialShareButtons).Name("Social Share Buttons");

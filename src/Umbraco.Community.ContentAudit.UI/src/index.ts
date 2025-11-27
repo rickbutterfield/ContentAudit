@@ -1,16 +1,16 @@
 ﻿import { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api';
 import { UMB_AUTH_CONTEXT } from '@umbraco-cms/backoffice/auth';
 
-export * from './exports.ts';
+export * from './exports';
 
 import { manifests as sectionManifests } from './section/manifests';
 import { manifests as workspaceManifests } from './workspace/manifests';
 import { manifests as modalManifests } from './modals/manifest';
 import { manifests as localizationManifests } from './localization/manifests';
 import { manifests as documentManifests } from './documents/manifests';
-import { client } from './api/index.ts';
+import { client } from './api/index';
 import { ManifestGlobalContext } from '@umbraco-cms/backoffice/extension-registry';
-import { CONTENT_AUDIT_CONTEXT_ALIAS } from './exports.ts';
+import { CONTENT_AUDIT_CONTEXT_ALIAS } from './exports';
 
 const globalContext: ManifestGlobalContext = {
     type: 'globalContext',

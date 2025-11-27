@@ -1,6 +1,4 @@
-﻿using Lucene.Net.Search;
-using Microsoft.AspNetCore.Http;
-using Umbraco.Cms.Core.Cache;
+﻿using Umbraco.Cms.Core.Cache;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -10,9 +8,7 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
-    /// <summary>
-    /// Service for retrieving and processing audit data from the repository.
-    /// </summary>
+    /// <inheritdoc/>
     public class DataService : IDataService
     {
         private readonly IAuditRepository _auditRepository;
@@ -21,12 +17,12 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IEmissionsService _emissionsService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataService"/> class.
+        /// Initializes a new instance of the <see cref="DataService"/> class
         /// </summary>
-        /// <param name="auditRepository">The audit repository for data access.</param>
-        /// <param name="auditIssueCollection">The collection of audit issues to check against.</param>
-        /// <param name="appCaches">The application caches for performance optimization.</param>
-        /// <param name="emissionsService">The emissions service for calculating carbon footprint.</param>
+        /// <param name="auditRepository">The audit repository for data access</param>
+        /// <param name="auditIssueCollection">The collection of audit issues to check against</param>
+        /// <param name="appCaches">The application caches for performance optimization</param>
+        /// <param name="emissionsService">The emissions service for calculating carbon footprint</param>
         public DataService(
             IAuditRepository auditRepository,
             AuditIssueCollection auditIssueCollection,
@@ -39,45 +35,27 @@ namespace Umbraco.Community.ContentAudit.Services
             _emissionsService = emissionsService;
         }
 
-        /// <summary>
-        /// Gets the latest audit overview containing summary statistics.
-        /// </summary>
-        /// <returns>An <see cref="OverviewDto"/> containing the latest audit overview.</returns>
-        public async Task<OverviewDto> GetLatestAuditOverview()
+        /// <inheritdoc/>
+        public async Task<OverviewDto> GetAuditOverview(Guid? id = null)
         {
-            var auditOverview = new OverviewDto();
-            var latestAuditKey = await _auditRepository.GetLatestAuditKey();
+            if (!id.HasValue)
+                id = await _auditRepository.GetLatestAuditKey();
 
-            if (latestAuditKey.HasValue)
-            {
-                var latestAudit = await _auditRepository.GetLatestAuditOverview(latestAuditKey.Value);
-                var firstAudit = latestAudit?.FirstOrDefault();
-                if (firstAudit != null)
-                {
-                    auditOverview = new OverviewDto(firstAudit);
-                }
-            }
+            var overview = await _auditRepository.GetAuditOverview(id.Value);
+            if (overview == null)
+                return new OverviewDto();
 
-            return auditOverview;
+            return new OverviewDto(overview);
         }
 
-        /// <summary>
-        /// Gets the audit overview for a specific audit run.
-        /// </summary>
-        /// <param name="auditKey">The unique identifier of the audit run.</param>
-        /// <returns>An <see cref="OverviewDto"/> containing the audit overview.</returns>
+        /// <inheritdoc/>
         public async Task<PageAnalysisDto> GetAuditPageAnalysisByKey(Guid auditKey)
         {
             var data = await GetLatestAuditDataInternal("", 0, auditKey);
             return data.FirstOrDefault() ?? new PageAnalysisDto();
         }
 
-        /// <summary>
-        /// Gets page analysis data from the latest audit run.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search URLs.</param>
-        /// <param name="statusCode">Optional HTTP status code filter.</param>
-        /// <returns>A list of <see cref="PageAnalysisDto"/> containing page analysis data.</returns>
+        /// <inheritdoc/>
         public async Task<List<PageAnalysisDto>> GetLatestAuditData(string filter = "", int statusCode = 0)
         {
             return await GetLatestAuditDataInternal(filter, statusCode);
@@ -88,6 +66,7 @@ namespace Umbraco.Community.ContentAudit.Services
         /// </summary>
         /// <param name="filter">Optional filter string to search URLs.</param>
         /// <param name="statusCode">Optional HTTP status code filter.</param>
+        /// <param name="auditKey">Optional audit key to query a specific audit run.</param>
         /// <returns>A list of <see cref="PageAnalysisDto"/> containing page analysis data.</returns>
         private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0, Guid? auditKey = default)
         {
@@ -237,11 +216,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        /// <summary>
-        /// Gets detailed analysis data for a specific page by its unique identifier.
-        /// </summary>
-        /// <param name="unique">The unique identifier of the page.</param>
-        /// <returns>A <see cref="PageAnalysisDto"/> containing the page analysis data with detected issues.</returns>
+        /// <inheritdoc/>
         public async Task<PageAnalysisDto> GetLatestPageAuditData(Guid unique)
         {
             var result = new PageAnalysisDto();
@@ -285,11 +260,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        /// <summary>
-        /// Gets a list of orphaned pages (pages with no inbound links).
-        /// </summary>
-        /// <param name="filter">Optional filter string to search URLs.</param>
-        /// <returns>A list of <see cref="PageDto"/> containing orphaned pages.</returns>
+        /// <inheritdoc/>
         public async Task<List<PageDto>> GetOrphanedPages(string filter = "")
         {
             var result = new List<PageDto>();
@@ -304,11 +275,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        /// <summary>
-        /// Gets a list of all images discovered during the audit.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search image URLs.</param>
-        /// <returns>A list of <see cref="ImageDto"/> containing image data.</returns>
+        /// <inheritdoc/>
         public async Task<List<ImageDto>> GetAllImages(string filter = "")
         {
             var latestAuditData = await GetLatestAuditData(filter);
@@ -318,22 +285,13 @@ namespace Umbraco.Community.ContentAudit.Services
             return images.ToList();
         }
 
-        /// <summary>
-        /// Gets a list of URLs with duplicate content.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search URLs.</param>
-        /// <returns>A list of <see cref="PageDto"/> containing pages with duplicate content.</returns>
-        /// <exception cref="NotImplementedException">This feature is not yet implemented.</exception>
+        /// <inheritdoc/>
         public async Task<List<PageDto>> GetDuplicateContentUrls(string filter = "")
         {
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Gets a list of pages with missing metadata.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search URLs.</param>
-        /// <returns>A list of <see cref="PageAnalysisDto"/> containing pages with missing metadata.</returns>
+        /// <inheritdoc/>
         public async Task<List<PageAnalysisDto>> GetPagesWithMissingMetadata(string filter = "")
         {
             var result = new List<PageAnalysisDto>();
@@ -342,10 +300,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        /// <summary>
-        /// Gets a list of all detected issues with statistics about affected pages.
-        /// </summary>
-        /// <returns>A list of <see cref="IssueDto"/> containing all detected issues.</returns>
+        /// <inheritdoc/>
         public async Task<List<IssueDto>> GetAllIssues()
         {
             var result = new List<IssueDto>();
@@ -404,11 +359,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        /// <summary>
-        /// Gets detailed information about a specific issue by its unique identifier.
-        /// </summary>
-        /// <param name="issueGuid">The unique identifier of the issue.</param>
-        /// <returns>An <see cref="IssueDto"/> containing the issue details, or null if not found.</returns>
+        /// <inheritdoc/>
         public async Task<IssueDto?> GetIssue(Guid issueGuid)
         {
             var pageData = await GetLatestAuditData();
@@ -457,11 +408,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return null;
         }
 
-        /// <summary>
-        /// Gets a list of external links grouped by URL with occurrence statistics.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search link URLs.</param>
-        /// <returns>A list of <see cref="LinkGroupDto"/> containing grouped external links.</returns>
+        /// <inheritdoc/>
         public async Task<List<LinkGroupDto>> GetExternalLinks(string filter = "")
         {
             var results = new List<LinkGroupDto>();
@@ -490,11 +437,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return results;
         }
 
-        /// <summary>
-        /// Gets a list of internal links grouped by URL with occurrence statistics.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search link URLs.</param>
-        /// <returns>A list of <see cref="LinkGroupDto"/> containing grouped internal links.</returns>
+        /// <inheritdoc/>
         public async Task<List<LinkGroupDto>> GetInternalLinks(string filter = "")
         {
             var results = new List<LinkGroupDto>();
@@ -523,10 +466,7 @@ namespace Umbraco.Community.ContentAudit.Services
             return results;
         }
 
-        /// <summary>
-        /// Calculates the overall health score for the site based on detected issues.
-        /// </summary>
-        /// <returns>A <see cref="HealthScoreDto"/> containing the health score and related statistics.</returns>
+        /// <inheritdoc/>
         public async Task<HealthScoreDto> GetHealthScore()
         {
             var result = new HealthScoreDto();
@@ -562,48 +502,69 @@ namespace Umbraco.Community.ContentAudit.Services
         }
 
         /// <summary>
-        /// Calculates a priority score for an issue based on its type, priority, and percentage of pages affected.
+        /// Calculates a normalized priority score (0-10) for an issue based on type, priority, and prevalence.
         /// </summary>
         /// <param name="issue">The issue to calculate the priority score for.</param>
-        /// <returns>A priority score as a double value.</returns>
+        /// <returns>A priority score between 0.0 and 10.0, where higher indicates higher priority.</returns>
         private double CalculatePriorityScore(IssueDto issue)
         {
-            double typeCoefficient = 10.0;
-            double priorityCoefficient = 20.0;
-            double percentageCoefficient = 1.0;
+            ArgumentNullException.ThrowIfNull(issue);
 
-            double typeWeight = (int)issue.Type * typeCoefficient;
-            double priorityWeight = (int)issue.Priority * priorityCoefficient;
-            double percentageWeight = issue.PercentOfTotal * percentageCoefficient;
+            const double PRIORITY_WEIGHT = 0.50;
+            const double TYPE_WEIGHT = 0.30;
+            const double PERCENTAGE_WEIGHT = 0.20;
 
-            if (issue.PercentOfTotal != 0)
-                return typeWeight + priorityWeight + percentageWeight;
+            // Safely handle nullable percentage and clamp without relying on generic Math.Clamp overload
+            double percentValue = issue.PercentOfTotal.GetValueOrDefault(0.0);
+            double validPercentage = Math.Min(Math.Max(percentValue, 0.0), 100.0);
 
-            return 0;
+            // Safely handle nullable enums/values for Priority and Type - default to 1 if null
+            int priorityValue = issue.Priority is null ? 1 : (int)issue.Priority;
+            int typeValue = issue.Type is null ? 1 : (int)issue.Type;
+
+            double normalizedPriority = (priorityValue - 1) / 2.0;
+            double normalizedType = (typeValue - 1) / 2.0;
+            double normalizedPercentage = validPercentage / 100.0;
+
+            double score = (normalizedPriority * PRIORITY_WEIGHT +
+                            normalizedType * TYPE_WEIGHT +
+                            normalizedPercentage * PERCENTAGE_WEIGHT) * 10.0;
+
+            return Math.Round(score, 2);
         }
 
-        /// <summary>
-        /// Gets all page analysis data for export purposes.
-        /// </summary>
-        /// <returns>A list of <see cref="PageAnalysisDto"/> containing all audit data.</returns>
-        public async Task<List<PageAnalysisDto>> GetExportData()
+        /// <inheritdoc/>
+        public async Task<List<PageAnalysisDto>> GetExportData(Guid? id = default)
         {
+            if (id.HasValue)
+            {
+                return await GetLatestAuditDataInternal("", 0, id.Value);
+            }
+
             return await GetLatestAuditData();
         }
 
-        /// <summary>
-        /// Gets a list of all audit overview records from the database.
-        /// </summary>
-        /// <returns>A list of <see cref="OverviewDto"/> containing all audit overviews.</returns>
+        /// <inheritdoc/>
         public async Task<List<OverviewDto>> GetAuditOverviews()
         {
             var results = new List<OverviewDto>();
-            var audits = await _auditRepository.GetAllAuditOverviews();
+            var audits = await _auditRepository.GetAuditOverviews();
             if (audits != null && audits.Any())
             {
                 results.AddRange(audits.Select(x => new OverviewDto(x)));
             }
             return results;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteAudit(Guid auditKey)
+        {
+            var result = await _auditRepository.DeleteAuditByKey(auditKey);
+            if (result)
+            {
+                _runtimeCache.Clear(Constants.Cache.Key);
+            }
+            return result;
         }
     }
 }

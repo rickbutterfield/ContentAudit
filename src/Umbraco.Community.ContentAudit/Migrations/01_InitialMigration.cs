@@ -25,6 +25,11 @@ namespace Umbraco.Community.ContentAudit.Migrations
     /// </remarks>
     public class InitialMigration : AsyncMigrationBase
     {
+        /// <summary>
+        /// Initializes a new instance of the migration.
+        /// </summary>
+        /// <param name="context">The migration context.</param>
+        /// <param name="hostEnvironment">The hosting environment.</param>
         public InitialMigration(IMigrationContext context, IHostEnvironment hostEnvironment) : base(context) { }
 
         /// <summary>

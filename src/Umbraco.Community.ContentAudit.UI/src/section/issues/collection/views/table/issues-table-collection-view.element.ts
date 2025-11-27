@@ -1,8 +1,8 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
+import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from '@umbraco-cms/backoffice/components';
 import { css, customElement, html, property, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { IssueDto } from '../../../../../api';
-import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
+import { IssueDto } from '../../../../../api/index';
 
 import './column-layouts/issues-table-name-column-layout.element';
 
@@ -110,7 +110,7 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
                     },
                     {
                         columnAlias: 'percentOfTotal',
-                        value: `${issue.percentOfTotal.toFixed(0)}%`
+                        value: `${issue.percentOfTotal?.toFixed(0)}%`
                     }
                 ]
             }

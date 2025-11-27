@@ -1,10 +1,10 @@
 ﻿import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
 import { tryExecute } from '@umbraco-cms/backoffice/resources';
-import { AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetLatestAuditOverviewResponse, GetPagesWithMissingMetadataResponse, GetCollectionResponse, IssueService } from "../../api";
+import { OverviewDto, AuditService, GetAllIssuesResponse, GetHealthScoreResponse, GetPagesWithMissingMetadataResponse, GetCollectionResponse, IssueService } from "../../api/index";
 
 export interface AuditDataSource {
-    getLatestAuditOverview(): Promise<UmbDataSourceResponse<GetLatestAuditOverviewResponse>>
+    getLatestAuditOverview(): Promise<UmbDataSourceResponse<OverviewDto>>
     getPagesWithMissingMetadata(): Promise<UmbDataSourceResponse<GetPagesWithMissingMetadataResponse>>
     getTopIssues(): Promise<UmbDataSourceResponse<GetAllIssuesResponse>>
     getHealthScore(): Promise<UmbDataSourceResponse<GetHealthScoreResponse>>
@@ -18,8 +18,8 @@ export class ContentAuditDataSource implements AuditDataSource {
         this.#host = host;
     }
 
-    async getLatestAuditOverview(): Promise<UmbDataSourceResponse<GetLatestAuditOverviewResponse>> {
-        return await tryExecute(this.#host, AuditService.getLatestAuditOverview());
+    async getLatestAuditOverview(): Promise<UmbDataSourceResponse<OverviewDto>> {
+        return await tryExecute(this.#host, AuditService.overview());
     }
 
     async getPagesWithMissingMetadata(): Promise<UmbDataSourceResponse<GetPagesWithMissingMetadataResponse>> {

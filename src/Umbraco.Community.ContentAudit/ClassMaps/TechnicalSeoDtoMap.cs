@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="TechnicalSeoDto"/>.
+    /// </summary>
     public class TechnicalSeoDtoMap : ClassMap<TechnicalSeoDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public TechnicalSeoDtoMap()
         {
             Map(m => m.ContentType).Name("Content Type");

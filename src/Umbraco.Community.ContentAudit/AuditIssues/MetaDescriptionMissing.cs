@@ -63,7 +63,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// Gets the properties to expose in the UI for this audit issue.
         /// </summary>
         /// <inheritdoc />
-        public IEnumerable<AuditIssueProperty> ExposedProperties => default;
+        public IEnumerable<AuditIssueProperty>? ExposedProperties => default;
 
         /// <summary>
         /// Checks pages to identify those without meta description tags.

@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="ContentQualityDto"/>.
+    /// </summary>
     public class ContentQualityDtoMap : ClassMap<ContentQualityDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public ContentQualityDtoMap()
         {
             Map(m => m.HasDuplicateContent).Name("Has Duplicate Content");

@@ -10,7 +10,7 @@
     </ItemGroup>
     <!-- Umbraco packages -->
     <PropertyGroup>
-        <UmbracoCmsPackageVersion>[17.0.0, 18)</UmbracoCmsPackageVersion>
+        <UmbracoCmsPackageVersion>[17.0.0, 18.0.0)</UmbracoCmsPackageVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageVersion Include="Umbraco.Cms" Version="$(UmbracoCmsPackageVersion)" />
@@ -23,12 +23,12 @@
     </ItemGroup>
     <!-- Third-party packages -->
     <ItemGroup>
-        <PackageVersion Include="Clean" Version="7.0.0-rc4" />
+        <PackageVersion Include="Clean" Version="7.0.0" />
         <PackageVersion Include="CsvHelper" Version="33.1.0" />
         <PackageVersion Include="Microsoft.Playwright" Version="1.56.0" />
         <PackageVersion Include="CommandLineParser" Version="2.9.1" />
         <PackageVersion Include="NJsonSchema" Version="11.4.0" />
         <PackageVersion Include="NJsonSchema.NewtonsoftJson" Version="11.4.0" />
-        <PackageVersion Include="uSync" Version="17.0.0-rc4" />
+        <PackageVersion Include="uSync" Version="17.0.0" />
     </ItemGroup>
 </Project>

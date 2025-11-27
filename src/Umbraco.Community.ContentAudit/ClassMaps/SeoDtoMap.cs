@@ -3,8 +3,14 @@ using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.ClassMaps
 {
+    /// <summary>
+    /// CSV mapping for <see cref="SeoDto"/>.
+    /// </summary>
     public class SeoDtoMap : ClassMap<SeoDto>
     {
+        /// <summary>
+        /// Configures column mappings.
+        /// </summary>
         public SeoDtoMap()
         {
             Map(x => x.Title).Name("Meta Title");
