@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Schemas;
@@ -8,13 +9,18 @@ namespace Umbraco.Community.ContentAudit.Repositories
     public class AuditRepository : IAuditRepository
     {
         private readonly IScopeProvider _scopeProvider;
+        private readonly ILogger<AuditRepository> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditRepository"/> class
         /// </summary>
         /// <param name="scopeProvider">The Umbraco scope provider for database access</param>
-        public AuditRepository(IScopeProvider scopeProvider)
-            => _scopeProvider = scopeProvider;
+        /// <param name="logger">The logger instance</param>
+        public AuditRepository(IScopeProvider scopeProvider, ILogger<AuditRepository> logger)
+        {
+            _scopeProvider = scopeProvider;
+            _logger = logger;
+        }
 
         /// <inheritdoc/>
         public async Task<Guid?> GetLatestAuditKey()
@@ -237,8 +243,9 @@ namespace Umbraco.Community.ContentAudit.Repositories
                 scope.Complete();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to delete audit {AuditKey}", auditKey);
                 return false;
             }
         }
