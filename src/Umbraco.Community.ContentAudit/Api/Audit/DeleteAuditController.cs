@@ -21,11 +21,11 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         /// <param name="id">Audit unique identifier.</param>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Delete(Guid id)
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete(Guid id)
         {
             var result = await DataService.DeleteAudit(id);
-            return result ? Ok() : NotFound();
+            return result ? Ok() : NotFoundProblem("Audit", id);
         }
     }
 }
