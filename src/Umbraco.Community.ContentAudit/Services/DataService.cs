@@ -15,6 +15,8 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly AuditIssueCollection _auditIssueCollection;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly IEmissionsService _emissionsService;
+        private readonly IReadOnlyList<IAuditPageIssue> _pageIssues;
+        private readonly IReadOnlyList<IAuditImageIssue> _imageIssues;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataService"/> class
@@ -33,6 +35,8 @@ namespace Umbraco.Community.ContentAudit.Services
             _auditIssueCollection = auditIssueCollection;
             _runtimeCache = appCaches.RuntimeCache;
             _emissionsService = emissionsService;
+            _pageIssues = _auditIssueCollection.OfType<IAuditPageIssue>().ToList();
+            _imageIssues = _auditIssueCollection.OfType<IAuditImageIssue>().ToList();
         }
 
         /// <inheritdoc/>
@@ -229,26 +233,21 @@ namespace Umbraco.Community.ContentAudit.Services
                 var page = latestData.FirstOrDefault(x => x.PageData.Unique == unique);
                 if (page != null)
                 {
-                    var pageIssues = _auditIssueCollection.Where(x => x is IAuditPageIssue);
-                    int totalIssues = pageIssues.Count();
+                    int totalIssues = _pageIssues.Count;
 
                     result = page;
                     result.Issues = new();
 
-                    foreach (IAuditPageIssue issue in pageIssues)
+                    var singlePageList = new List<PageAnalysisDto>(1) { page };
+                    foreach (var issue in _pageIssues)
                     {
-                        var issueCheck = issue.CheckPages(new List<PageAnalysisDto>() { page });
+                        var issueCheck = issue.CheckPages(singlePageList);
 
-                        if (issueCheck != null)
+                        if (issueCheck != null && issueCheck.Any())
                         {
-                            var pagesWithIssues = issueCheck?.Count();
-
-                            if (pagesWithIssues != 0)
-                            {
-                                var auditIssue = new IssueDto(issue);
-                                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                                result.Issues.Add(auditIssue);
-                            }
+                            var auditIssue = new IssueDto(issue);
+                            auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                            result.Issues.Add(auditIssue);
                         }
                     }
 
@@ -313,7 +312,7 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 var pageCount = pageData.Count;
 
-                foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
+                foreach (var issue in _pageIssues)
                 {
                     var issueCheck = issue.CheckPages(pageData);
                     var pagesWithIssues = issueCheck?.Count();
@@ -338,7 +337,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 {
                     var imageCount = imageData.Count();
 
-                    foreach (IAuditImageIssue issue in _auditIssueCollection.Where(x => x is IAuditImageIssue))
+                    foreach (var issue in _imageIssues)
                     {
                         var issueCheck = issue.CheckImages(imageData, pageData);
                         var imagesWithIssues = issueCheck?.DistinctBy(x => x.FoundPage).Count() ?? 0;
@@ -476,27 +475,22 @@ namespace Umbraco.Community.ContentAudit.Services
 
             if (data != null && data.Any())
             {
-                foreach (var page in data)
+                result.TotalPages = data.Count;
+
+                var pagesWithErrors = new HashSet<Guid>();
+                foreach (var issue in _pageIssues)
                 {
-                    bool pageHasError = false;
-                    result.TotalPages++;
-
-                    foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
+                    var pagesWithIssue = issue.CheckPages(data);
+                    if (pagesWithIssue != null)
                     {
-                        var issueCheck = issue.CheckPages(new List<PageAnalysisDto>() { page });
-                        if (issueCheck?.Count() == 1)
+                        foreach (var page in pagesWithIssue)
                         {
-                            pageHasError = true;
-                            break;
+                            pagesWithErrors.Add(page.PageData.Unique);
                         }
-                    }
-
-                    if (pageHasError)
-                    {
-                        result.PagesWithErrors++;
                     }
                 }
 
+                result.PagesWithErrors = pagesWithErrors.Count;
                 result.HealthScore = ((double)(result.TotalPages - result.PagesWithErrors) / result.TotalPages) * 100.0;
             }
 
