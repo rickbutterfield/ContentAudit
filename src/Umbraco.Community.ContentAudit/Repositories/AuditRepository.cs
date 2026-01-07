@@ -43,7 +43,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
                 return key;
             }
 
-            return Guid.Empty;
+            return null;
         }
 
         /// <inheritdoc/>
@@ -60,7 +60,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
         }
 
         /// <inheritdoc/>
-        public async Task<OverviewSchema> GetAuditOverview(Guid auditKey)
+        public async Task<OverviewSchema?> GetAuditOverview(Guid auditKey)
         {
             using var scope = _scopeProvider.CreateScope();
 
@@ -69,7 +69,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
 
             scope.Complete();
 
-            return latestAudit.First();
+            return latestAudit.FirstOrDefault();
         }
 
         /// <inheritdoc/>

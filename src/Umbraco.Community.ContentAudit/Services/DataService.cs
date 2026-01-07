@@ -38,8 +38,10 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<OverviewDto> GetAuditOverview(Guid? id = null)
         {
+            id ??= await _auditRepository.GetLatestAuditKey();
+
             if (!id.HasValue)
-                id = await _auditRepository.GetLatestAuditKey();
+                return new OverviewDto();
 
             var overview = await _auditRepository.GetAuditOverview(id.Value);
             if (overview == null)

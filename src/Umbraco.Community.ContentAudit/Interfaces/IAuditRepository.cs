@@ -17,8 +17,8 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// Gets the overview data for a specific audit
         /// </summary>
         /// <param name="auditKey">The unique identifier of the audit</param>
-        /// <returns>Collection of overview schema records</returns>
-        Task<OverviewSchema> GetAuditOverview(Guid auditKey);
+        /// <returns>The overview schema record if found, otherwise null</returns>
+        Task<OverviewSchema?> GetAuditOverview(Guid auditKey);
 
         /// <summary>
         /// Gets all pages associated with a specific audit
