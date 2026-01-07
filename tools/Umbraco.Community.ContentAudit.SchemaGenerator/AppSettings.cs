@@ -17,6 +17,8 @@ namespace Umbraco.Community.ContentAudit.SchemaGenerator
             public int MaxConcurrentCrawls { get; set; } = 4;
 
             public string BaseUrl { get; set; } = string.Empty;
+
+            public int MaxCrawlDurationMinutes { get; set; } = 30;
         }
 
     }

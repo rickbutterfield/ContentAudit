@@ -53,5 +53,11 @@ namespace Umbraco.Community.ContentAudit.Configuration
         /// </summary>
         [DefaultValue("")]
         public string BaseUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Maximum duration in minutes for a crawl operation. Set to 0 for no limit.
+        /// </summary>
+        [DefaultValue(30)]
+        public int MaxCrawlDurationMinutes { get; set; } = 30;
     }
 }

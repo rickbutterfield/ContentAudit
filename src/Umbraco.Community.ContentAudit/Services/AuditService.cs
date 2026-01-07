@@ -117,10 +117,21 @@ namespace Umbraco.Community.ContentAudit.Services
                 : _requestHandlerSettings.AddTrailingSlash ? baseUrl.EnsureEndsWith('/') : baseUrl;
 
             var umbracoApplicationUrl = _webRoutingSettings.UmbracoApplicationUrl;
-            
+
             if (string.IsNullOrEmpty(_baseUrl))
             {
                 throw new ArgumentException("Base URL must be provided either through configuration or as a parameter", nameof(baseUrl));
+            }
+
+            using var timeoutCts = _contentAuditSettings.MaxCrawlDurationMinutes > 0
+                ? new CancellationTokenSource(TimeSpan.FromMinutes(_contentAuditSettings.MaxCrawlDurationMinutes))
+                : new CancellationTokenSource();
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+            var linkedToken = linkedCts.Token;
+
+            if (_contentAuditSettings.MaxCrawlDurationMinutes > 0)
+            {
+                _logger.LogInformation("Crawl timeout set to {0} minutes", _contentAuditSettings.MaxCrawlDurationMinutes);
             }
 
             _baseUri = new Uri(_baseUrl);
@@ -144,11 +155,11 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             var processUrlBlock = new ActionBlock<UrlQueueItem>(
-                async queueItem => await ProcessUrlAsync(queueItem, _baseUri, cancellationToken),
+                async queueItem => await ProcessUrlAsync(queueItem, _baseUri, linkedToken),
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = _contentAuditSettings.MaxConcurrentCrawls,
-                    CancellationToken = cancellationToken,
+                    CancellationToken = linkedToken,
                     BoundedCapacity = 100
                 });
 
@@ -161,7 +172,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
                     {
                         _logger.LogInformation("Processing initial URL from queue: {0}", queueItem.Url);
-                        await processUrlBlock.SendAsync(queueItem, cancellationToken);
+                        await processUrlBlock.SendAsync(queueItem, linkedToken);
                     }
 
                     int emptyChecks = 0;
@@ -172,7 +183,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
                         {
                             _logger.LogInformation("Processing newly discovered URL: {0}", queueItem.Url);
-                            await processUrlBlock.SendAsync(queueItem, cancellationToken);
+                            await processUrlBlock.SendAsync(queueItem, linkedToken);
                             emptyChecks = 0;
                         }
 
@@ -188,12 +199,12 @@ namespace Umbraco.Community.ContentAudit.Services
                                 break;
                             }
 
-                            await Task.Delay(5000, cancellationToken);
+                            await Task.Delay(5000, linkedToken);
                         }
                         else
                         {
                             emptyChecks = 0;
-                            await Task.Delay(100, cancellationToken);
+                            await Task.Delay(100, linkedToken);
                         }
                     }
 
@@ -208,7 +219,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 {
                     processUrlBlock.Complete();
                 }
-            }, cancellationToken);
+            }, linkedToken);
 
             var completionTask = Task.Run(async () =>
             {
@@ -222,15 +233,21 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     _crawlResultsChannel.Writer.Complete();
                 }
+                catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+                {
+                    _logger.LogWarning("Crawl timed out after {0} minutes", _contentAuditSettings.MaxCrawlDurationMinutes);
+                    await SaveCrawlResults();
+                    _crawlResultsChannel.Writer.Complete();
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error during completion");
                     _crawlResultsChannel.Writer.Complete(ex);
                     throw;
                 }
-            }, cancellationToken);
+            }, linkedToken);
 
-            await foreach (var result in _crawlResultsChannel.Reader.ReadAllAsync(cancellationToken))
+            await foreach (var result in _crawlResultsChannel.Reader.ReadAllAsync(linkedToken))
                 yield return result;
 
             await completionTask;
