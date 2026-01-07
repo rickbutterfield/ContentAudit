@@ -6,7 +6,7 @@ namespace Umbraco.Community.ContentAudit.Interfaces
     /// <summary>
     /// Service for crawling and analyzing web pages
     /// </summary>
-    public interface ICrawlService
+    public interface ICrawlService : IAsyncDisposable
     {
         /// <summary>
         /// Analyzes a web page and returns detailed analysis data

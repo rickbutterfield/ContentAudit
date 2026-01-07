@@ -4,6 +4,7 @@ using OpenIddict.Validation.AspNetCore;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Community.ContentAudit.Api;
 using Umbraco.Community.ContentAudit.Authorization;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
@@ -44,6 +45,9 @@ namespace Umbraco.Community.ContentAudit
             builder.Services.AddScoped<IAuditService, AuditService>();
             builder.Services.AddScoped<IEmissionsService, EmissionsService>();
             builder.Services.AddScoped<IValidationService, ValidationService>();
+
+            // Register global exception handler for API endpoints
+            builder.Services.AddExceptionHandler<ContentAuditExceptionHandler>();
 
             // Register Playwright as a singleton
             builder.Services.AddSingleton<IPlaywright>(_ => Playwright.CreateAsync().GetAwaiter().GetResult());

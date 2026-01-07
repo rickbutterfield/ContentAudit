@@ -13,11 +13,11 @@ using Umbraco.Community.ContentAudit.Extensions;
 namespace Umbraco.Community.ContentAudit.Services
 {
     /// <inheritdoc/>
-    public class CrawlService : ICrawlService, IDisposable
+    public class CrawlService : ICrawlService, IAsyncDisposable, IDisposable
     {
         private readonly ILogger<CrawlService> _logger;
         private readonly IPlaywright _playwright;
-        private readonly IBrowser _browser;
+        private readonly Lazy<Task<IBrowser>> _browserLazy;
         private readonly IValidationService _validationService;
         private bool _disposed;
         private Uri? _baseUri;
@@ -37,10 +37,28 @@ namespace Umbraco.Community.ContentAudit.Services
             _playwright = playwright;
             _validationService = validationService;
 
-            _browser = _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            _browserLazy = new Lazy<Task<IBrowser>>(() =>
+                _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+                {
+                    Headless = true
+                }));
+        }
+
+        private Task<IBrowser> GetBrowserAsync() => _browserLazy.Value;
+
+        /// <inheritdoc/>
+        public async ValueTask DisposeAsync()
+        {
+            if (!_disposed)
             {
-                Headless = true
-            }).GetAwaiter().GetResult();
+                if (_browserLazy.IsValueCreated)
+                {
+                    var browser = await _browserLazy.Value;
+                    await browser.DisposeAsync();
+                }
+                _disposed = true;
+            }
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -48,24 +66,15 @@ namespace Umbraco.Community.ContentAudit.Services
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Protected implementation of Dispose pattern.
-        /// </summary>
-        /// <param name="disposing">True if disposing managed resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
             if (!_disposed)
             {
-                if (disposing)
+                if (_browserLazy.IsValueCreated && _browserLazy.Value.IsCompletedSuccessfully)
                 {
-                    _browser?.DisposeAsync().GetAwaiter().GetResult();
+                    _browserLazy.Value.Result.DisposeAsync().AsTask().GetAwaiter().GetResult();
                 }
                 _disposed = true;
             }
+            GC.SuppressFinalize(this);
         }
 
         /// <inheritdoc/>
@@ -75,7 +84,8 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 _baseUri = baseUri;
 
-                var page = await _browser.NewPageAsync();
+                var browser = await GetBrowserAsync();
+                var page = await browser.NewPageAsync();
                 var startTime = DateTime.UtcNow;
 
                 var pageAnalysis = new PageAnalysisDto() { Unique = nodeKey, EntityType = "document" };
