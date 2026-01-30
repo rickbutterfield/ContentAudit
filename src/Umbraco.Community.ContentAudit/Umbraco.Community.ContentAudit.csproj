@@ -24,6 +24,7 @@
 
     <ItemGroup>
         <PackageReference Include="CsvHelper" />
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
         <PackageReference Include="Microsoft.Playwright" />
         <PackageReference Include="Umbraco.Cms.Core" />
         <PackageReference Include="Umbraco.Cms.Web.Common" />

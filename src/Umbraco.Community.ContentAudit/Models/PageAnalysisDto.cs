@@ -124,5 +124,20 @@ namespace Umbraco.Community.ContentAudit.Models
         /// This includes estimated environmental impact metrics using the Sustainable Web Design methodology.
         /// </remarks>
         public EmissionsDto EmissionsData { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the content hash for incremental crawl detection.
+        /// </summary>
+        public string? ContentHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ETag header value from the HTTP response.
+        /// </summary>
+        public string? ETag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last-Modified header value from the HTTP response.
+        /// </summary>
+        public DateTime? LastModified { get; set; }
     }
 } 

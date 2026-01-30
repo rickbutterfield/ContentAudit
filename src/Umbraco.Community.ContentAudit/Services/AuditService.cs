@@ -1,30 +1,26 @@
-﻿using Examine;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using System.Threading.Tasks.Dataflow;
-using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Configuration.Models;
-using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.Routing;
-using Umbraco.Cms.Infrastructure.Examine;
-using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
+using Umbraco.Community.ContentAudit.Extensions;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
-using Umbraco.Community.ContentAudit.Schemas;
 using Umbraco.Extensions;
-using static Umbraco.Cms.Core.Constants;
 
 namespace Umbraco.Community.ContentAudit.Services
 {
     /// <inheritdoc />
     public class AuditService : IAuditService
     {
+        private const int EmptyQueueCheckDelayMs = 5000;
+        private const int QueuePollingDelayMs = 100;
+
         private string? _baseUrl;
         private Uri? _baseUri;
 
@@ -33,6 +29,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ConcurrentDictionary<string, byte> _visitedUrls = new();
         private readonly ConcurrentDictionary<string, byte> _robotsDisallowedPaths = new();
         private readonly ConcurrentDictionary<string, CrawlDto> _crawlResults = new();
+        private readonly ConcurrentDictionary<string, HeadResponseDto> _headResponseCache = new();
 
         private readonly HashSet<KeyValuePair<Guid, string>> _umbracoContent = new();
 
@@ -48,26 +45,38 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ConcurrentBag<SocialMediaDto> _socialMediaDtos = new();
         private readonly ConcurrentBag<ContentQualityDto> _contentQualityDtos = new();
 
-        private readonly IScopeProvider _scopeProvider;
-        private readonly IExamineManager _examineManager;
-        private readonly IPublishedUrlProvider _urlProvider;
-        private readonly ISitemapService _sitemapService;
         private readonly IRobotsService _robotsService;
         private readonly ICrawlService _crawlService;
+        private readonly ICrawlResultPersistence _persistence;
         private readonly ILogger<AuditService> _logger;
-        private readonly IAppPolicyCache _runtimeCache;
         private readonly WebRoutingSettings _webRoutingSettings;
         private readonly AuditIssueCollection _auditIssueCollection;
+        private readonly IEnumerable<IUrlDiscoveryStrategy> _urlDiscoveryStrategies;
 
         private readonly Channel<CrawlDto> _crawlResultsChannel;
         private readonly SemaphoreSlim _crawlSemaphore;
         private int _isDiscoveryComplete;
 
+        private Guid _currentAuditKey;
+        private volatile int _pagesSinceLastFlush;
+        private const int FlushThreshold = 50;
+
+        private Dictionary<string, PageFingerprintDto> _previousFingerprints = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentBag<PageFingerprintDto> _newFingerprints = new();
+
+        // Circuit breaker for repeated failures
+        private readonly ConcurrentDictionary<string, int> _pathFailureCounts = new();
+        private readonly ConcurrentDictionary<string, byte> _trippedPaths = new();
+        private const int CircuitBreakerThreshold = 5;
+
+        // Crawl delay (from config or robots.txt)
+        private int _effectiveCrawlDelayMs;
+
         /// <summary>
         /// Gets the content audit settings
         /// </summary>
         public ContentAuditSettings _contentAuditSettings { get; private set; }
-        
+
         /// <summary>
         /// Gets the request handler settings
         /// </summary>
@@ -80,27 +89,20 @@ namespace Umbraco.Community.ContentAudit.Services
             IOptionsMonitor<ContentAuditSettings> contentAuditSettings,
             IOptionsMonitor<RequestHandlerSettings> requestHandlerSettings,
             IOptionsMonitor<WebRoutingSettings> webRoutingSettings,
-            IScopeProvider scopeProvider,
-            IExamineManager examineManager,
-            IPublishedUrlProvider urlProvider,
-            ISitemapService sitemapService,
             IRobotsService robotsService,
             ICrawlService pageScanningService,
+            ICrawlResultPersistence persistence,
             AuditIssueCollection auditIssueCollection,
             ILogger<AuditService> logger,
-            HttpClient httpClient,
-            AppCaches appCaches)
+            IEnumerable<IUrlDiscoveryStrategy> urlDiscoveryStrategies)
         {
-            _scopeProvider = scopeProvider;
-            _examineManager = examineManager;
-            _urlProvider = urlProvider;
-            _sitemapService = sitemapService;
             _robotsService = robotsService;
             _crawlService = pageScanningService;
+            _persistence = persistence;
             _auditIssueCollection = auditIssueCollection;
             _logger = logger;
-            _runtimeCache = appCaches.RuntimeCache;
             _webRoutingSettings = webRoutingSettings.CurrentValue;
+            _urlDiscoveryStrategies = urlDiscoveryStrategies;
 
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
@@ -136,12 +138,44 @@ namespace Umbraco.Community.ContentAudit.Services
 
             _baseUri = new Uri(_baseUrl);
             Interlocked.Exchange(ref _isDiscoveryComplete, 0);
+            _pagesSinceLastFlush = 0;
 
-            await GetSitemap();
-            await GetRobots();
+            var existingAuditKey = await _persistence.GetIncompleteAuditAsync(_baseUrl, linkedToken);
+            if (existingAuditKey.HasValue)
+            {
+                _currentAuditKey = existingAuditKey.Value;
+                _logger.LogInformation("Resuming incomplete audit {AuditKey}", _currentAuditKey);
 
-            LoadUmbracoContentUrls();
-            QueueUmbracoContent();
+                var state = await _persistence.LoadCrawlStateAsync(_currentAuditKey, linkedToken);
+                if (state != null)
+                {
+                    foreach (var url in state.VisitedUrls)
+                        _visitedUrls.TryAdd(url, 0);
+
+                    foreach (var item in state.PendingUrls)
+                        _urlQueue.Enqueue(item);
+
+                    foreach (var path in state.DisallowedPaths)
+                        _robotsDisallowedPaths.TryAdd(path, 0);
+
+                    _logger.LogInformation("Restored state: {VisitedCount} visited, {PendingCount} pending",
+                        state.VisitedUrls.Count(), state.PendingUrls.Count());
+                }
+            }
+            else
+            {
+                _currentAuditKey = await _persistence.CreateAuditAsync(_baseUrl, linkedToken);
+                _logger.LogInformation("Created new audit {AuditKey}", _currentAuditKey);
+
+                await DiscoverInitialUrlsAsync(linkedToken);
+                await GetRobots();
+            }
+
+            if (_contentAuditSettings.UseIncrementalCrawl)
+            {
+                _previousFingerprints = await _persistence.GetPageFingerprintsAsync(_baseUrl, linkedToken);
+                _logger.LogInformation("Loaded {Count} fingerprints for incremental crawl", _previousFingerprints.Count);
+            }
 
             if (_urlQueue.IsEmpty)
             {
@@ -150,7 +184,8 @@ namespace Umbraco.Community.ContentAudit.Services
                     Url = _baseUrl,
                     IsExternal = false,
                     IsAsset = false,
-                    Unique = Guid.Empty
+                    Unique = Guid.Empty,
+                    Depth = 0 // Starting URL is depth 0
                 });
             }
 
@@ -199,12 +234,12 @@ namespace Umbraco.Community.ContentAudit.Services
                                 break;
                             }
 
-                            await Task.Delay(5000, linkedToken);
+                            await Task.Delay(EmptyQueueCheckDelayMs, linkedToken);
                         }
                         else
                         {
                             emptyChecks = 0;
-                            await Task.Delay(100, linkedToken);
+                            await Task.Delay(QueuePollingDelayMs, linkedToken);
                         }
                     }
 
@@ -242,6 +277,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error during completion");
+                    await _persistence.FailAuditAsync(_currentAuditKey);
                     _crawlResultsChannel.Writer.Complete(ex);
                     throw;
                 }
@@ -265,6 +301,12 @@ namespace Umbraco.Community.ContentAudit.Services
                 await _crawlSemaphore.WaitAsync(cancellationToken);
                 semaphoreAcquired = true;
 
+                // Apply crawl delay if configured
+                if (_effectiveCrawlDelayMs > 0)
+                {
+                    await Task.Delay(_effectiveCrawlDelayMs, cancellationToken);
+                }
+
                 _logger.LogInformation("Started processing URL: {0}", url);
 
                 var crawlResultKey = $"{url}|{isExternal}|{isAsset}";
@@ -281,12 +323,28 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 if (_crawlResults.TryAdd(crawlResultKey, crawlResult))
                 {
-                    if (!IsDisallowed(url))
+                    if (IsCircuitBroken(url))
+                    {
+                        crawlResult.Blocked = true;
+                        crawlResult.Crawled = false;
+                        _logger.LogInformation("Skipping URL due to circuit breaker: {0}", url);
+                    }
+                    else if (!IsDisallowed(url))
                     {
                         if (!isAsset && !isExternal && _visitedUrls.TryAdd(url, 0))
                         {
-                            crawlResult = await CrawlInternalUrl(url, baseUri);
+                            crawlResult = await CrawlInternalUrl(url, baseUri, queueItem.Depth);
                             _crawlResults[crawlResultKey] = crawlResult;
+
+                            // Update circuit breaker based on result
+                            if (crawlResult.Crawled && crawlResult.Unique != Guid.Empty)
+                            {
+                                RecordSuccess(url);
+                            }
+                            else if (!crawlResult.Crawled || crawlResult.Unique == Guid.Empty)
+                            {
+                                RecordFailure(url);
+                            }
                         }
 
                         crawlResult.Crawled = true;
@@ -298,6 +356,15 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
                     _logger.LogInformation("Writing crawl result for URL: {0}", url);
                     await _crawlResultsChannel.Writer.WriteAsync(crawlResult, cancellationToken);
+
+                    if (!isAsset && !isExternal)
+                    {
+                        Interlocked.Increment(ref _pagesSinceLastFlush);
+                        if (_pagesSinceLastFlush >= FlushThreshold)
+                        {
+                            await SaveCrawlStateAsync();
+                        }
+                    }
                 }
                 else
                 {
@@ -307,6 +374,7 @@ namespace Umbraco.Community.ContentAudit.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing URL: {0}", url);
+                RecordFailure(url);
             }
             finally
             {
@@ -318,11 +386,41 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
-        private async Task<CrawlDto> CrawlInternalUrl(string url, Uri baseUri)
+        private async Task<CrawlDto> CrawlInternalUrl(string url, Uri baseUri, int currentDepth)
         {
-            _logger.LogInformation("Starting internal crawl: {0}", url);
+            _logger.LogInformation("Starting internal crawl: {0} (depth: {1})", url, currentDepth);
 
             var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == (_requestHandlerSettings.AddTrailingSlash ? url.EnsureEndsWith('/') : url));
+
+            if (_contentAuditSettings.UseIncrementalCrawl && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
+            {
+                var changeCheck = await _crawlService.CheckPageChangedAsync(url, previousFingerprint);
+                if (!changeCheck.HasChanged)
+                {
+                    _logger.LogInformation("Page {Url} unchanged, skipping full crawl", url);
+
+                    _newFingerprints.Add(new PageFingerprintDto
+                    {
+                        Url = url,
+                        ContentHash = changeCheck.NewContentHash ?? previousFingerprint.ContentHash,
+                        ETag = changeCheck.NewETag ?? previousFingerprint.ETag,
+                        LastModified = changeCheck.NewLastModified ?? previousFingerprint.LastModified,
+                        UmbracoUpdateDate = previousFingerprint.UmbracoUpdateDate
+                    });
+
+                    return new CrawlDto
+                    {
+                        Url = url,
+                        Crawled = true,
+                        Asset = false,
+                        External = false,
+                        Blocked = false,
+                        Unique = matchingUmbracoNode.Key,
+                        Skipped = true
+                    };
+                }
+            }
+
             var pageAnalysis = await _crawlService.GetPageAnalysis(url, baseUri, matchingUmbracoNode.Key);
             if (pageAnalysis == null)
             {
@@ -342,7 +440,8 @@ namespace Umbraco.Community.ContentAudit.Services
                         IsExternal = false,
                         IsAsset = false,
                         SourceUrl = url,
-                        Unique = matchingUmbracoNode.Key
+                        Unique = matchingUmbracoNode.Key,
+                        Depth = currentDepth // Redirects keep same depth
                     };
 
                     EnqueueUrl(urlQueueItem);
@@ -355,6 +454,31 @@ namespace Umbraco.Community.ContentAudit.Services
             if (pageAnalysis.SeoData != null)
             {
                 _seoDtos.Add(pageAnalysis.SeoData);
+
+                // Follow canonical URL if it's different and internal
+                if (!string.IsNullOrEmpty(pageAnalysis.SeoData.CanonicalUrl) &&
+                    pageAnalysis.SeoData.CanonicalUrl != url)
+                {
+                    if (Uri.TryCreate(_baseUri, pageAnalysis.SeoData.CanonicalUrl, out var canonicalUri))
+                    {
+                        var canonicalUrl = canonicalUri.AbsoluteUri;
+                        bool isCanonicalExternal = canonicalUri.Host != baseUri.Host;
+
+                        if (!isCanonicalExternal)
+                        {
+                            _logger.LogInformation("Following canonical URL: {Canonical} from page {Url}", canonicalUrl, url);
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = canonicalUrl,
+                                IsExternal = false,
+                                IsAsset = false,
+                                SourceUrl = url,
+                                Unique = matchingUmbracoNode.Key,
+                                Depth = currentDepth // Canonical keeps same depth
+                            });
+                        }
+                    }
+                }
             }
 
             if (pageAnalysis.ContentAnalysis != null)
@@ -401,8 +525,12 @@ namespace Umbraco.Community.ContentAudit.Services
 
                         _logger.LogInformation("Processing discovered link: {0} from page {1}", absoluteUrl, url);
 
-                        var existingLinkDto = _linkDtos.FirstOrDefault(x => x.Url == absoluteUrl);
-                        if (existingLinkDto == null)
+                        if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
+                        {
+                            link.StatusCode = cachedResponse.StatusCode;
+                            link.ContentType = cachedResponse.ContentType;
+                        }
+                        else
                         {
                             var headResponse = await _crawlService.GetHeadResponse(absoluteUrl);
 
@@ -410,12 +538,8 @@ namespace Umbraco.Community.ContentAudit.Services
                             {
                                 link.StatusCode = headResponse.StatusCode;
                                 link.ContentType = headResponse.ContentType;
+                                _headResponseCache.TryAdd(absoluteUrl, headResponse);
                             }
-                        }
-                        else
-                        {
-                            link.StatusCode = existingLinkDto.StatusCode;
-                            link.ContentType = existingLinkDto.ContentType;
                         }
 
                         link.Url = absoluteUrl;
@@ -427,7 +551,8 @@ namespace Umbraco.Community.ContentAudit.Services
                             IsExternal = isExternal,
                             IsAsset = false,
                             SourceUrl = url,
-                            Unique = matchingUmbracoNode.Key
+                            Unique = matchingUmbracoNode.Key,
+                            Depth = currentDepth + 1 // Links are one level deeper
                         };
 
                         EnqueueUrl(urlQueueItem);
@@ -444,8 +569,13 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     _logger.LogInformation("Processing discovered resource: {0} from page {1}", absoluteUrl, url);
 
-                    var existingResourceDto = _resourceDtos.FirstOrDefault(x => x.Url == absoluteUrl);
-                    if (existingResourceDto == null)
+                    if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
+                    {
+                        resource.StatusCode = cachedResponse.StatusCode;
+                        resource.ContentType = cachedResponse.ContentType;
+                        resource.Size = cachedResponse.ContentLength;
+                    }
+                    else
                     {
                         var headResponse = await _crawlService.GetHeadResponse(absoluteUrl);
 
@@ -454,13 +584,8 @@ namespace Umbraco.Community.ContentAudit.Services
                             resource.StatusCode = headResponse.StatusCode;
                             resource.ContentType = headResponse.ContentType;
                             resource.Size = headResponse.ContentLength;
+                            _headResponseCache.TryAdd(absoluteUrl, headResponse);
                         }
-                    }
-                    else
-                    {
-                        resource.StatusCode = existingResourceDto.StatusCode;
-                        resource.ContentType = existingResourceDto.ContentType;
-                        resource.Size = existingResourceDto.Size;
                     }
 
                     _resourceDtos.Add(resource);
@@ -471,7 +596,8 @@ namespace Umbraco.Community.ContentAudit.Services
                         IsExternal = isExternal,
                         IsAsset = true,
                         SourceUrl = url,
-                        Unique = matchingUmbracoNode.Key
+                        Unique = matchingUmbracoNode.Key,
+                        Depth = currentDepth + 1 // Resources are one level deeper
                     };
 
                     EnqueueUrl(urlQueueItem);
@@ -482,6 +608,18 @@ namespace Umbraco.Community.ContentAudit.Services
             foreach (var image in pageAnalysis.Images)
             {
                 _imageDtos.Add(image);
+            }
+
+            if (_contentAuditSettings.UseIncrementalCrawl)
+            {
+                _newFingerprints.Add(new PageFingerprintDto
+                {
+                    Url = url,
+                    ContentHash = pageAnalysis.ContentHash,
+                    ETag = pageAnalysis.ETag,
+                    LastModified = pageAnalysis.LastModified,
+                    UmbracoUpdateDate = matchingUmbracoNode.Key != Guid.Empty ? DateTime.Now : null
+                });
             }
 
             return new CrawlDto
@@ -497,31 +635,33 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private void EnqueueUrl(UrlQueueItem item)
         {
+            // Normalize URL for consistent comparison and deduplication
             if (item.IsAsset)
             {
-                var uri = new Uri(item.Url, UriKind.RelativeOrAbsolute);
-                if (uri.IsAbsoluteUri)
-                {
-                    var uriBuilder = new UriBuilder(uri)
-                    {
-                        Query = string.Empty
-                    };
-                    item.Url = uriBuilder.Uri.ToString();
-                }
-                else
-                {
-                    int queryIndex = item.Url.IndexOf('?');
-                    if (queryIndex >= 0)
-                    {
-                        item.Url = item.Url.Substring(0, queryIndex);
-                    }
-                }
+                // Assets: remove query strings and normalize
+                item.Url = item.Url.NormalizeUrlWithoutQuery(_requestHandlerSettings.AddTrailingSlash);
+            }
+            else
+            {
+                // Pages: normalize but preserve query strings (may be meaningful)
+                item.Url = item.Url.NormalizeUrl(_requestHandlerSettings.AddTrailingSlash);
             }
 
-            var fragmentIndex = item.Url.IndexOf('#');
-            if (fragmentIndex >= 0)
+            // Check URL pattern exclusions (only for internal URLs)
+            if (!item.IsExternal && item.Url.ShouldExcludeUrl(
+                _contentAuditSettings.ExcludePatterns,
+                _contentAuditSettings.IncludePatterns))
             {
-                item.Url = item.Url.Substring(0, fragmentIndex);
+                _logger.LogInformation("Skipping URL due to pattern exclusion: {0}", item.Url);
+                return;
+            }
+
+            // Check max crawl depth (0 = unlimited)
+            if (_contentAuditSettings.MaxCrawlDepth > 0 && item.Depth > _contentAuditSettings.MaxCrawlDepth)
+            {
+                _logger.LogInformation("Skipping URL due to depth limit ({Depth} > {MaxDepth}): {Url}",
+                    item.Depth, _contentAuditSettings.MaxCrawlDepth, item.Url);
+                return;
             }
 
             _urlQueue.Enqueue(item);
@@ -531,111 +671,77 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private async Task SaveCrawlResults()
         {
-            using var scope = _scopeProvider.CreateScope();
+            await FlushDataToDatabase();
 
-            var pagesCrawledCount = _pageDtos.Count();
+            if (_contentAuditSettings.UseIncrementalCrawl && _newFingerprints.Any())
+            {
+                await _persistence.SavePageFingerprintsAsync(_currentAuditKey, _newFingerprints);
+                _logger.LogInformation("Saved {Count} page fingerprints for incremental crawl", _newFingerprints.Count);
+            }
 
-            var internalLinks = _linkDtos.Where(x => !x.IsExternal).DistinctBy(x => x.Url);
-            var externalLinks = _linkDtos.Where(x => x.IsExternal).DistinctBy(x => x.Url);
-            var externalLinkCount = externalLinks.Count();
+            // Calculate totals from _crawlResults which includes ALL processed URLs (including skipped)
+            var allCrawlResults = _crawlResults.Values.ToList();
 
-            var assetUrls = _resourceDtos.DistinctBy(x => x.Url);
-            var assetUrlsCount = assetUrls.Count();
+            var internalCount = allCrawlResults.Count(x => !x.External && !x.Asset && !x.Blocked);
+            var externalCount = allCrawlResults.Count(x => x.External && !x.Asset);
+            var assetCount = allCrawlResults.Count(x => x.Asset);
+            var blockedCount = allCrawlResults.Count(x => x.Blocked);
 
-            var disallowedUrlsCount = _robotsDisallowedPaths.Count;
+            var totalUrls = internalCount + externalCount + assetCount + blockedCount;
 
-            var totalUrls = pagesCrawledCount + externalLinkCount + assetUrlsCount + disallowedUrlsCount;
+            var metadata = new AuditMetadata(
+                TotalUrls: totalUrls,
+                TotalInternal: internalCount,
+                TotalExternal: externalCount,
+                TotalAssets: assetCount,
+                TotalBlocked: blockedCount);
 
-            // Calculate health score before saving
+            await _persistence.UpdateAuditTotalsAsync(_currentAuditKey, metadata);
+
             double healthScore = await CalculateHealthScore();
+            await _persistence.CompleteAuditAsync(_currentAuditKey, healthScore);
+            await _persistence.DeleteCrawlStateAsync(_currentAuditKey);
+        }
 
-            var overview = new OverviewSchema
-            {
-                Key = Guid.NewGuid(),
-                RunDate = DateTime.Now,
-                Total = totalUrls,
-                TotalInternal = pagesCrawledCount,
-                TotalExternal = externalLinkCount,
-                TotalAssets = assetUrlsCount,
-                TotalBlocked = disallowedUrlsCount,
-                HealthScore = healthScore
-            };
+        private async Task FlushDataToDatabase()
+        {
+            var pages = _pageDtos.ToList();
+            var seoData = _seoDtos.ToList();
+            var contentAnalysis = _contentAnalysisDtos.ToList();
+            var performance = _performanceDtos.ToList();
+            var accessibility = _accessibilityDtos.ToList();
+            var technicalSeo = _technicalSeoDtos.ToList();
+            var socialMedia = _socialMediaDtos.ToList();
+            var contentQuality = _contentQualityDtos.ToList();
+            var images = _imageDtos.ToList();
+            var resources = _resourceDtos.ToList();
+            var links = _linkDtos.ToList();
 
-            await scope.Database.InsertAsync(overview);
+            var internalLinks = links.Where(x => !x.IsExternal).DistinctBy(x => x.Url).ToList();
 
-            // Use the Guid Key from the overview as the audit identifier
-            var auditKey = overview.Key;
+            await _persistence.SavePagesAsync(_currentAuditKey, pages);
+            await _persistence.SaveSeoDataAsync(_currentAuditKey, seoData, internalLinks);
+            await _persistence.SaveContentAnalysisAsync(_currentAuditKey, contentAnalysis);
+            await _persistence.SavePerformanceAsync(_currentAuditKey, performance);
+            await _persistence.SaveAccessibilityAsync(_currentAuditKey, accessibility);
+            await _persistence.SaveTechnicalSeoAsync(_currentAuditKey, technicalSeo);
+            await _persistence.SaveSocialMediaAsync(_currentAuditKey, socialMedia);
+            await _persistence.SaveContentQualityAsync(_currentAuditKey, contentQuality);
+            await _persistence.SaveImagesAsync(_currentAuditKey, images);
+            await _persistence.SaveResourcesAsync(_currentAuditKey, resources);
+            await _persistence.SaveLinksAsync(_currentAuditKey, links);
 
-            foreach (var seoData in _seoDtos)
-            {
-                seoData.AuditKey = auditKey;
+            _pagesSinceLastFlush = 0;
+        }
 
-                seoData.IsOrphaned = internalLinks.Any(x => seoData.Url?.Contains(x.Url!) == true) == false;
-                await scope.Database.InsertAsync(new SeoSchema(seoData));
-            }
+        private async Task SaveCrawlStateAsync()
+        {
+            var state = new CrawlState(
+                _visitedUrls.Keys,
+                _urlQueue.ToArray(),
+                _robotsDisallowedPaths.Keys);
 
-            foreach (var contentAnalysisData in _contentAnalysisDtos)
-            {
-                contentAnalysisData.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new ContentAnalysisSchema(contentAnalysisData));
-            }
-
-            foreach (var performanceData in _performanceDtos)
-            {
-                performanceData.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new PerformanceSchema(performanceData));
-            }
-
-            foreach (var accessibilityData in _accessibilityDtos)
-            {
-                accessibilityData.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new AccessibilitySchema(accessibilityData));
-            }
-
-            foreach (var technicalSeoData in _technicalSeoDtos)
-            {
-                technicalSeoData.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new TechnicalSeoSchema(technicalSeoData));
-            }
-
-            foreach (var socialMediaData in _socialMediaDtos)
-            {
-                socialMediaData.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new SocialMediaSchema(socialMediaData));
-            }
-
-            foreach (var contentQualityData in _contentQualityDtos)
-            {
-                contentQualityData.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new ContentQualitySchema(contentQualityData));
-            }
-
-            foreach (var page in _pageDtos)
-            {
-                await scope.Database.InsertAsync(new PageSchema(page, auditKey));
-            }
-
-            foreach (var image in _imageDtos)
-            {
-                image.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new ImageSchema(image));
-            }
-
-            foreach (var resource in _resourceDtos)
-            {
-                resource.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new ResourceSchema(resource));
-            }
-
-            foreach (var link in _linkDtos)
-            {
-                link.AuditKey = auditKey;
-                await scope.Database.InsertAsync(new LinkSchema(link));
-            }
-
-            scope.Complete();
-
-            _runtimeCache.Clear(Constants.Cache.Key);
+            await _persistence.SaveCrawlStateAsync(_currentAuditKey, state);
         }
 
         private async Task<double> CalculateHealthScore()
@@ -693,100 +799,137 @@ namespace Umbraco.Community.ContentAudit.Services
             return healthScore;
         }
 
-        private async Task GetSitemap()
+        private async Task DiscoverInitialUrlsAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Should we attempt to use sitemap.xml? {0}", _contentAuditSettings.UseSitemapXml);
-            if (_contentAuditSettings.UseSitemapXml)
+            var orderedStrategies = _urlDiscoveryStrategies.OrderByDescending(s => s.Priority);
+            var discoveredUrls = new Dictionary<string, DiscoveredUrl>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var strategy in orderedStrategies)
             {
-                var sitemapUrls = await _sitemapService.GetSitemapUrlAsync(_baseUrl!);
-                sitemapUrls.ForEach(x =>
+                _logger.LogInformation("Running URL discovery strategy: {Name} (Priority: {Priority})", strategy.Name, strategy.Priority);
+
+                try
                 {
+                    var urls = await strategy.DiscoverUrlsAsync(_baseUrl!, cancellationToken);
+
+                    foreach (var discoveredUrl in urls)
+                    {
+                        var normalizedUrl = _requestHandlerSettings.AddTrailingSlash
+                            ? discoveredUrl.Url.EnsureEndsWith('/')
+                            : discoveredUrl.Url;
+
+                        if (!discoveredUrls.ContainsKey(normalizedUrl))
+                        {
+                            discoveredUrls[normalizedUrl] = discoveredUrl;
+                        }
+                    }
+
+                    _logger.LogInformation("Strategy {Name} discovered {Count} URLs", strategy.Name, urls.Count());
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error running URL discovery strategy: {Name}", strategy.Name);
+                }
+            }
+
+            foreach (var kvp in discoveredUrls)
+            {
+                var discoveredUrl = kvp.Value;
+
+                if (discoveredUrl.ContentId.HasValue)
+                {
+                    _umbracoContent.Add(new KeyValuePair<Guid, string>(discoveredUrl.ContentId.Value, kvp.Key));
+                }
+
+                if (Uri.TryCreate(_baseUri, discoveredUrl.Url, out var absoluteUri))
+                {
+                    var absoluteUrl = absoluteUri.AbsoluteUri;
+
                     EnqueueUrl(new UrlQueueItem
                     {
-                        Url = x,
+                        Url = absoluteUrl,
                         IsExternal = false,
-                        IsAsset = false
+                        IsAsset = false,
+                        Unique = discoveredUrl.ContentId ?? Guid.Empty,
+                        Depth = 0 // Seed URLs start at depth 0
                     });
-                    _logger.LogInformation("Adding {0} to the URL queue from sitemap.xml", x);
-                });
+
+                    _logger.LogInformation("Adding {Url} to the URL queue from discovery strategy", absoluteUrl);
+                }
             }
-            else
-            {
-                EnqueueUrl(new UrlQueueItem
-                {
-                    Url = _baseUrl!,
-                    IsExternal = false,
-                    IsAsset = false
-                });
-                _logger.LogInformation("Adding {0} to the URL queue", _baseUrl);
-            }
+
+            _logger.LogInformation("URL discovery complete. Total unique URLs: {Count}", discoveredUrls.Count);
         }
 
         private async Task GetRobots()
         {
             _logger.LogInformation("Should we attempt to use robots.txt? {0}", _contentAuditSettings.RespectRobotsTxt);
+            // Start with configured crawl delay
+            _effectiveCrawlDelayMs = _contentAuditSettings.CrawlDelayMs;
+
             if (_contentAuditSettings.RespectRobotsTxt)
             {
                 var robotsDisallowedUrls = await _robotsService.GetDisallowedPathsAsync(_baseUrl!);
                 if (robotsDisallowedUrls != null && robotsDisallowedUrls?.Any() == true)
                     robotsDisallowedUrls.ForEach(x => _robotsDisallowedPaths.TryAdd(x, 0));
-            }
-        }
 
-        private void QueueUmbracoContent()
-        {
-            _logger.LogInformation("Should we attempt to use Umbraco's content index? {0}", _contentAuditSettings.UseUmbracoContentIndex);
-            if (_contentAuditSettings.UseUmbracoContentIndex)
-            {
-                foreach (var (key, url) in _umbracoContent)
+                // Honor Crawl-delay from robots.txt (takes precedence over config)
+                var robotsCrawlDelay = await _robotsService.GetCrawlDelayAsync(_baseUrl!);
+                if (robotsCrawlDelay.HasValue)
                 {
-                    if (Uri.TryCreate(_baseUri, url, out var absoluteUri))
-                    {
-                        var absoluteUrl = absoluteUri.AbsoluteUri;
-
-                        if (!_visitedUrls.ContainsKey(absoluteUrl) && !IsDisallowed(absoluteUrl))
-                        {
-                            EnqueueUrl(new UrlQueueItem
-                            {
-                                Url = absoluteUrl,
-                                IsExternal = false,
-                                IsAsset = false,
-                                Unique = key
-                            });
-
-                            _logger.LogInformation("Adding {0} to the URL queue from Umbraco content index", absoluteUrl);
-                        }
-                    }
+                    _effectiveCrawlDelayMs = Math.Max(_effectiveCrawlDelayMs, robotsCrawlDelay.Value);
+                    _logger.LogInformation("Using Crawl-delay from robots.txt: {DelayMs}ms", robotsCrawlDelay.Value);
                 }
             }
-        }
 
-        private void LoadUmbracoContentUrls()
-        {
-            if (_examineManager.TryGetIndex(UmbracoIndexes.InternalIndexName, out var contentIndex))
+            if (_effectiveCrawlDelayMs > 0)
             {
-                var searcher = contentIndex.Searcher;
-
-                var query = searcher.CreateQuery("content").NativeQuery("+__IndexType:content");
-                var results = query.Execute();
-
-                foreach (var result in results)
-                {
-                    if (result.Values.TryGetValue(UmbracoExamineFieldNames.NodeKeyFieldName, out var keyString) &&
-                    Guid.TryParse(keyString, out var key) &&
-                    result.Values.TryGetValue(UmbracoExamineFieldNames.ItemIdFieldName, out var idString) &&
-                    int.TryParse(idString, out var nodeId))
-                    {
-                        var url = _urlProvider.GetUrl(nodeId, UrlMode.Absolute);
-
-                        if (!string.IsNullOrEmpty(url))
-                            _umbracoContent.Add(new KeyValuePair<Guid, string>(key, url));
-                    }
-                }
+                _logger.LogInformation("Effective crawl delay: {DelayMs}ms", _effectiveCrawlDelayMs);
             }
         }
 
         private bool IsDisallowed(string url) =>
             _robotsDisallowedPaths.Keys.Any(disallowed => url.StartsWith(disallowed, StringComparison.OrdinalIgnoreCase));
+
+        private static string GetPathPrefix(string url)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                return url;
+
+            var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length == 0)
+                return "/";
+
+            // Use first two path segments as the prefix (e.g., "/blog/posts" or "/products")
+            var prefixSegments = segments.Take(Math.Min(2, segments.Length));
+            return "/" + string.Join("/", prefixSegments);
+        }
+
+        private bool IsCircuitBroken(string url)
+        {
+            var prefix = GetPathPrefix(url);
+            return _trippedPaths.ContainsKey(prefix);
+        }
+
+        private void RecordSuccess(string url)
+        {
+            var prefix = GetPathPrefix(url);
+            _pathFailureCounts.TryRemove(prefix, out _);
+        }
+
+        private void RecordFailure(string url)
+        {
+            var prefix = GetPathPrefix(url);
+            var count = _pathFailureCounts.AddOrUpdate(prefix, 1, (_, c) => c + 1);
+
+            if (count >= CircuitBreakerThreshold)
+            {
+                if (_trippedPaths.TryAdd(prefix, 0))
+                {
+                    _logger.LogWarning("Circuit breaker tripped for path prefix: {Prefix} after {Count} consecutive failures",
+                        prefix, count);
+                }
+            }
+        }
     }
 }

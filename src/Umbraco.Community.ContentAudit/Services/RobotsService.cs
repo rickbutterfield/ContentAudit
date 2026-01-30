@@ -58,6 +58,23 @@ namespace Umbraco.Community.ContentAudit.Services
             return sitemapUrls;
         }
 
+        /// <inheritdoc/>
+        public async Task<int?> GetCrawlDelayAsync(string baseUrl)
+        {
+            string robotsUrl = $"{baseUrl.TrimEnd('/')}/robots.txt";
+
+            try
+            {
+                string robotsContent = await _httpClient.GetStringAsync(robotsUrl);
+                return ParseCrawlDelay(robotsContent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not fetch robots.txt from {RobotsUrl} for Crawl-delay.", robotsUrl);
+                return null;
+            }
+        }
+
         /// <summary>
         /// Parses the content of a robots.txt file to extract disallowed paths.
         /// </summary>
@@ -115,6 +132,31 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return sitemapList;
+        }
+
+        /// <summary>
+        /// Parses the content of a robots.txt file to extract the Crawl-delay value.
+        /// </summary>
+        /// <param name="content">The raw content of the robots.txt file.</param>
+        /// <returns>Crawl delay in milliseconds, or null if not specified.</returns>
+        private int? ParseCrawlDelay(string content)
+        {
+            var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("Crawl-delay:", StringComparison.OrdinalIgnoreCase))
+                {
+                    string value = line.Substring(12).Trim();
+                    if (double.TryParse(value, out double seconds))
+                    {
+                        // Convert seconds to milliseconds
+                        return (int)(seconds * 1000);
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

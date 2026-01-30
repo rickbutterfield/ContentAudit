@@ -1,20 +1,18 @@
-import { UmbTreeServerDataSourceBase as s, UmbTreeRepositoryBase as n } from "@umbraco-cms/backoffice/tree";
-import { A as r, b as a, c as i } from "./index.js";
-class u extends s {
+import { UmbTreeServerDataSourceBase as n, UmbTreeRepositoryBase as a } from "@umbraco-cms/backoffice/tree";
+import { A as r, b as o, c as i } from "./index.js";
+class u extends n {
   constructor(t) {
     super(t, {
-      getRootItems: o,
+      getRootItems: s,
       getChildrenOf: d,
       getAncestorsOf: c,
-      mapper: p
+      mapper: l
     });
   }
 }
-const o = () => r.root({}), d = (e) => e.parent.unique === null ? o() : r.children({
+const s = () => r.root({}), d = (e) => e.parent.unique === null ? s() : r.children({
   path: { parentId: e.parent.unique }
-}), c = () => {
-  throw new Error("Not supported for the forms tree");
-}, p = (e) => {
+}), c = () => Promise.resolve({ data: [] }), l = (e) => {
   var t;
   return {
     unique: e.id,
@@ -24,12 +22,12 @@ const o = () => r.root({}), d = (e) => e.parent.unique === null ? o() : r.childr
     },
     name: e.name,
     icon: "icon-dashboard",
-    entityType: a,
+    entityType: o,
     isFolder: e.isFolder,
     hasChildren: e.hasChildren
   };
 };
-class f extends n {
+class m extends a {
   constructor(t) {
     super(t, u);
   }
@@ -46,7 +44,7 @@ class f extends n {
   }
 }
 export {
-  f as AuditAuditsTreeRepository,
-  f as api
+  m as AuditAuditsTreeRepository,
+  m as api
 };
 //# sourceMappingURL=audits-tree.repository.js.map

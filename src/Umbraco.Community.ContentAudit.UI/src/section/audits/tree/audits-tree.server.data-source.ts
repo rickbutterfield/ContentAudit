@@ -33,7 +33,9 @@ const getChildrenOf = (args: UmbTreeChildrenOfRequestArgs) => {
 }
 
 const getAncestorsOf = () => {
-    throw new Error("Not supported for the forms tree");
+    // Audits are flat (direct children of root), so they have no ancestors
+    // The root is fetched separately by the menu structure context
+    return Promise.resolve({ data: [] });
 };
 
 const mapper = (item: AuditTreeItemResponseModel): AuditAuditsTreeItemModel => {

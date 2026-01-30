@@ -18,5 +18,12 @@
         /// <param name="baseUrl">The base URL of the website</param>
         /// <returns>List of sitemap URLs found in robots.txt</returns>
         Task<List<string>> GetSitemapUrlsAsync(string baseUrl);
+
+        /// <summary>
+        /// Gets the Crawl-delay directive value from robots.txt
+        /// </summary>
+        /// <param name="baseUrl">The base URL of the website</param>
+        /// <returns>Crawl delay in milliseconds, or null if not specified</returns>
+        Task<int?> GetCrawlDelayAsync(string baseUrl);
     }
 }

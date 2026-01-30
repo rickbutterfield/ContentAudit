@@ -74,7 +74,9 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
             migrationPlan.From(string.Empty)
                 .To<InitialMigration>("contentaudit-init")
                 .To<AddHealthScoreMigration>("contentaudit-add-healthscore")
-                .To<MigrateToAuditKeyMigration>("contentaudit-migrate-to-auditkey");
+                .To<MigrateToAuditKeyMigration>("contentaudit-migrate-to-auditkey")
+                .To<AddCrawlStateMigration>("contentaudit-add-crawlstate")
+                .To<AddPageFingerprintMigration>("contentaudit-add-pagefingerprint");
 
             var upgrader = new Upgrader(migrationPlan);
             await upgrader.ExecuteAsync(

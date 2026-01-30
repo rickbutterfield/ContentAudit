@@ -4,11 +4,8 @@
     {
         internal const string Alias = "ContentAudit";
         internal const string Name = "Audit";
-#if !NET9_0
-        internal const string SectionAlias = "audit";
-#else
+        internal const string HttpClientName = "ContentAuditCrawler";
         internal const string SectionAlias = "Umb.Section.ContentAudit";
-#endif
         internal const string MetadataTreeAlias = "contentMetadata";
 
         internal class Trees

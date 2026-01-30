@@ -52,5 +52,14 @@
         /// This GUID is used to uniquely identify this queue item instance and prevent duplicate processing.
         /// </remarks>
         public Guid Unique { get; set; }
+
+        /// <summary>
+        /// Gets or sets the crawl depth of this URL from the starting point.
+        /// </summary>
+        /// <remarks>
+        /// Depth 0 represents the initial seed URLs. Each subsequent level of discovered links increments the depth.
+        /// Used to enforce maximum crawl depth limits.
+        /// </remarks>
+        public int Depth { get; set; }
     }
 }

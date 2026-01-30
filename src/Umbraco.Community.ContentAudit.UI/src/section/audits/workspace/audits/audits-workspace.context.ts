@@ -2,11 +2,13 @@ import { UmbContextBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbContextToken } from "@umbraco-cms/backoffice/context-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { UmbWorkspaceRouteManager } from "@umbraco-cms/backoffice/workspace";
-import { UmbArrayState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
+import { UmbArrayState, UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
 import { CONTENT_AUDIT_AUDITS_WORKSPACE_ALIAS } from "../constants";
 import ContentAuditAuditsWorkspaceEditorElement from "./audits-workspace-editor.element";
 import { OverviewDto, AuditService, IssueDto, IssueService } from "../../../../api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
+import type { UmbEntityModel } from "@umbraco-cms/backoffice/entity";
+import { AUDIT_AUDITS_ENTITY_TYPE } from "../../entity";
 
 export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 
@@ -19,6 +21,18 @@ export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 	readonly issues = this.#issues.asObservable();
 
 	readonly unique = this.#data.asObservablePart((data) => data?.key);
+
+	// Required for UMB_SUBMITTABLE_TREE_ENTITY_WORKSPACE_CONTEXT
+	#entityType = new UmbStringState(AUDIT_AUDITS_ENTITY_TYPE);
+	readonly entityType = this.#entityType.asObservable();
+
+	#isNew = new UmbBooleanState(false);
+	readonly isNew = this.#isNew.asObservable();
+
+	#createUnderParent = new UmbObjectState<UmbEntityModel | undefined>(undefined);
+	readonly _internal_createUnderParent = this.#createUnderParent.asObservable();
+	readonly _internal_createUnderParentEntityType = this.#createUnderParent.asObservablePart((p) => p?.entityType);
+	readonly _internal_createUnderParentEntityUnique = this.#createUnderParent.asObservablePart((p) => p?.unique);
 
 	readonly routes = new UmbWorkspaceRouteManager(this);
 
@@ -35,6 +49,23 @@ export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 				},
 			},
 		]);
+	}
+
+	// Required for UMB_SUBMITTABLE_TREE_ENTITY_WORKSPACE_CONTEXT (read-only, so no-op)
+	async requestSubmit(): Promise<void> {
+		// Read-only workspace, nothing to submit
+	}
+
+	getIsNew(): boolean {
+		return this.#isNew.getValue();
+	}
+
+	_internal_getCreateUnderParent(): UmbEntityModel | undefined {
+		return this.#createUnderParent.getValue();
+	}
+
+	_internal_setCreateUnderParent(parent: UmbEntityModel | undefined): void {
+		this.#createUnderParent.setValue(parent);
 	}
 
 	async load(unique: string) {

@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
+using Polly;
+using Polly.Retry;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Umbraco.Community.ContentAudit.Enums;
@@ -13,79 +17,65 @@ using Umbraco.Community.ContentAudit.Extensions;
 namespace Umbraco.Community.ContentAudit.Services
 {
     /// <inheritdoc/>
-    public class CrawlService : ICrawlService, IAsyncDisposable, IDisposable
+    public class CrawlService : ICrawlService
     {
+        private const int MaxRetryAttempts = 3;
+        private static readonly TimeSpan InitialRetryDelay = TimeSpan.FromSeconds(1);
+
         private readonly ILogger<CrawlService> _logger;
-        private readonly IPlaywright _playwright;
-        private readonly Lazy<Task<IBrowser>> _browserLazy;
+        private readonly IBrowserPagePool _pagePool;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IValidationService _validationService;
-        private bool _disposed;
+        private readonly ResiliencePipeline _playwrightRetryPipeline;
         private Uri? _baseUri;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrawlService"/> class
         /// </summary>
         /// <param name="logger">The logger for diagnostic information</param>
-        /// <param name="playwright">The Playwright instance for browser automation</param>
+        /// <param name="pagePool">The browser page pool for page reuse</param>
+        /// <param name="httpClientFactory">The HTTP client factory for making HTTP requests</param>
         /// <param name="validationService">The validation service for HTML validation</param>
         public CrawlService(
             ILogger<CrawlService> logger,
-            IPlaywright playwright,
+            IBrowserPagePool pagePool,
+            IHttpClientFactory httpClientFactory,
             IValidationService validationService)
         {
             _logger = logger;
-            _playwright = playwright;
+            _pagePool = pagePool;
+            _httpClientFactory = httpClientFactory;
             _validationService = validationService;
 
-            _browserLazy = new Lazy<Task<IBrowser>>(() =>
-                _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            _playwrightRetryPipeline = new ResiliencePipelineBuilder()
+                .AddRetry(new RetryStrategyOptions
                 {
-                    Headless = true
-                }));
-        }
-
-        private Task<IBrowser> GetBrowserAsync() => _browserLazy.Value;
-
-        /// <inheritdoc/>
-        public async ValueTask DisposeAsync()
-        {
-            if (!_disposed)
-            {
-                if (_browserLazy.IsValueCreated)
-                {
-                    var browser = await _browserLazy.Value;
-                    await browser.DisposeAsync();
-                }
-                _disposed = true;
-            }
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Disposes of the browser resources used by this service.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                if (_browserLazy.IsValueCreated && _browserLazy.Value.IsCompletedSuccessfully)
-                {
-                    _browserLazy.Value.Result.DisposeAsync().AsTask().GetAwaiter().GetResult();
-                }
-                _disposed = true;
-            }
-            GC.SuppressFinalize(this);
+                    MaxRetryAttempts = MaxRetryAttempts,
+                    Delay = InitialRetryDelay,
+                    BackoffType = DelayBackoffType.Exponential,
+                    UseJitter = true,
+                    ShouldHandle = new PredicateBuilder().Handle<PlaywrightException>().Handle<TimeoutException>(),
+                    OnRetry = args =>
+                    {
+                        _logger.LogWarning("Playwright retry attempt {AttemptNumber} after {Delay}ms for {Exception}",
+                            args.AttemptNumber, args.RetryDelay.TotalMilliseconds, args.Outcome.Exception?.Message);
+                        return ValueTask.CompletedTask;
+                    }
+                })
+                .Build();
         }
 
         /// <inheritdoc/>
         public async Task<PageAnalysisDto?> GetPageAnalysis(string url, Uri baseUri, Guid nodeKey)
         {
+            IPage? page = null;
+            bool pageInBadState = false;
+
             try
             {
                 _baseUri = baseUri;
 
-                var browser = await GetBrowserAsync();
-                var page = await browser.NewPageAsync();
+                page = await _pagePool.AcquireAsync();
                 var startTime = DateTime.UtcNow;
 
                 var pageAnalysis = new PageAnalysisDto() { Unique = nodeKey, EntityType = "document" };
@@ -131,11 +121,12 @@ namespace Umbraco.Community.ContentAudit.Services
                     await route.ContinueAsync();
                 });
 
-                // Navigate to the page and wait for network idle
-                var response = await page.GotoAsync(url, new PageGotoOptions
-                {
-                    WaitUntil = WaitUntilState.NetworkIdle
-                });
+                // Navigate to the page and wait for network idle (with retry)
+                var response = await _playwrightRetryPipeline.ExecuteAsync(async ct =>
+                    await page.GotoAsync(url, new PageGotoOptions
+                    {
+                        WaitUntil = WaitUntilState.NetworkIdle
+                    }));
 
                 var endTime = DateTime.UtcNow;
 
@@ -166,6 +157,8 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
 
                 string contentType = response.Headers.TryGetValue("content-type", out var ct) ? ct : string.Empty;
+                string? eTag = response.Headers.TryGetValue("etag", out var etag) ? etag?.Trim('"') : null;
+                DateTime? lastModified = response.Headers.TryGetValue("last-modified", out var lm) && DateTime.TryParse(lm, out var parsedLm) ? parsedLm : null;
 
                 if (!response.Ok)
                 {
@@ -468,22 +461,66 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 await analysisData;
 
-                await page.CloseAsync();
+                // Set fingerprint data for incremental crawl support
+                // Use raw HTTP content for hash (not Playwright-rendered DOM) to ensure consistency with fallback checks
+                pageAnalysis.ETag = eTag;
+                pageAnalysis.LastModified = lastModified;
+                pageAnalysis.ContentHash = await GetRawContentHashAsync(url);
+
                 return pageAnalysis;
+            }
+            catch (PlaywrightException ex)
+            {
+                _logger.LogWarning(ex, "Playwright error analyzing page {0}, falling back to HttpClient", url);
+                pageInBadState = true;
+                return await GetPageAnalysisFallbackAsync(url, nodeKey);
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogWarning(ex, "Timeout analyzing page {0}, falling back to HttpClient", url);
+                pageInBadState = true;
+                return await GetPageAnalysisFallbackAsync(url, nodeKey);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error analyzing page {0}", url);
-                return new PageAnalysisDto();
+                return await GetPageAnalysisFallbackAsync(url, nodeKey);
+            }
+            finally
+            {
+                if (page != null)
+                {
+                    if (pageInBadState)
+                    {
+                        try
+                        {
+                            if (!page.IsClosed)
+                                await page.CloseAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Error closing bad state page");
+                        }
+                    }
+                    else
+                    {
+                        await _pagePool.ReleaseAsync(page);
+                    }
+                }
             }
         }
 
         private bool IsExternalUrl(string? url)
         {
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url) || _baseUri == null)
                 return false;
 
-            return !url.StartsWith(_baseUri?.AbsolutePath!);
+            if (Uri.TryCreate(_baseUri, url, out var absoluteUri))
+            {
+                return absoluteUri.Host != _baseUri.Host;
+            }
+
+            return !url.StartsWith(_baseUri.AbsoluteUri);
         }
 
         private int CountWords(string text)
@@ -861,7 +898,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             try
             {
-                using var httpClient = new HttpClient();
+                using var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
                 var request = new HttpRequestMessage(HttpMethod.Head, url);
                 var response = await httpClient.SendAsync(request);
 
@@ -880,6 +917,332 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<PageChangeCheckResult> CheckPageChangedAsync(string url, PageFingerprintDto? previousFingerprint)
+        {
+            if (previousFingerprint == null)
+            {
+                return new PageChangeCheckResult(true, null, null);
+            }
+
+            try
+            {
+                using var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+                var request = new HttpRequestMessage(HttpMethod.Head, url);
+
+                if (!string.IsNullOrEmpty(previousFingerprint.ETag))
+                {
+                    request.Headers.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue($"\"{previousFingerprint.ETag}\"", true));
+                }
+
+                if (previousFingerprint.LastModified.HasValue)
+                {
+                    request.Headers.IfModifiedSince = previousFingerprint.LastModified.Value;
+                }
+
+                var response = await httpClient.SendAsync(request);
+
+                if (response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    _logger.LogDebug("Page {Url} not modified (304 response)", url);
+                    return new PageChangeCheckResult(false, previousFingerprint.ETag, previousFingerprint.LastModified, previousFingerprint.ContentHash);
+                }
+
+                var newETag = response.Headers.ETag?.Tag?.Trim('"');
+                var newLastModified = response.Content.Headers.LastModified?.DateTime;
+
+                if (!string.IsNullOrEmpty(previousFingerprint.ETag) && !string.IsNullOrEmpty(newETag))
+                {
+                    if (previousFingerprint.ETag == newETag)
+                    {
+                        _logger.LogDebug("Page {Url} not modified (same ETag)", url);
+                        return new PageChangeCheckResult(false, newETag, newLastModified, previousFingerprint.ContentHash);
+                    }
+                }
+
+                if (previousFingerprint.LastModified.HasValue && newLastModified.HasValue)
+                {
+                    if (newLastModified <= previousFingerprint.LastModified)
+                    {
+                        _logger.LogDebug("Page {Url} not modified (same or older LastModified)", url);
+                        return new PageChangeCheckResult(false, newETag, newLastModified, previousFingerprint.ContentHash);
+                    }
+                }
+
+                // Fallback: if no reliable HTTP headers, use content hash comparison
+                if (string.IsNullOrEmpty(newETag) && !newLastModified.HasValue && !string.IsNullOrEmpty(previousFingerprint.ContentHash))
+                {
+                    _logger.LogDebug("No HTTP caching headers for {Url}, falling back to content hash comparison", url);
+                    return await CheckPageChangedByContentHashAsync(url, previousFingerprint.ContentHash);
+                }
+
+                _logger.LogDebug("Page {Url} has changed", url);
+                return new PageChangeCheckResult(true, newETag, newLastModified);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error checking if page changed for {Url}, assuming changed", url);
+                return new PageChangeCheckResult(true, null, null);
+            }
+        }
+
+        private async Task<PageChangeCheckResult> CheckPageChangedByContentHashAsync(string url, string previousContentHash)
+        {
+            try
+            {
+                using var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+                var response = await httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogDebug("Failed to fetch {Url} for content hash comparison, assuming changed", url);
+                    return new PageChangeCheckResult(true, null, null);
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var newContentHash = ComputeContentHash(content);
+
+                if (newContentHash == previousContentHash)
+                {
+                    _logger.LogDebug("Page {Url} not modified (same content hash)", url);
+                    return new PageChangeCheckResult(false, null, null, newContentHash);
+                }
+
+                _logger.LogDebug("Page {Url} has changed (different content hash)", url);
+                return new PageChangeCheckResult(true, null, null, newContentHash);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error checking content hash for {Url}, assuming changed", url);
+                return new PageChangeCheckResult(true, null, null);
+            }
+        }
+
+        private async Task<string?> GetRawContentHashAsync(string url)
+        {
+            try
+            {
+                using var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+                var content = await httpClient.GetStringAsync(url);
+                return ComputeContentHash(content);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to fetch raw content for hash computation: {Url}", url);
+                return null;
+            }
+        }
+
+        private async Task<PageAnalysisDto?> GetPageAnalysisFallbackAsync(string url, Guid nodeKey)
+        {
+            _logger.LogInformation("Using HttpClient fallback for page analysis: {Url}", url);
+
+            try
+            {
+                using var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+                var response = await httpClient.GetAsync(url);
+
+                var pageAnalysis = new PageAnalysisDto
+                {
+                    Unique = nodeKey,
+                    EntityType = "document"
+                };
+
+                pageAnalysis.PageData = new PageDto
+                {
+                    Url = url,
+                    StatusCode = (int)response.StatusCode,
+                    Unique = nodeKey
+                };
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return pageAnalysis;
+                }
+
+                var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
+                if (!contentType.Contains("text/html"))
+                {
+                    pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
+                    {
+                        Url = url,
+                        ContentType = contentType
+                    };
+                    return pageAnalysis;
+                }
+
+                var html = await response.Content.ReadAsStringAsync();
+
+                // Parse basic SEO data using regex
+                pageAnalysis.SeoData = new SeoDto
+                {
+                    Url = url,
+                    Title = ExtractHtmlValue(html, @"<title[^>]*>([^<]*)</title>"),
+                    MetaDescription = ExtractMetaContent(html, "description"),
+                    H1 = ExtractHtmlValue(html, @"<h1[^>]*>([^<]*)</h1>"),
+                    CanonicalUrl = ExtractLinkHref(html, "canonical"),
+                    HasNoIndex = html.Contains("noindex", StringComparison.OrdinalIgnoreCase),
+                    HasNoFollow = html.Contains("nofollow", StringComparison.OrdinalIgnoreCase),
+                    OpenGraphTitle = ExtractMetaContent(html, "og:title", "property"),
+                    OpenGraphDescription = ExtractMetaContent(html, "og:description", "property"),
+                    OpenGraphImage = ExtractMetaContent(html, "og:image", "property")
+                };
+
+                // Extract links
+                pageAnalysis.Links = ExtractLinks(html, url);
+
+                // Extract images
+                pageAnalysis.Images = ExtractImages(html, url, nodeKey);
+
+                // Technical SEO data
+                var eTag = response.Headers.ETag?.Tag?.Trim('"');
+                var lastModified = response.Content.Headers.LastModified?.DateTime;
+
+                pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
+                {
+                    Url = url,
+                    ContentType = contentType,
+                    HasGzipCompression = response.Content.Headers.ContentEncoding.Contains("gzip"),
+                    HasBrowserCaching = response.Headers.CacheControl?.MaxAge != null,
+                    HasHttps = url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                };
+
+                pageAnalysis.ETag = eTag;
+                pageAnalysis.LastModified = lastModified;
+                pageAnalysis.ContentHash = ComputeContentHash(html);
+
+                _logger.LogInformation("HttpClient fallback completed for {Url}", url);
+                return pageAnalysis;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "HttpClient fallback failed for {Url}", url);
+                return new PageAnalysisDto
+                {
+                    Unique = nodeKey,
+                    EntityType = "document",
+                    PageData = new PageDto { Url = url, StatusCode = 0, Unique = nodeKey }
+                };
+            }
+        }
+
+        private static string ExtractHtmlValue(string html, string pattern)
+        {
+            var match = Regex.Match(html, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            return match.Success ? match.Groups[1].Value.Trim() : "";
+        }
+
+        private static string ExtractMetaContent(string html, string name, string attribute = "name")
+        {
+            var pattern = $@"<meta\s+{attribute}=""{Regex.Escape(name)}""[^>]*content=""([^""]*)""";
+            var match = Regex.Match(html, pattern, RegexOptions.IgnoreCase);
+            if (match.Success) return match.Groups[1].Value;
+
+            // Try reverse order (content before name)
+            pattern = $@"<meta\s+content=""([^""]*)""[^>]*{attribute}=""{Regex.Escape(name)}""";
+            match = Regex.Match(html, pattern, RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups[1].Value : "";
+        }
+
+        private static string ExtractLinkHref(string html, string rel)
+        {
+            var pattern = $@"<link\s+rel=""{Regex.Escape(rel)}""[^>]*href=""([^""]*)""";
+            var match = Regex.Match(html, pattern, RegexOptions.IgnoreCase);
+            if (match.Success) return match.Groups[1].Value;
+
+            // Try reverse order
+            pattern = $@"<link\s+href=""([^""]*)""[^>]*rel=""{Regex.Escape(rel)}""";
+            match = Regex.Match(html, pattern, RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups[1].Value : "";
+        }
+
+        private List<LinkDto> ExtractLinks(string html, string pageUrl)
+        {
+            var links = new List<LinkDto>();
+            var matches = Regex.Matches(html, @"<a\s+[^>]*href=""([^""]*)""", RegexOptions.IgnoreCase);
+
+            foreach (Match match in matches)
+            {
+                var href = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(href) || href.StartsWith("mailto:") || href.StartsWith("javascript:"))
+                    continue;
+
+                links.Add(new LinkDto
+                {
+                    Url = href,
+                    FoundPage = pageUrl,
+                    IsExternal = IsExternalUrl(href)
+                });
+            }
+
+            return links;
+        }
+
+        private List<ImageDto> ExtractImages(string html, string pageUrl, Guid nodeKey)
+        {
+            var images = new List<ImageDto>();
+            var matches = Regex.Matches(html, @"<img\s+[^>]*src=""([^""]*)""[^>]*(alt=""([^""]*)"")?", RegexOptions.IgnoreCase);
+
+            foreach (Match match in matches)
+            {
+                var src = match.Groups[1].Value;
+                var alt = match.Groups.Count > 3 ? match.Groups[3].Value : "";
+
+                images.Add(new ImageDto(new ResourceDto
+                {
+                    Url = src,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(src)
+                })
+                {
+                    AltText = alt
+                });
+            }
+
+            return images;
+        }
+
+        /// <inheritdoc/>
+        public string ComputeContentHash(string content)
+        {
+            if (string.IsNullOrEmpty(content))
+                return string.Empty;
+
+            var normalizedContent = NormalizeHtmlForHashing(content);
+            var bytes = Encoding.UTF8.GetBytes(normalizedContent);
+            var hash = SHA256.HashData(bytes);
+            return Convert.ToHexString(hash).ToLowerInvariant();
+        }
+
+        private static string NormalizeHtmlForHashing(string html)
+        {
+            // Remove HTML comments
+            html = Regex.Replace(html, @"<!--.*?-->", string.Empty, RegexOptions.Singleline);
+
+            // Remove anti-forgery/CSRF tokens (ASP.NET, Umbraco)
+            html = Regex.Replace(html, @"<input[^>]*name=""__RequestVerificationToken""[^>]*>", string.Empty, RegexOptions.IgnoreCase);
+            html = Regex.Replace(html, @"<input[^>]*name=""ufprt""[^>]*>", string.Empty, RegexOptions.IgnoreCase);
+
+            // Remove CSP nonces
+            html = Regex.Replace(html, @"\s*nonce=""[^""]*""", string.Empty, RegexOptions.IgnoreCase);
+
+            // Remove cache-busting query strings on assets
+            html = Regex.Replace(html, @"(\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot))\?[^""'\s>]*", "$1", RegexOptions.IgnoreCase);
+
+            // Remove data-* attributes that might contain dynamic values
+            html = Regex.Replace(html, @"\s*data-token=""[^""]*""", string.Empty, RegexOptions.IgnoreCase);
+            html = Regex.Replace(html, @"\s*data-session[^=]*=""[^""]*""", string.Empty, RegexOptions.IgnoreCase);
+            html = Regex.Replace(html, @"\s*data-nonce=""[^""]*""", string.Empty, RegexOptions.IgnoreCase);
+
+            // Normalize whitespace
+            html = Regex.Replace(html, @"\s+", " ");
+            html = Regex.Replace(html, @">\s+<", "><");
+            html = html.Trim();
+
+            return html;
         }
     }
 }

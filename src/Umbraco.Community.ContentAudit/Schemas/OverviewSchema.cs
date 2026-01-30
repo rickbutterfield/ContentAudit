@@ -62,8 +62,32 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public double HealthScore { get; set; }
 
         /// <summary>
+        /// Gets or sets the audit status (0 = InProgress, 1 = Completed, 2 = Failed)
+        /// </summary>
+        public int Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the base URL being audited
+        /// </summary>
+        [NullSetting(NullSetting = NullSettings.Null)]
+        public string? BaseUrl { get; set; }
+
+        /// <summary>
         /// Gets the creation date in UTC
         /// </summary>
         public DateTime CreatedDate => DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Audit status values
+    /// </summary>
+    public enum AuditStatus
+    {
+        /// <summary>Audit is in progress</summary>
+        InProgress = 0,
+        /// <summary>Audit completed successfully</summary>
+        Completed = 1,
+        /// <summary>Audit failed or was cancelled</summary>
+        Failed = 2
     }
 }

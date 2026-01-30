@@ -40,9 +40,8 @@ namespace Umbraco.Community.ContentAudit.Configuration
         /// <summary>
         /// Optional absolute URL to a sitemap to crawl.
         /// </summary>
-        [DefaultValue("")]
-        [Url(ErrorMessage = "SitemapUrl must be a valid URL")]
-        public string SitemapUrl { get; set; } = "";
+        [OptionalUrl(ErrorMessage = "SitemapUrl must be a valid URL")]
+        public string? SitemapUrl { get; set; }
 
         /// <summary>
         /// Maximum number of concurrent crawl tasks.
@@ -54,9 +53,8 @@ namespace Umbraco.Community.ContentAudit.Configuration
         /// <summary>
         /// Base URL for the site under audit.
         /// </summary>
-        [DefaultValue("")]
-        [Url(ErrorMessage = "BaseUrl must be a valid URL")]
-        public string BaseUrl { get; set; } = string.Empty;
+        [OptionalUrl(ErrorMessage = "BaseUrl must be a valid URL")]
+        public string? BaseUrl { get; set; }
 
         /// <summary>
         /// Maximum duration in minutes for a crawl operation. Set to 0 for no limit.
@@ -64,5 +62,38 @@ namespace Umbraco.Community.ContentAudit.Configuration
         [DefaultValue(30)]
         [Range(0, 1440, ErrorMessage = "MaxCrawlDurationMinutes must be between 0 and 1440 (24 hours)")]
         public int MaxCrawlDurationMinutes { get; set; } = 30;
+
+        /// <summary>
+        /// Whether to use incremental crawls (only re-crawl changed pages).
+        /// </summary>
+        [DefaultValue(true)]
+        public bool UseIncrementalCrawl { get; set; } = true;
+
+        /// <summary>
+        /// URL patterns to exclude from crawling. Supports wildcards (* and **).
+        /// Examples: "/admin/*", "*/api/**", "*.pdf"
+        /// </summary>
+        public List<string> ExcludePatterns { get; set; } = new();
+
+        /// <summary>
+        /// URL patterns to include in crawling. If specified, only matching URLs will be crawled.
+        /// Supports wildcards (* and **). Examples: "/blog/*", "/products/**"
+        /// </summary>
+        public List<string> IncludePatterns { get; set; } = new();
+
+        /// <summary>
+        /// Delay in milliseconds between crawl requests. Set to 0 for no delay.
+        /// This can be overridden by robots.txt Crawl-delay directive if RespectRobotsTxt is enabled.
+        /// </summary>
+        [DefaultValue(0)]
+        [Range(0, 60000, ErrorMessage = "CrawlDelayMs must be between 0 and 60000 (60 seconds)")]
+        public int CrawlDelayMs { get; set; } = 0;
+
+        /// <summary>
+        /// Maximum crawl depth from the starting URL. Set to 0 for unlimited depth.
+        /// </summary>
+        [DefaultValue(0)]
+        [Range(0, 100, ErrorMessage = "MaxCrawlDepth must be between 0 and 100")]
+        public int MaxCrawlDepth { get; set; } = 0;
     }
 }

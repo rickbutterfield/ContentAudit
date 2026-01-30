@@ -6,6 +6,12 @@ using Umbraco.Community.ContentAudit.Schemas;
 namespace Umbraco.Community.ContentAudit.Repositories
 {
     /// <inheritdoc/>
+    /// <remarks>
+    /// SQL queries in this class use string interpolation for table names only.
+    /// Table names are sourced from trusted compile-time constants (e.g., <see cref="OverviewSchema.TableName"/>)
+    /// and are not user-provided, making SQL injection impossible for these values.
+    /// All query parameters are properly parameterized using NPoco's parameter binding.
+    /// </remarks>
     public class AuditRepository : IAuditRepository
     {
         private readonly IScopeProvider _scopeProvider;

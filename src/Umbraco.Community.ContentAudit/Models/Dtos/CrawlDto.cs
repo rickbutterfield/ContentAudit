@@ -46,5 +46,11 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         /// </summary>
         [JsonPropertyName("unique")]
         public Guid Unique { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the URL was skipped due to incremental crawl (unchanged).
+        /// </summary>
+        [JsonPropertyName("skipped")]
+        public bool Skipped { get; set; }
     }
 }
