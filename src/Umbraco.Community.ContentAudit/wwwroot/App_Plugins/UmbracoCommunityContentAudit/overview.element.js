@@ -1,126 +1,121 @@
-import { UmbElementMixin as L } from "@umbraco-cms/backoffice/element-api";
-import { LitElement as N, repeat as M, html as u, nothing as x, css as I, state as g, customElement as z } from "@umbraco-cms/backoffice/external/lit";
-import { C as W, a as B } from "./index.js";
-import { UmbModalToken as G, UMB_MODAL_MANAGER_CONTEXT as H } from "@umbraco-cms/backoffice/modal";
+import { UmbElementMixin as U } from "@umbraco-cms/backoffice/element-api";
+import { LitElement as L, repeat as N, html as o, nothing as A, css as M, state as f, customElement as I } from "@umbraco-cms/backoffice/external/lit";
+import { C as z, a as W } from "./index.js";
+import { UmbModalToken as B, UMB_MODAL_MANAGER_CONTEXT as G } from "@umbraco-cms/backoffice/modal";
 import "./run-warning-modal.element.js";
-import { UMB_NOTIFICATION_CONTEXT as P } from "@umbraco-cms/backoffice/notification";
-import { UmbRequestReloadChildrenOfEntityEvent as V } from "@umbraco-cms/backoffice/entity-action";
-import { UMB_ACTION_EVENT_CONTEXT as X } from "@umbraco-cms/backoffice/action";
-const q = new G("Umb.ContentAudit.Modal.RunWarning", {
+import { UMB_NOTIFICATION_CONTEXT as H } from "@umbraco-cms/backoffice/notification";
+import { UmbRequestReloadChildrenOfEntityEvent as P } from "@umbraco-cms/backoffice/entity-action";
+import { UMB_ACTION_EVENT_CONTEXT as V } from "@umbraco-cms/backoffice/action";
+const X = new B("Umb.ContentAudit.Modal.RunWarning", {
   modal: {
     type: "dialog",
     size: "small"
   }
 });
-var F = Object.defineProperty, K = Object.getOwnPropertyDescriptor, S = (e) => {
-  throw TypeError(e);
-}, f = (e, t, a, s) => {
-  for (var l = s > 1 ? void 0 : s ? K(t, a) : t, i = e.length - 1, d; i >= 0; i--)
-    (d = e[i]) && (l = (s ? d(t, a, l) : d(l)) || l);
-  return s && l && F(t, a, l), l;
-}, O = (e, t, a) => t.has(e) || S("Cannot " + a), b = (e, t, a) => (O(e, t, "read from private field"), t.get(e)), $ = (e, t, a) => t.has(e) ? S("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, a), k = (e, t, a, s) => (O(e, t, "write to private field"), t.set(e, a), a), v = (e, t, a) => (O(e, t, "access private method"), a), w, y, _, h, A, C, T, D, E, R;
-let c = class extends L(N) {
+var q = Object.defineProperty, F = Object.getOwnPropertyDescriptor, O = (t) => {
+  throw TypeError(t);
+}, b = (t, e, i, r) => {
+  for (var s = r > 1 ? void 0 : r ? F(e, i) : e, a = t.length - 1, l; a >= 0; a--)
+    (l = t[a]) && (s = (r ? l(e, i, s) : l(s)) || s);
+  return r && s && q(e, i, s), s;
+}, $ = (t, e, i) => e.has(t) || O("Cannot " + i), h = (t, e, i) => ($(t, e, "read from private field"), e.get(t)), _ = (t, e, i) => e.has(t) ? O("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), x = (t, e, i, r) => ($(t, e, "write to private field"), e.set(t, i), i), d = (t, e, i) => ($(t, e, "access private method"), i), p, g, w, c, y, S, C, T, D, E;
+let u = class extends U(L) {
   constructor() {
-    super(), $(this, h), this.crawlData = [], $(this, w), $(this, y), $(this, _), this.scanRunning = !1, this._auditOverviews = [], this._topIssues = [], this.consumeContext(P, (e) => {
-      k(this, _, e);
-    }), this.consumeContext(W, (e) => {
-      k(this, w, e), this.observe(e == null ? void 0 : e.latestAuditOverview, (t) => {
-        this._latestAuditOverview = t;
-      }), this.observe(e == null ? void 0 : e.auditOverviews, (t) => {
-        this._auditOverviews = t || [];
-      }), this.observe(e == null ? void 0 : e.topIssues, (t) => {
-        t && (this._topIssues = t.filter((a) => a.numberOfUrls != 0));
-      }), this.observe(e == null ? void 0 : e.healthScore, (t) => {
-        this._healthScore = t, this._healthScore != null && (this._pagesWithoutErrors = this._healthScore.totalPages - this._healthScore.pagesWithErrors);
-      }), v(this, h, A).call(this);
-    }), this.consumeContext(H, (e) => {
-      k(this, y, e);
+    super(), _(this, c), this.crawlData = [], _(this, p), _(this, g), _(this, w), this.scanRunning = !1, this._auditOverviews = [], this._topIssues = [], this.consumeContext(H, (t) => {
+      x(this, w, t);
+    }), this.consumeContext(z, (t) => {
+      x(this, p, t), this.observe(t?.latestAuditOverview, (e) => {
+        this._latestAuditOverview = e;
+      }), this.observe(t?.auditOverviews, (e) => {
+        this._auditOverviews = e || [];
+      }), this.observe(t?.topIssues, (e) => {
+        e && (this._topIssues = e.filter((i) => i.numberOfUrls != 0));
+      }), this.observe(t?.healthScore, (e) => {
+        this._healthScore = e, this._healthScore != null && (this._pagesWithoutErrors = this._healthScore.totalPages - this._healthScore.pagesWithErrors);
+      }), d(this, c, y).call(this);
+    }), this.consumeContext(G, (t) => {
+      x(this, g, t);
     });
   }
   async _openModal() {
-    var a;
-    const e = (a = b(this, y)) == null ? void 0 : a.open(this, q, {
+    (await h(this, g)?.open(this, X, {
       data: {
         headline: "Ready to run an audit?"
       }
-    }), t = await (e == null ? void 0 : e.onSubmit());
-    t != null && t.run && this.startAudit();
+    })?.onSubmit())?.run && this.startAudit();
   }
   async startAudit() {
-    var t, a, s;
-    const { stream: e } = await B.startCrawl();
-    this.scanRunning = !0, this.crawlData = [], (t = b(this, _)) == null || t.peek("positive", {
+    const { stream: t } = await W.startCrawl();
+    this.scanRunning = !0, this.crawlData = [], h(this, w)?.peek("positive", {
       data: {
         headline: "Crawl started",
         message: "You will be notified when it is complete."
       }
     });
     try {
-      for await (const l of e)
-        this.crawlData.push(l), this.requestUpdate();
-      (a = b(this, _)) == null || a.peek("default", {
+      for await (const e of t)
+        this.crawlData.push(e), this.requestUpdate();
+      h(this, w)?.peek("default", {
         data: { headline: "Crawl completed", message: "You can now view the results." }
       });
-    } catch (l) {
-      (s = b(this, _)) == null || s.peek("danger", {
-        data: { headline: "Crawl failed", message: l.message ?? "Unknown error" }
+    } catch (e) {
+      h(this, w)?.peek("danger", {
+        data: { headline: "Crawl failed", message: e.message ?? "Unknown error" }
       });
     } finally {
-      this.scanRunning = !1, v(this, h, A).call(this);
-      const l = await this.getContext(X);
-      if (!l)
+      this.scanRunning = !1, d(this, c, y).call(this);
+      const e = await this.getContext(V);
+      if (!e)
         throw new Error("Could not get the action event context");
-      const i = new V({
+      const i = new P({
         entityType: "audits-root",
         unique: null
       });
-      l.dispatchEvent(i);
+      e.dispatchEvent(i);
     }
   }
   _renderScanData() {
     if (this.crawlData.length !== 0) {
-      const e = this.crawlData.length, t = this.crawlData.filter((i) => i.crawled && !i.external && !i.asset).length, a = this.crawlData.filter((i) => i.crawled && i.external && !i.asset).length, s = this.crawlData.filter((i) => i.crawled && i.asset).length, l = this.crawlData.filter((i) => i.blocked).length;
-      return u`
+      const t = this.crawlData.length, e = this.crawlData.filter((a) => a.crawled && !a.external && !a.asset).length, i = this.crawlData.filter((a) => a.crawled && a.external && !a.asset).length, r = this.crawlData.filter((a) => a.crawled && a.asset).length, s = this.crawlData.filter((a) => a.blocked).length;
+      return o`
                 <uui-box headline="Debug scan data" class="span-3">
-                    <p>Total: ${e}</p>
-                    <p>Internal: ${t}</p>
-                    <p>External: ${a}</p>
-                    <p>Assets: ${s}</p>
-                    <p>Blocked: ${l}</p>
+                    <p>Total: ${t}</p>
+                    <p>Internal: ${e}</p>
+                    <p>External: ${i}</p>
+                    <p>Assets: ${r}</p>
+                    <p>Blocked: ${s}</p>
 
-                    ${M(
+                    ${N(
         this.crawlData,
-        (i) => i.url,
-        (i) => u`${JSON.stringify(i)}<br/>`
+        (a) => a.url,
+        (a) => o`${JSON.stringify(a)}<br/>`
       )}
                 </uui-box>
             `;
     }
   }
   render() {
-    return u`
+    return o`
             <div id="main">
-                ${v(this, h, T).call(this)}
-                ${v(this, h, D).call(this)}
-                ${v(this, h, E).call(this)}
-                ${v(this, h, R).call(this)}
+                ${d(this, c, C).call(this)}
+                ${d(this, c, T).call(this)}
+                ${d(this, c, D).call(this)}
+                ${d(this, c, E).call(this)}
             </div>
         `;
   }
 };
+p = /* @__PURE__ */ new WeakMap();
+g = /* @__PURE__ */ new WeakMap();
 w = /* @__PURE__ */ new WeakMap();
-y = /* @__PURE__ */ new WeakMap();
-_ = /* @__PURE__ */ new WeakMap();
-h = /* @__PURE__ */ new WeakSet();
-A = function() {
-  var e, t, a, s;
-  (e = b(this, w)) == null || e.getLatestAuditOverview(), (t = b(this, w)) == null || t.getAuditOverviews(), (a = b(this, w)) == null || a.getTopIssues(), (s = b(this, w)) == null || s.getHealthScore();
+c = /* @__PURE__ */ new WeakSet();
+y = function() {
+  h(this, p)?.getLatestAuditOverview(), h(this, p)?.getAuditOverviews(), h(this, p)?.getTopIssues(), h(this, p)?.getHealthScore();
 };
-C = function() {
-  var e, t, a, s, l, i;
+S = function() {
   if (this.scanRunning) {
-    const d = this.crawlData.length, r = this.crawlData.filter((o) => o.crawled && !o.external && !o.asset).length, n = this.crawlData.filter((o) => o.crawled && o.external && !o.asset).length, p = this.crawlData.filter((o) => o.crawled && o.asset).length, m = this.crawlData.filter((o) => o.blocked).length;
-    return u`
+    const t = this.crawlData.length, e = this.crawlData.filter((a) => a.crawled && !a.external && !a.asset).length, i = this.crawlData.filter((a) => a.crawled && a.external && !a.asset).length, r = this.crawlData.filter((a) => a.crawled && a.asset).length, s = this.crawlData.filter((a) => a.blocked).length;
+    return o`
                 <uui-loader-bar></uui-loader-bar>
 
                 <uui-table>
@@ -129,62 +124,61 @@ C = function() {
 
                     <uui-table-row>
                         <uui-table-cell>URLs crawled:</uui-table-cell>
-                        <uui-table-cell>${d}</uui-table-cell>
+                        <uui-table-cell>${t}</uui-table-cell>
                     </uui-table-row>
                     <uui-table-row>
                         <uui-table-cell>Internal URLs:</uui-table-cell>
-                        <uui-table-cell>${r}</uui-table-cell>
+                        <uui-table-cell>${e}</uui-table-cell>
                     </uui-table-row>
                     <uui-table-row>
                         <uui-table-cell>External URLs:</uui-table-cell>
-                        <uui-table-cell>${n}</uui-table-cell>
+                        <uui-table-cell>${i}</uui-table-cell>
                     </uui-table-row>
                     <uui-table-row>
                         <uui-table-cell>Asset URLs:</uui-table-cell>
-                        <uui-table-cell>${p}</uui-table-cell>
+                        <uui-table-cell>${r}</uui-table-cell>
                     </uui-table-row>
                     <uui-table-row>
                         <uui-table-cell>Blocked URLs:</uui-table-cell>
-                        <uui-table-cell>${m}</uui-table-cell>
+                        <uui-table-cell>${s}</uui-table-cell>
                     </uui-table-row>
                 </uui-table>
             `;
   } else
-    return ((e = this._latestAuditOverview) == null ? void 0 : e.runDate) == null ? u`<p>No scan has been run yet</p>` : u`
+    return this._latestAuditOverview?.runDate == null ? o`<p>No scan has been run yet</p>` : o`
                     <uui-table>
                         <uui-table-column></uui-table-column>
                         <uui-table-column></uui-table-column>
 
                         <uui-table-row>
                             <uui-table-cell>Total URLs:</uui-table-cell>
-                            <uui-table-cell>${(t = this._latestAuditOverview) == null ? void 0 : t.total}</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.total}</uui-table-cell>
                         </uui-table-row>
                         <uui-table-row>
                             <uui-table-cell>Internal URLs:</uui-table-cell>
-                            <uui-table-cell>${(a = this._latestAuditOverview) == null ? void 0 : a.totalInternal}</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalInternal}</uui-table-cell>
                         </uui-table-row>
                         <uui-table-row>
                             <uui-table-cell>External URLs:</uui-table-cell>
-                            <uui-table-cell>${(s = this._latestAuditOverview) == null ? void 0 : s.totalExternal}</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalExternal}</uui-table-cell>
                         </uui-table-row>
                         <uui-table-row>
                             <uui-table-cell>Asset URLs:</uui-table-cell>
-                            <uui-table-cell>${(l = this._latestAuditOverview) == null ? void 0 : l.totalAssets}</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalAssets}</uui-table-cell>
                         </uui-table-row>
                         <uui-table-row>
                             <uui-table-cell>Blocked URLs:</uui-table-cell>
-                            <uui-table-cell>${(i = this._latestAuditOverview) == null ? void 0 : i.totalBlocked}</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalBlocked}</uui-table-cell>
                         </uui-table-row>
                     </uui-table>
                 `;
 };
-T = function() {
-  var e, t, a;
+C = function() {
   if (this._latestAuditOverview !== void 0)
-    return u`
-                <uui-box headline="Latest audit" class="span-2" style="${((e = this._latestAuditOverview) == null ? void 0 : e.runDate) != null || this.scanRunning ? "--uui-box-default-padding: 0;" : ""}">
+    return o`
+                <uui-box headline="Latest audit" class="span-2" style="${this._latestAuditOverview?.runDate != null || this.scanRunning ? "--uui-box-default-padding: 0;" : ""}">
                     <div slot="header">
-                        ${((t = this._latestAuditOverview) == null ? void 0 : t.runDate) != null ? this.localize.date((a = this._latestAuditOverview) == null ? void 0 : a.runDate, { dateStyle: "long", timeStyle: "short" }) : x}
+                        ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate, { dateStyle: "long", timeStyle: "short" }) : A}
                     </div>
                     <div slot="header-actions">
                         <uui-button
@@ -194,17 +188,17 @@ T = function() {
                         >Run new scan</uui-button>
                     </div>
 
-                    ${v(this, h, C).call(this)}
+                    ${d(this, c, S).call(this)}
                 </uui-box>
             `;
 };
-D = function() {
+T = function() {
   if (this._healthScore !== void 0) {
-    let e = "score--danger";
-    return this._healthScore.healthScore >= 90 ? e = "score--success" : this._healthScore.healthScore >= 50 && (e = "score--warning"), u`
+    let t = "score--danger";
+    return this._healthScore.healthScore >= 90 ? t = "score--success" : this._healthScore.healthScore >= 50 && (t = "score--warning"), o`
                 <uui-box headline="Site health">
                     <div class="score">
-                        <svg viewBox="0 0 36 36" class="score__inner ${e}">
+                        <svg viewBox="0 0 36 36" class="score__inner ${t}">
                             <path class="score__bg"
                                 d="M18 2.0845
                                 a 15.9155 15.9155 0 0 1 0 31.831
@@ -223,65 +217,64 @@ D = function() {
             `;
   }
 };
-E = function() {
-  var d;
-  if (this._auditOverviews.length <= 1) return x;
-  const e = this._auditOverviews.slice(0, 10).reverse(), t = 150, a = 100, s = e.map((r, n) => {
-    const p = n / (e.length - 1) * a, m = t - (r.healthScore || 0) / 100 * t;
-    return `${p},${m}`;
-  }).join(" "), l = ((d = e[e.length - 1]) == null ? void 0 : d.healthScore) || 0, i = l >= 90 ? "var(--uui-color-positive)" : l >= 50 ? "var(--uui-color-warning)" : "var(--uui-color-danger)";
-  return u`
+D = function() {
+  if (this._auditOverviews.length <= 1) return A;
+  const t = this._auditOverviews.slice(0, 10).reverse(), e = 150, i = 100, r = t.map((l, n) => {
+    const v = n / (t.length - 1) * i, m = e - (l.healthScore || 0) / 100 * e;
+    return `${v},${m}`;
+  }).join(" "), s = t[t.length - 1]?.healthScore || 0, a = s >= 90 ? "var(--uui-color-positive)" : s >= 50 ? "var(--uui-color-warning)" : "var(--uui-color-danger)";
+  return o`
             <uui-box headline="Health Score Trend" class="span-3">
                 <div class="chart-container">
-                    <svg class="chart" viewBox="0 0 100 ${t}" preserveAspectRatio="none">
+                    <svg class="chart" viewBox="0 0 100 ${e}" preserveAspectRatio="none">
                         <!-- Grid lines with labels -->
-                        ${[100, 90, 75, 50, 25, 0].map((r) => {
-    const n = t - r / 100 * t;
-    return u`
+                        ${[100, 90, 75, 50, 25, 0].map((l) => {
+    const n = e - l / 100 * e;
+    return o`
                                 <line
                                     x1="0"
                                     y1="${n}"
                                     x2="100"
                                     y2="${n}"
-                                    class="chart-grid-line ${r === 90 || r === 50 ? "chart-grid-line--threshold" : ""}"
+                                    class="chart-grid-line ${l === 90 || l === 50 ? "chart-grid-line--threshold" : ""}"
                                 />
-                                <text x="1" y="${n - 0.5}" class="chart-grid-label">${r}</text>
+                                <text x="1" y="${n - 0.5}" class="chart-grid-label">${l}</text>
                             `;
   })}
 
                         <!-- Gradient fill under the line -->
                         <defs>
                             <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:${i};stop-opacity:0.2" />
-                                <stop offset="100%" style="stop-color:${i};stop-opacity:0" />
+                                <stop offset="0%" style="stop-color:${a};stop-opacity:0.2" />
+                                <stop offset="100%" style="stop-color:${a};stop-opacity:0" />
                             </linearGradient>
                         </defs>
 
                         <!-- Area fill -->
                         <path
-                            d="M ${s.split(" ")[0]} L ${s} L ${a},${t} L 0,${t} Z"
+                            d="M ${r.split(" ")[0]} L ${r} L ${i},${e} L 0,${e} Z"
                             fill="url(#chartGradient)"
                         />
 
                         <!-- Line chart -->
                         <polyline
-                            points="${s}"
+                            points="${r}"
                             class="chart-line"
                             fill="none"
-                            stroke="${i}"
+                            stroke="${a}"
                             stroke-width="0.5"
                         />
 
                         <!-- Data points -->
-                        ${e.map((r, n) => {
-    const p = n / (e.length - 1) * a, m = t - (r.healthScore || 0) / 100 * t, o = r.healthScore || 0, U = o >= 90 ? "var(--uui-color-positive)" : o >= 50 ? "var(--uui-color-warning)" : "var(--uui-color-danger)";
-    return u`
+                        ${t.map((l, n) => {
+    const v = n / (t.length - 1) * i, m = e - (l.healthScore || 0) / 100 * e, k = l.healthScore || 0, R = k >= 90 ? "var(--uui-color-positive)" : k >= 50 ? "var(--uui-color-warning)" : "var(--uui-color-danger)";
+    return o`
                                 <circle
-                                    cx="${p}"
+                                    cx="${v}"
                                     cy="${m}"
                                     r="1"
                                     class="chart-point"
-                                    fill="${U}"
+                                    fill="${R}"
                                 />
                             `;
   })}
@@ -289,14 +282,14 @@ E = function() {
 
                     <!-- Labels -->
                     <div class="chart-labels">
-                        ${e.map((r) => {
-    const n = r.healthScore || 0, p = n >= 90 ? "chart-label-score--success" : n >= 50 ? "chart-label-score--warning" : "chart-label-score--danger";
-    return u`
+                        ${t.map((l) => {
+    const n = l.healthScore || 0, v = n >= 90 ? "chart-label-score--success" : n >= 50 ? "chart-label-score--warning" : "chart-label-score--danger";
+    return o`
                                 <div class="chart-label">
                                     <div class="chart-label-date">
-                                        ${r.runDate ? this.localize.date(r.runDate, { dateStyle: "short" }) : "N/A"}
+                                        ${l.runDate ? this.localize.date(l.runDate, { dateStyle: "short" }) : "N/A"}
                                     </div>
-                                    <div class="chart-label-score ${p}">${n.toFixed(0)}</div>
+                                    <div class="chart-label-score ${v}">${n.toFixed(0)}</div>
                                 </div>
                             `;
   })}
@@ -305,9 +298,9 @@ E = function() {
             </uui-box>
         `;
 };
-R = function() {
+E = function() {
   if (this._topIssues.length !== 0)
-    return u`
+    return o`
                 <uui-box headline="Top issues" class="span-3" style="--uui-box-default-padding: 0;">
                     <div slot="header-actions">
                         <uui-button look="secondary" href="/umbraco/section/audit/workspace/issues-root">See all issues</uui-button>
@@ -316,8 +309,8 @@ R = function() {
                 </uui-box>
             `;
 };
-c.styles = [
-  I`
+u.styles = [
+  M`
             :host {
                 display: block;
                 padding: var(--uui-size-space-5);
@@ -479,30 +472,30 @@ c.styles = [
             }
         `
 ];
-f([
-  g()
-], c.prototype, "scanRunning", 2);
-f([
-  g()
-], c.prototype, "_latestAuditOverview", 2);
-f([
-  g()
-], c.prototype, "_auditOverviews", 2);
-f([
-  g()
-], c.prototype, "_topIssues", 2);
-f([
-  g()
-], c.prototype, "_healthScore", 2);
-f([
-  g()
-], c.prototype, "_pagesWithoutErrors", 2);
-c = f([
-  z("content-audit-scan-view")
-], c);
-const ie = c;
+b([
+  f()
+], u.prototype, "scanRunning", 2);
+b([
+  f()
+], u.prototype, "_latestAuditOverview", 2);
+b([
+  f()
+], u.prototype, "_auditOverviews", 2);
+b([
+  f()
+], u.prototype, "_topIssues", 2);
+b([
+  f()
+], u.prototype, "_healthScore", 2);
+b([
+  f()
+], u.prototype, "_pagesWithoutErrors", 2);
+u = b([
+  I("content-audit-scan-view")
+], u);
+const ae = u;
 export {
-  c as ContentAuditScanViewElement,
-  ie as default
+  u as ContentAuditScanViewElement,
+  ae as default
 };
 //# sourceMappingURL=overview.element.js.map

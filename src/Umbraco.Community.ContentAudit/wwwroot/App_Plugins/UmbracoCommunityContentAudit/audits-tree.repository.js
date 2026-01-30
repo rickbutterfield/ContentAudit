@@ -1,5 +1,5 @@
 import { UmbTreeServerDataSourceBase as n, UmbTreeRepositoryBase as a } from "@umbraco-cms/backoffice/tree";
-import { A as r, b as o, c as i } from "./index.js";
+import { b as o, c as i, A as r } from "./index.js";
 class u extends n {
   constructor(t) {
     super(t, {
@@ -12,21 +12,18 @@ class u extends n {
 }
 const s = () => r.root({}), d = (e) => e.parent.unique === null ? s() : r.children({
   path: { parentId: e.parent.unique }
-}), c = () => Promise.resolve({ data: [] }), l = (e) => {
-  var t;
-  return {
-    unique: e.id,
-    parent: {
-      unique: ((t = e.parent) == null ? void 0 : t.id) || null,
-      entityType: i
-    },
-    name: e.name,
-    icon: "icon-dashboard",
-    entityType: o,
-    isFolder: e.isFolder,
-    hasChildren: e.hasChildren
-  };
-};
+}), c = () => Promise.resolve({ data: [] }), l = (e) => ({
+  unique: e.id,
+  parent: {
+    unique: e.parent?.id || null,
+    entityType: i
+  },
+  name: e.name,
+  icon: "icon-dashboard",
+  entityType: o,
+  isFolder: e.isFolder,
+  hasChildren: e.hasChildren
+});
 class m extends a {
   constructor(t) {
     super(t, u);

@@ -1,42 +1,32 @@
-var u = (e) => {
-  throw TypeError(e);
-};
-var l = (e, o, t) => o.has(e) || u("Cannot " + t);
-var i = (e, o, t) => (l(e, o, "read from private field"), t ? t.call(e) : o.get(e)), n = (e, o, t) => o.has(e) ? u("Cannot add the same private member more than once") : o instanceof WeakSet ? o.add(e) : o.set(e, t), c = (e, o, t, r) => (l(e, o, "write to private field"), r ? r.call(e, t) : o.set(e, t), t);
-import { UmbRepositoryBase as C } from "@umbraco-cms/backoffice/repository";
-import { A as p } from "./index.js";
-import { tryExecute as f } from "@umbraco-cms/backoffice/resources";
-var s;
-class y {
-  constructor(o) {
-    n(this, s);
-    c(this, s, o);
+import { UmbRepositoryBase as i } from "@umbraco-cms/backoffice/repository";
+import { A as n } from "./index.js";
+import { tryExecute as c } from "@umbraco-cms/backoffice/resources";
+class u {
+  #t;
+  constructor(t) {
+    this.#t = t;
   }
-  async getCollection(o) {
-    const { data: t, error: r } = await f(i(this, s), p.getLatestAuditData({ query: o }));
-    if (r)
-      return { error: r };
-    if (!t)
+  async getCollection(t) {
+    const { data: e, error: o } = await c(this.#t, n.getLatestAuditData({ query: t }));
+    if (o)
+      return { error: o };
+    if (!e)
       return { data: { items: [], total: 0 } };
-    const { items: d, total: m } = t;
-    return { data: { items: d, total: m } };
+    const { items: s, total: a } = e;
+    return { data: { items: s, total: a } };
   }
 }
-s = new WeakMap();
-var a;
-class x extends C {
+class C extends i {
+  #t;
   constructor(t) {
-    super(t);
-    n(this, a);
-    c(this, a, new y(t));
+    super(t), this.#t = new u(t);
   }
   async requestCollection(t) {
-    return i(this, a).getCollection(t);
+    return this.#t.getCollection(t);
   }
 }
-a = new WeakMap();
 export {
-  x as ContentAuditStatusCodesCollectionRepository,
-  x as default
+  C as ContentAuditStatusCodesCollectionRepository,
+  C as default
 };
 //# sourceMappingURL=status-codes-collection.repository.js.map

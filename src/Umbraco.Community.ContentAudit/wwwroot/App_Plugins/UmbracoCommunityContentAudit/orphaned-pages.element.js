@@ -1,8 +1,8 @@
 import { html as i, customElement as m } from "@umbraco-cms/backoffice/external/lit";
 import { UmbCollectionDefaultElement as s } from "@umbraco-cms/backoffice/collection";
-var u = Object.getOwnPropertyDescriptor, d = (o, n, a, r) => {
-  for (var e = r > 1 ? void 0 : r ? u(n, a) : n, t = o.length - 1, c; t >= 0; t--)
-    (c = o[t]) && (e = c(e) || e);
+var u = Object.getOwnPropertyDescriptor, d = (o, n, c, r) => {
+  for (var e = r > 1 ? void 0 : r ? u(n, c) : n, t = o.length - 1, a; t >= 0; t--)
+    (a = o[t]) && (e = a(e) || e);
   return e;
 };
 let l = class extends s {

@@ -1,107 +1,106 @@
-import { UmbLitElement as _t } from "@umbraco-cms/backoffice/lit-element";
-import { t as $t } from "./index.js";
-import { r as bt } from "./state.js";
-import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as Dt } from "./all-pages-workspace.context.js";
-import { html as o, css as ft } from "@umbraco-cms/backoffice/external/lit";
-import { UmbTextStyles as gt } from "@umbraco-cms/backoffice/style";
-var xt = Object.defineProperty, Ct = Object.getOwnPropertyDescriptor, ct = (t) => {
+import { UmbLitElement as f } from "@umbraco-cms/backoffice/lit-element";
+import { t as D } from "./index.js";
+import { r as m } from "./state.js";
+import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as x } from "./all-pages-workspace.context.js";
+import { html as a, css as C } from "@umbraco-cms/backoffice/external/lit";
+import { UmbTextStyles as S } from "@umbraco-cms/backoffice/style";
+var w = Object.defineProperty, k = Object.getOwnPropertyDescriptor, v = (t) => {
   throw TypeError(t);
-}, f = (t, e, a, r) => {
-  for (var i = r > 1 ? void 0 : r ? Ct(e, a) : e, l = t.length - 1, s; l >= 0; l--)
-    (s = t[l]) && (i = (r ? s(e, a, i) : s(i)) || i);
-  return r && i && xt(e, a, i), i;
-}, g = (t, e, a) => e.has(t) || ct("Cannot " + a), nt = (t, e, a) => (g(t, e, "read from private field"), e.get(t)), yt = (t, e, a) => e.has(t) ? ct("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), St = (t, e, a, r) => (g(t, e, "write to private field"), e.set(t, a), a), D = (t, e, a) => (g(t, e, "access private method"), a), $, _, ht, mt, vt;
-let p = class extends _t {
+}, y = (t, e, o, l) => {
+  for (var i = l > 1 ? void 0 : l ? k(e, o) : e, d = t.length - 1, p; d >= 0; d--)
+    (p = t[d]) && (i = (l ? p(e, o, i) : p(i)) || i);
+  return l && i && w(e, o, i), i;
+}, b = (t, e, o) => e.has(t) || v("Cannot " + o), c = (t, e, o) => (b(t, e, "read from private field"), e.get(t)), h = (t, e, o) => e.has(t) ? v("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, o), T = (t, e, o, l) => (b(t, e, "write to private field"), e.set(t, o), o), n = (t, e, o) => (b(t, e, "access private method"), o), u, s, _, $, g;
+let r = class extends f {
   constructor() {
-    super(), yt(this, _), this._documentUnique = "", yt(this, $), this.consumeContext(Dt, (t) => {
-      St(this, $, t), D(this, _, ht).call(this);
+    super(), h(this, s), this._documentUnique = "", h(this, u), this.consumeContext(x, (t) => {
+      T(this, u, t), n(this, s, _).call(this);
     });
   }
   render() {
-    return this._data ? o`
-			${D(this, _, mt).call(this)}
-			${D(this, _, vt).call(this)}
-		` : o`<uui-box>No data available</uui-box>`;
+    return this._data ? a`
+			${n(this, s, $).call(this)}
+			${n(this, s, g).call(this)}
+		` : a`<uui-box>No data available</uui-box>`;
   }
 };
-$ = /* @__PURE__ */ new WeakMap();
-_ = /* @__PURE__ */ new WeakSet();
-ht = function() {
-  nt(this, $) && this.observe(nt(this, $).data, (t) => {
+u = /* @__PURE__ */ new WeakMap();
+s = /* @__PURE__ */ new WeakSet();
+_ = function() {
+  c(this, u) && this.observe(c(this, u).data, (t) => {
     this._data = t;
   }, "umbCollectionItemsObserver");
 };
-mt = function() {
-  var t, e, a, r, i, l, s, n, y, b, c, h, m, v, x, C, S, w, k, T, A, P, E, H, N, L, O, I, R, G, M, Y, U, V, W, B, q, z, F, Q, K, j, X, Z, J, tt, et, at, ot, it, rt, lt, st, ut, dt, pt;
-  return o`
+$ = function() {
+  return a`
 		<div>
-			${(t = this._data) != null && t.seoData ? o`
+			${this._data?.seoData ? a`
 				<uui-box headline="SEO">
 					<umb-property-layout label="Title">
-						<div slot="editor">${(e = this._data) == null ? void 0 : e.seoData.title}</div>
+						<div slot="editor">${this._data?.seoData.title}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Meta Description">
-						<div slot="editor">${(a = this._data) == null ? void 0 : a.seoData.metaDescription}</div>
+						<div slot="editor">${this._data?.seoData.metaDescription}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Canonical URL">
-						<div slot="editor">${(r = this._data) == null ? void 0 : r.seoData.canonicalUrl}</div>
+						<div slot="editor">${this._data?.seoData.canonicalUrl}</div>
 					</umb-property-layout>
 					<umb-property-layout label="H1">
-						<div slot="editor">${(i = this._data) == null ? void 0 : i.seoData.h1}</div>
+						<div slot="editor">${this._data?.seoData.h1}</div>
 					</umb-property-layout>
 					<umb-property-layout label="H2s">
 						<div slot="editor">
-							<ul>${(s = (l = this._data) == null ? void 0 : l.seoData.h2s) == null ? void 0 : s.map((u) => o`<li>${u}</li>`)}<ul>
+							<ul>${this._data?.seoData.h2s?.map((t) => a`<li>${t}</li>`)}<ul>
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="H3s">
 						<div slot="editor">
-							<ul>${(y = (n = this._data) == null ? void 0 : n.seoData.h3s) == null ? void 0 : y.map((u) => o`<li>${u}</li>`)}<ul>
+							<ul>${this._data?.seoData.h3s?.map((t) => a`<li>${t}</li>`)}<ul>
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="No Index">
-						<div slot="editor">${(b = this._data) != null && b.seoData.hasNoIndex ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.seoData.hasNoIndex ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="No Follow">
-						<div slot="editor">${(c = this._data) != null && c.seoData.hasNoFollow ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.seoData.hasNoFollow ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Open Graph Title">
-						<div slot="editor">${(h = this._data) == null ? void 0 : h.seoData.openGraphTitle}</div>
+						<div slot="editor">${this._data?.seoData.openGraphTitle}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Open Graph Description">
-						<div slot="editor">${(m = this._data) == null ? void 0 : m.seoData.openGraphDescription}</div>
+						<div slot="editor">${this._data?.seoData.openGraphDescription}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Open Graph Image">
-						<div slot="editor"><a href=${(v = this._data) == null ? void 0 : v.seoData.openGraphImage} target="_blank">${(x = this._data) == null ? void 0 : x.seoData.openGraphImage}</a></div>
+						<div slot="editor"><a href=${this._data?.seoData.openGraphImage} target="_blank">${this._data?.seoData.openGraphImage}</a></div>
 					</umb-property-layout>
 				</uui-box>
 			` : ""}
 
-			${(C = this._data) != null && C.contentAnalysis ? o`
+			${this._data?.contentAnalysis ? a`
 				<uui-box headline="Content Analysis">
 					<umb-property-layout label="Word Count">
-						<div slot="editor">${(S = this._data) == null ? void 0 : S.contentAnalysis.wordCount}</div>
+						<div slot="editor">${this._data?.contentAnalysis.wordCount}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Paragraph Count">
-						<div slot="editor">${(w = this._data) == null ? void 0 : w.contentAnalysis.paragraphCount}</div>
+						<div slot="editor">${this._data?.contentAnalysis.paragraphCount}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Images">
-						<div slot="editor">${(k = this._data) == null ? void 0 : k.contentAnalysis.images}</div>
+						<div slot="editor">${this._data?.contentAnalysis.images}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Resources">
-						<div slot="editor">${(T = this._data) == null ? void 0 : T.contentAnalysis.resources}</div>
+						<div slot="editor">${this._data?.contentAnalysis.resources}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Links">
-						<div slot="editor">${(A = this._data) == null ? void 0 : A.contentAnalysis.links}</div>
+						<div slot="editor">${this._data?.contentAnalysis.links}</div>
 					</umb-property-layout>
 					<umb-property-layout label="External Links">
-						<div slot="editor">${(P = this._data) == null ? void 0 : P.contentAnalysis.externalLinks}</div>
+						<div slot="editor">${this._data?.contentAnalysis.externalLinks}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Internal Links">
-						<div slot="editor">${(E = this._data) == null ? void 0 : E.contentAnalysis.internalLinks}</div>
+						<div slot="editor">${this._data?.contentAnalysis.internalLinks}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Readability Score" description="Flesch Reading Ease Score. Scores around 100 mean the document is extremely easy to read, while scores around 0 mean that it is highly complex and difficult to understand.">
-						<div slot="editor">${Math.round((H = this._data) == null ? void 0 : H.contentAnalysis.readabilityScore)}</div>
+						<div slot="editor">${Math.round(this._data?.contentAnalysis.readabilityScore)}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Keyword Density">
 						<div slot="editor">
@@ -110,10 +109,10 @@ mt = function() {
 								<uui-table-head-cell>Keyword</uui-table-head-cell>
 								<uui-table-head-cell>Density</uui-table-head-cell>
 							</uui-table-head>
-							${Object.entries((N = this._data) == null ? void 0 : N.contentAnalysis.keywordDensity).map((u) => o`
+							${Object.entries(this._data?.contentAnalysis.keywordDensity).map((t) => a`
 									<uui-table-row>
-										<uui-table-cell>${u[0]}</uui-table-cell>
-										<uui-table-cell>${u[1]}%</uui-table-cell>
+										<uui-table-cell>${t[0]}</uui-table-cell>
+										<uui-table-cell>${t[1]}%</uui-table-cell>
 									</uui-table-row>	
 								`)}
 							</uui-table>
@@ -122,65 +121,65 @@ mt = function() {
 				</uui-box>
 			` : ""}
 
-			${(L = this._data) != null && L.performanceData ? o`
+			${this._data?.performanceData ? a`
 				<uui-box headline="Performance">
 					<umb-property-layout label="Page Load Time">
-						<div slot="editor">${(O = this._data) == null ? void 0 : O.performanceData.pageLoadTime}ms</div>
+						<div slot="editor">${this._data?.performanceData.pageLoadTime}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="First Contentful Paint">
-						<div slot="editor">${(R = (I = this._data) == null ? void 0 : I.performanceData.firstContentfulPaint) == null ? void 0 : R.value}ms</div>
+						<div slot="editor">${this._data?.performanceData.firstContentfulPaint?.value}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="Largest Contentful Paint">
-						<div slot="editor">${(M = (G = this._data) == null ? void 0 : G.performanceData.largestContentfulPaint) == null ? void 0 : M.value}ms</div>
+						<div slot="editor">${this._data?.performanceData.largestContentfulPaint?.value}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="Time to Interactive">
-						<div slot="editor">${(U = (Y = this._data) == null ? void 0 : Y.performanceData.timeToInteractive) == null ? void 0 : U.value}ms</div>
+						<div slot="editor">${this._data?.performanceData.timeToInteractive?.value}ms</div>
 					</umb-property-layout>
 					<umb-property-layout label="Total Requests">
-						<div slot="editor">${(V = this._data) == null ? void 0 : V.performanceData.totalRequests}</div>
+						<div slot="editor">${this._data?.performanceData.totalRequests}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Total Bytes">
-						<div slot="editor">${(W = this._data) == null ? void 0 : W.performanceData.totalBytes}b</div>
+						<div slot="editor">${this._data?.performanceData.totalBytes}b</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ""}
 
-			${(B = this._data) != null && B.accessibilityData ? o`
+			${this._data?.accessibilityData ? a`
 				<uui-box headline="Accessibility">
 					<umb-property-layout label="ARIA Labels">
-						<div slot="editor">${(q = this._data) == null ? void 0 : q.accessibilityData.ariaLabelCount}</div>
+						<div slot="editor">${this._data?.accessibilityData.ariaLabelCount}</div>
 					</umb-property-layout>
 					<umb-property-layout label="ARIA Described By">
-						<div slot="editor">${(z = this._data) == null ? void 0 : z.accessibilityData.ariaDescribedByCount}</div>
+						<div slot="editor">${this._data?.accessibilityData.ariaDescribedByCount}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Skip to Content">
-						<div slot="editor">${(F = this._data) != null && F.accessibilityData.hasSkipToContent ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.accessibilityData.hasSkipToContent ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Proper Heading Structure">
-						<div slot="editor">${(Q = this._data) != null && Q.accessibilityData.hasProperHeadingStructure ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.accessibilityData.hasProperHeadingStructure ? "Yes" : "No"}</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ""}
 
-			${(K = this._data) != null && K.technicalSeoData ? o`
+			${this._data?.technicalSeoData ? a`
 				<uui-box headline="Technical SEO">
 					<umb-property-layout label="Content Type">
-						<div slot="editor">${(j = this._data) == null ? void 0 : j.technicalSeoData.contentType}</div>
+						<div slot="editor">${this._data?.technicalSeoData.contentType}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Charset">
-						<div slot="editor">${(X = this._data) == null ? void 0 : X.technicalSeoData.charset}</div>
+						<div slot="editor">${this._data?.technicalSeoData.charset}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has GZip Compression">
-						<div slot="editor">${(Z = this._data) != null && Z.technicalSeoData.hasGzipCompression ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.technicalSeoData.hasGzipCompression ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Browser Caching">
-						<div slot="editor">${(J = this._data) != null && J.technicalSeoData.hasBrowserCaching ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.technicalSeoData.hasBrowserCaching ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has HTTPS">
-						<div slot="editor">${(tt = this._data) != null && tt.technicalSeoData.hasHttps ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.technicalSeoData.hasHttps ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Valid HTML">
-						<div slot="editor">${(et = this._data) != null && et.technicalSeoData.hasValidHtml ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.technicalSeoData.hasValidHtml ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="HTML Validation Errors">
 						<div slot="editor">
@@ -189,12 +188,12 @@ mt = function() {
 									<uui-table-head-cell>Message</uui-table-head-cell>
 									<uui-table-head-cell>Type</uui-table-head-cell>
 								</uui-table-head>
-								${Object.entries((at = this._data) == null ? void 0 : at.technicalSeoData.htmlValidationErrors).map((u) => {
-    let d = u[1];
-    return o`
+								${Object.entries(this._data?.technicalSeoData.htmlValidationErrors).map((t) => {
+    let e = t[1];
+    return a`
 										<uui-table-row>
-											<uui-table-cell>${d == null ? void 0 : d.message}</uui-table-cell>
-											<uui-table-cell>${d == null ? void 0 : d.type}</uui-table-cell>
+											<uui-table-cell>${e?.message}</uui-table-cell>
+											<uui-table-cell>${e?.type}</uui-table-cell>
 										</uui-table-row>	
 									`;
   })}
@@ -202,33 +201,33 @@ mt = function() {
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Schema Markup">
-						<div slot="editor">${(ot = this._data) != null && ot.technicalSeoData.hasSchemaMarkup ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.technicalSeoData.hasSchemaMarkup ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Schema Type">
-						<div slot="editor">${(it = this._data) == null ? void 0 : it.technicalSeoData.schemaType}</div>
+						<div slot="editor">${this._data?.technicalSeoData.schemaType}</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ""}
 
-			${(rt = this._data) != null && rt.contentQualityData ? o`
+			${this._data?.contentQualityData ? a`
 				<uui-box headline="Content Quality">
 					<umb-property-layout label="Has Thin Content">
-						<div slot="editor">${(lt = this._data) != null && lt.contentQualityData.hasThinContent ? "Yes" : "No"}</div>
+						<div slot="editor">${this._data?.contentQualityData.hasThinContent ? "Yes" : "No"}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Content Score">
-						<div slot="editor">${(st = this._data) == null ? void 0 : st.contentQualityData.contentScore}</div>
+						<div slot="editor">${this._data?.contentQualityData.contentScore}</div>
 					</umb-property-layout>
 				</uui-box>
 			` : ""}
 
-			${(ut = this._data) != null && ut.emissionsData ? o`
+			${this._data?.emissionsData ? a`
 				<uui-box headline="Emissions">
 					<umb-property-layout label="Emissions per Page View">
-						<div slot="editor">${(dt = this._data) == null ? void 0 : dt.emissionsData.emissionsPerPageView}g CO<sub>2</sub></div>
+						<div slot="editor">${this._data?.emissionsData.emissionsPerPageView}g CO<sub>2</sub></div>
 					</umb-property-layout>
 					<umb-property-layout label="Carbon Rating">
 						<div slot="editor">
-							<content-audit-carbon-intensity-label .value=${(pt = this._data) == null ? void 0 : pt.emissionsData.carbonRating}>
+							<content-audit-carbon-intensity-label .value=${this._data?.emissionsData.carbonRating}>
 							</content-audit-carbon-intensity-label>
 						</div>
 					</umb-property-layout>
@@ -237,12 +236,11 @@ mt = function() {
 			</div>
 		`;
 };
-vt = function() {
-  var e, a, r, i, l, s, n, y, b, c, h, m, v;
+g = function() {
   let t = "score--danger";
-  return (e = this._data) != null && e.healthScore && (((a = this._data) == null ? void 0 : a.healthScore.healthScore) >= 90 ? t = "score--success" : ((r = this._data) == null ? void 0 : r.healthScore.healthScore) >= 50 && (t = "score--warning")), o`
+  return this._data?.healthScore && (this._data?.healthScore.healthScore >= 90 ? t = "score--success" : this._data?.healthScore.healthScore >= 50 && (t = "score--warning")), a`
 			<div>
-			${(i = this._data) != null && i.healthScore ? o`
+			${this._data?.healthScore ? a`
 				<uui-box headline="Page health">
 					<div class="score">
 						<svg viewBox="0 0 36 36" class="score__inner ${t}">
@@ -252,27 +250,27 @@ vt = function() {
 								a 15.9155 15.9155 0 0 1 0 -31.831"
 							/>
 							<path class="score__fill"
-								stroke-dasharray="${(s = (l = this._data) == null ? void 0 : l.healthScore) == null ? void 0 : s.healthScore}, 100"
+								stroke-dasharray="${this._data?.healthScore?.healthScore}, 100"
 								d="M18 2.0845
 								a 15.9155 15.9155 0 0 1 0 31.831
 								a 15.9155 15.9155 0 0 1 0 -31.831"
 							/>
 						</svg>
-						<p class="score__text">${(y = (n = this._data) == null ? void 0 : n.healthScore) == null ? void 0 : y.healthScore.toFixed(0)} / 100</p>
+						<p class="score__text">${this._data?.healthScore?.healthScore.toFixed(0)} / 100</p>
 					</div>
 				</uui-box>
 			` : ""}
-			${(b = this._data) != null && b.pageData ? o`
+			${this._data?.pageData ? a`
 				<uui-box headline="Page">
 					<umb-property-layout label="URL" orientation="vertical">
-						<div slot="editor"><a href=${(c = this._data) == null ? void 0 : c.pageData.url} target="_blank">${(h = this._data) == null ? void 0 : h.pageData.url}</a></div>
+						<div slot="editor"><a href=${this._data?.pageData.url} target="_blank">${this._data?.pageData.url}</a></div>
 					</umb-property-layout>
 					<umb-property-layout label="Unique" orientation="vertical">
-						<div slot="editor">${(m = this._data) == null ? void 0 : m.pageData.unique}</div>
+						<div slot="editor">${this._data?.pageData.unique}</div>
 					</umb-property-layout>
 					<umb-property-layout label="Status Code" orientation="vertical">
 						<div slot="editor">
-							<content-audit-status-code-label .statusCode=${(v = this._data) == null ? void 0 : v.pageData.statusCode}></content-audit-status-code-label>
+							<content-audit-status-code-label .statusCode=${this._data?.pageData.statusCode}></content-audit-status-code-label>
 						</div>
 					</umb-property-layout>
 				</uui-box>
@@ -280,9 +278,9 @@ vt = function() {
 			</div>
 		`;
 };
-p.styles = [
-  gt,
-  ft`
+r.styles = [
+  S,
+  C`
 			:host {
 				display: grid;
 				gap: var(--uui-size-layout-1);
@@ -354,18 +352,18 @@ p.styles = [
 }
 		`
 ];
-f([
-  bt()
-], p.prototype, "_data", 2);
-f([
-  bt()
-], p.prototype, "_documentUnique", 2);
-p = f([
-  $t("content-audit-all-pages-details-workspace-view")
-], p);
-const Ht = p;
+y([
+  m()
+], r.prototype, "_data", 2);
+y([
+  m()
+], r.prototype, "_documentUnique", 2);
+r = y([
+  D("content-audit-all-pages-details-workspace-view")
+], r);
+const O = r;
 export {
-  p as ContentAuditAllPagesDetailsWorkspaceViewElement,
-  Ht as default
+  r as ContentAuditAllPagesDetailsWorkspaceViewElement,
+  O as default
 };
 //# sourceMappingURL=all-pages-details-workspace-view.element.js.map

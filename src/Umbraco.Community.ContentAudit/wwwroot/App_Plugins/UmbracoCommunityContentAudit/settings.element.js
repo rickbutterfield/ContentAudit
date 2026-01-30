@@ -1,27 +1,26 @@
-import { UmbElementMixin as g } from "@umbraco-cms/backoffice/element-api";
-import { LitElement as m, html as c, css as v, state as h, customElement as y } from "@umbraco-cms/backoffice/external/lit";
+import { UmbElementMixin as c } from "@umbraco-cms/backoffice/element-api";
+import { LitElement as g, html as m, css as v, state as h, customElement as y } from "@umbraco-cms/backoffice/external/lit";
 import { C as f } from "./index.js";
 import "@umbraco-cms/backoffice/repository";
 import "@umbraco-cms/backoffice/resources";
 var _ = Object.defineProperty, b = Object.getOwnPropertyDescriptor, d = (t) => {
   throw TypeError(t);
-}, p = (t, e, i, r) => {
-  for (var s = r > 1 ? void 0 : r ? b(e, i) : e, n = t.length - 1, l; n >= 0; n--)
-    (l = t[n]) && (s = (r ? l(e, i, s) : l(s)) || s);
-  return r && s && _(e, i, s), s;
-}, u = (t, e, i) => e.has(t) || d("Cannot " + i), w = (t, e, i) => (u(t, e, "read from private field"), e.get(t)), C = (t, e, i) => e.has(t) ? d("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), x = (t, e, i, r) => (u(t, e, "write to private field"), e.set(t, i), i), a;
-let o = class extends g(m) {
+}, p = (t, e, i, o) => {
+  for (var s = o > 1 ? void 0 : o ? b(e, i) : e, n = t.length - 1, l; n >= 0; n--)
+    (l = t[n]) && (s = (o ? l(e, i, s) : l(s)) || s);
+  return o && s && _(e, i, s), s;
+}, u = (t, e, i) => e.has(t) || d("Cannot " + i), x = (t, e, i) => (u(t, e, "read from private field"), e.get(t)), w = (t, e, i) => e.has(t) ? d("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), C = (t, e, i, o) => (u(t, e, "write to private field"), e.set(t, i), i), a;
+let r = class extends c(g) {
   constructor() {
-    super(), C(this, a), this.settings = void 0, this.consumeContext(f, (t) => {
-      var e;
-      x(this, a, t), this.observe(t == null ? void 0 : t.settings, (i) => {
-        this.settings = i;
-      }), (e = w(this, a)) == null || e.getSettings();
+    super(), w(this, a), this.settings = void 0, this.consumeContext(f, (t) => {
+      C(this, a, t), this.observe(t?.settings, (e) => {
+        this.settings = e;
+      }), x(this, a)?.getSettings();
     });
   }
   render() {
     if (this.settings !== void 0)
-      return c`
+      return m`
                 <uui-box headline="Settings">
                     <div slot="header">Discovered from appsettings.json</div>
 
@@ -51,7 +50,7 @@ let o = class extends g(m) {
   }
 };
 a = /* @__PURE__ */ new WeakMap();
-o.styles = [
+r.styles = [
   v`
             :host {
                 display: block;
@@ -75,13 +74,13 @@ o.styles = [
 ];
 p([
   h()
-], o.prototype, "settings", 2);
-o = p([
+], r.prototype, "settings", 2);
+r = p([
   y("content-audit-settings-view")
-], o);
-const A = o;
+], r);
+const A = r;
 export {
-  o as ContentAuditSettingsViewElement,
+  r as ContentAuditSettingsViewElement,
   A as default
 };
 //# sourceMappingURL=settings.element.js.map

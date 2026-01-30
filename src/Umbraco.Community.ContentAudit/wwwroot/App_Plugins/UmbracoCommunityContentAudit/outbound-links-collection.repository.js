@@ -1,42 +1,32 @@
-var u = (o) => {
-  throw TypeError(o);
-};
-var l = (o, e, t) => e.has(o) || u("Cannot " + t);
-var s = (o, e, t) => (l(o, e, "read from private field"), t ? t.call(o) : e.get(o)), a = (o, e, t) => e.has(o) ? u("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(o) : e.set(o, t), c = (o, e, t, r) => (l(o, e, "write to private field"), r ? r.call(o, t) : e.set(o, t), t);
-import { UmbRepositoryBase as p } from "@umbraco-cms/backoffice/repository";
-import { A as C } from "./index.js";
-import { tryExecute as f } from "@umbraco-cms/backoffice/resources";
-var n;
-class y {
-  constructor(e) {
-    a(this, n);
-    c(this, n, e);
+import { UmbRepositoryBase as s } from "@umbraco-cms/backoffice/repository";
+import { A as a } from "./index.js";
+import { tryExecute as c } from "@umbraco-cms/backoffice/resources";
+class u {
+  #t;
+  constructor(t) {
+    this.#t = t;
   }
-  async getCollection(e) {
-    const { data: t, error: r } = await f(s(this, n), C.getExternalLinks({ query: e }));
-    if (r)
-      return { error: r };
-    if (!t)
+  async getCollection(t) {
+    const { data: o, error: e } = await c(this.#t, a.getExternalLinks({ query: t }));
+    if (e)
+      return { error: e };
+    if (!o)
       return { data: { items: [], total: 0 } };
-    const { items: d, total: m } = t;
-    return { data: { items: d, total: m } };
+    const { items: n, total: i } = o;
+    return { data: { items: n, total: i } };
   }
 }
-n = new WeakMap();
-var i;
-class g extends p {
+class p extends s {
+  #t;
   constructor(t) {
-    super(t);
-    a(this, i);
-    c(this, i, new y(t));
+    super(t), this.#t = new u(t);
   }
   async requestCollection(t) {
-    return s(this, i).getCollection(t);
+    return this.#t.getCollection(t);
   }
 }
-i = new WeakMap();
 export {
-  g as ContentAuditOutboundLinksCollectionRepository,
-  g as default
+  p as ContentAuditOutboundLinksCollectionRepository,
+  p as default
 };
 //# sourceMappingURL=outbound-links-collection.repository.js.map

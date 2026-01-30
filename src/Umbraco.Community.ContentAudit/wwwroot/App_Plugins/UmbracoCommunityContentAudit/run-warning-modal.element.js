@@ -1,7 +1,7 @@
 import { UmbModalBaseElement as h } from "@umbraco-cms/backoffice/modal";
 import { t as p } from "./index.js";
-import { html as v, css as b } from "@umbraco-cms/backoffice/external/lit";
-import { UmbTextStyles as _ } from "@umbraco-cms/backoffice/style";
+import { html as v, css as _ } from "@umbraco-cms/backoffice/external/lit";
+import { UmbTextStyles as b } from "@umbraco-cms/backoffice/style";
 var f = Object.getOwnPropertyDescriptor, c = (e) => {
   throw TypeError(e);
 }, g = (e, t, a, r) => {
@@ -14,9 +14,8 @@ let i = class extends h {
     super(), y(this, n);
   }
   render() {
-    var e;
     return v`
-            <uui-dialog-layout headline="${((e = this.modalContext) == null ? void 0 : e.data.headline) ?? "Default headline"}">
+            <uui-dialog-layout headline="${this.modalContext?.data.headline ?? "Default headline"}">
                 <p id="subtitle">
                     Running an audit scan can be an intensive process, depending on the number of pages on your website. It is not recommended to run a scan at peak times on a live website, as it may cause performance issues. It is recommended to run the scan on a staging or development environment first, or at a quieter time on the live website.
                 </p>
@@ -34,16 +33,14 @@ let i = class extends h {
 };
 n = /* @__PURE__ */ new WeakSet();
 d = function() {
-  var e;
-  (e = this.modalContext) == null || e.reject();
+  this.modalContext?.reject();
 };
 m = function() {
-  var e;
-  this.value = { run: !0 }, (e = this.modalContext) == null || e.submit();
+  this.value = { run: !0 }, this.modalContext?.submit();
 };
 i.styles = [
-  _,
-  b`
+  b,
+  _`
 			:host {
 				display: block;
 				min-width: 460px;
@@ -54,9 +51,9 @@ i.styles = [
 i = g([
   p("content-audit-modal-run-warning")
 ], i);
-const $ = i;
+const M = i;
 export {
   i as UmbBlockCatalogueModalElement,
-  $ as default
+  M as default
 };
 //# sourceMappingURL=run-warning-modal.element.js.map

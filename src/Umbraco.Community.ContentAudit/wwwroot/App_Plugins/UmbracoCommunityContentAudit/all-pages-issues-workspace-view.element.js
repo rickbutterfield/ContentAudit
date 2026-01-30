@@ -4,13 +4,13 @@ import { r as p } from "./state.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as A } from "./all-pages-workspace.context.js";
 import { html as o, css as I } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles as w } from "@umbraco-cms/backoffice/style";
-var x = Object.defineProperty, E = Object.getOwnPropertyDescriptor, b = (e) => {
-  throw TypeError(e);
-}, u = (e, t, a, r) => {
-  for (var s = r > 1 ? void 0 : r ? E(t, a) : t, c = e.length - 1, h; c >= 0; c--)
-    (h = e[c]) && (s = (r ? h(t, a, s) : h(s)) || s);
-  return r && s && x(t, a, s), s;
-}, m = (e, t, a) => t.has(e) || b("Cannot " + a), f = (e, t, a) => (m(e, t, "read from private field"), t.get(e)), y = (e, t, a) => t.has(e) ? b("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, a), P = (e, t, a, r) => (m(e, t, "write to private field"), t.set(e, a), a), _ = (e, t, a) => (m(e, t, "access private method"), a), l, n, v, d;
+var x = Object.defineProperty, E = Object.getOwnPropertyDescriptor, b = (t) => {
+  throw TypeError(t);
+}, u = (t, e, a, r) => {
+  for (var s = r > 1 ? void 0 : r ? E(e, a) : e, c = t.length - 1, _; c >= 0; c--)
+    (_ = t[c]) && (s = (r ? _(e, a, s) : _(s)) || s);
+  return r && s && x(e, a, s), s;
+}, m = (t, e, a) => e.has(t) || b("Cannot " + a), f = (t, e, a) => (m(t, e, "read from private field"), e.get(t)), y = (t, e, a) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), P = (t, e, a, r) => (m(t, e, "write to private field"), e.set(t, a), a), h = (t, e, a) => (m(t, e, "access private method"), a), l, n, v, d;
 let i = class extends C {
   constructor() {
     super(), y(this, n), y(this, l), this._tableConfig = {
@@ -30,13 +30,12 @@ let i = class extends C {
         name: "Priority",
         alias: "priority"
       }
-    ], this._tableItems = [], this.consumeContext(A, (e) => {
-      P(this, l, e), _(this, n, v).call(this);
+    ], this._tableItems = [], this.consumeContext(A, (t) => {
+      P(this, l, t), h(this, n, v).call(this);
     });
   }
-  updated(e) {
-    var t;
-    e.has("data") && this._data && ((t = this._data) == null ? void 0 : t.issues.length) !== 0 && _(this, n, d).call(this, this._data.issues);
+  updated(t) {
+    t.has("data") && this._data && this._data?.issues.length !== 0 && h(this, n, d).call(this, this._data.issues);
   }
   render() {
     if (!this._data) return o`<uui-box>No data available</uui-box>`;
@@ -55,32 +54,32 @@ let i = class extends C {
 l = /* @__PURE__ */ new WeakMap();
 n = /* @__PURE__ */ new WeakSet();
 v = function() {
-  f(this, l) && this.observe(f(this, l).data, (e) => {
-    e && (this._data = e, _(this, n, d).call(this, this._data.issues));
+  f(this, l) && this.observe(f(this, l).data, (t) => {
+    t && (this._data = t, h(this, n, d).call(this, this._data.issues));
   }, "umbCollectionItemsObserver");
 };
-d = function(e) {
-  this._tableItems = e.map((t) => ({
-    id: t.unique,
+d = function(t) {
+  this._tableItems = t.map((e) => ({
+    id: e.unique,
     entityType: "issue-type",
     icon: "icon-alert",
     data: [
       {
         columnAlias: "name",
         value: {
-          unique: t.unique,
-          name: t.name,
-          category: t.category,
-          description: t.description
+          unique: e.unique,
+          name: e.name,
+          category: e.category,
+          description: e.description
         }
       },
       {
         columnAlias: "type",
-        value: o`<content-audit-issue-type-label .type=${t.type}></content-audit-issue-type-label`
+        value: o`<content-audit-issue-type-label .type=${e.type}></content-audit-issue-type-label`
       },
       {
         columnAlias: "priority",
-        value: o`<content-audit-priority-type-label .type=${t.priority}></content-audit-priority-type-label>`
+        value: o`<content-audit-priority-type-label .type=${e.priority}></content-audit-priority-type-label>`
       }
     ]
   }));
@@ -110,9 +109,9 @@ u([
 i = u([
   g("content-audit-all-pages-issues-workspace-view")
 ], i);
-const k = i;
+const $ = i;
 export {
   i as ContentAuditAllPagesIssuesWorkspaceViewElement,
-  k as default
+  $ as default
 };
 //# sourceMappingURL=all-pages-issues-workspace-view.element.js.map

@@ -1,36 +1,30 @@
-var _ = (t) => {
-  throw TypeError(t);
-};
-var d = (t, e, s) => e.has(t) || _("Cannot " + s);
-var a = (t, e, s) => (d(t, e, "read from private field"), s ? s.call(t) : e.get(t)), c = (t, e, s) => e.has(t) ? _("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), m = (t, e, s, r) => (d(t, e, "write to private field"), r ? r.call(t, s) : e.set(t, s), s);
-import { UmbContextBase as f } from "@umbraco-cms/backoffice/class-api";
-import { UmbContextToken as E } from "@umbraco-cms/backoffice/context-api";
-import { UMB_WORKSPACE_PATH_PATTERN as A, UmbWorkspaceRouteManager as y } from "@umbraco-cms/backoffice/workspace";
-import { html as O, state as S, customElement as w } from "@umbraco-cms/backoffice/external/lit";
-import { UmbLitElement as U } from "@umbraco-cms/backoffice/lit-element";
-import { ContentAuditIssuesDetailRepository as P } from "./issues-detail.repository.js";
-import { UmbObjectState as g } from "@umbraco-cms/backoffice/observable-api";
-import { g as b } from "./index.js";
-var I = Object.defineProperty, N = Object.getOwnPropertyDescriptor, v = (t) => {
-  throw TypeError(t);
-}, l = (t, e, s, r) => {
-  for (var o = r > 1 ? void 0 : r ? N(e, s) : e, n = t.length - 1, h; n >= 0; n--)
-    (h = t[n]) && (o = (r ? h(e, s, o) : h(o)) || o);
-  return r && o && I(e, s, o), o;
-}, C = (t, e, s) => e.has(t) || v("Cannot " + s), W = (t, e, s) => (C(t, e, "read from private field"), e.get(t)), k = (t, e, s) => e.has(t) ? v("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), q = (t, e, s, r) => (C(t, e, "write to private field"), e.set(t, s), s), p;
-let u = class extends U {
+import { UmbContextBase as c } from "@umbraco-cms/backoffice/class-api";
+import { UmbContextToken as m } from "@umbraco-cms/backoffice/context-api";
+import { UMB_WORKSPACE_PATH_PATTERN as v, UmbWorkspaceRouteManager as l } from "@umbraco-cms/backoffice/workspace";
+import { html as C, state as T, customElement as f } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement as E } from "@umbraco-cms/backoffice/lit-element";
+import { ContentAuditIssuesDetailRepository as A } from "./issues-detail.repository.js";
+import { UmbObjectState as y } from "@umbraco-cms/backoffice/observable-api";
+import { g as O } from "./index.js";
+var S = Object.defineProperty, w = Object.getOwnPropertyDescriptor, u = (e) => {
+  throw TypeError(e);
+}, d = (e, t, s, a) => {
+  for (var r = a > 1 ? void 0 : a ? w(t, s) : t, n = e.length - 1, p; n >= 0; n--)
+    (p = e[n]) && (r = (a ? p(t, s, r) : p(r)) || r);
+  return a && r && S(t, s, r), r;
+}, h = (e, t, s) => t.has(e) || u("Cannot " + s), U = (e, t, s) => (h(e, t, "read from private field"), t.get(e)), P = (e, t, s) => t.has(e) ? u("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), g = (e, t, s, a) => (h(e, t, "write to private field"), t.set(e, s), s), o;
+let i = class extends E {
   constructor() {
-    super(), k(this, p), this.consumeContext(T, (t) => {
-      var e;
-      q(this, p, t), this.observe((e = W(this, p)) == null ? void 0 : e.data, (s) => {
-        this._data = s;
+    super(), P(this, o), this.consumeContext(_, (e) => {
+      g(this, o, e), this.observe(U(this, o)?.data, (t) => {
+        this._data = t;
       });
     });
   }
   render() {
     if (this._data)
-      return O`
-				<umb-workspace-editor back-path="${R}" .enforceNoFooter="${!0}">
+      return C`
+				<umb-workspace-editor back-path="${b}" .enforceNoFooter="${!0}">
 					<div slot="header">
 						<h3 id="headline">${this._data.name}</h3>
 					</div>
@@ -38,63 +32,56 @@ let u = class extends U {
 			`;
   }
 };
-p = /* @__PURE__ */ new WeakMap();
-l([
-  S()
-], u.prototype, "_data", 2);
-u = l([
-  w("content-audit-issues-workspace-editor")
-], u);
-const R = A.generateAbsolute({
+o = /* @__PURE__ */ new WeakMap();
+d([
+  T()
+], i.prototype, "_data", 2);
+i = d([
+  f("content-audit-issues-workspace-editor")
+], i);
+const b = v.generateAbsolute({
   sectionName: "audit",
   entityType: "issues-root"
 });
-var i;
-class F extends f {
-  constructor(s) {
-    super(s, T);
-    c(this, i);
-    this.workspaceAlias = b, this.repository = new P(this), m(this, i, new g(void 0)), this.data = a(this, i).asObservable(), this.unique = a(this, i).asObservablePart((r) => r == null ? void 0 : r.unique), this.routes = new y(this), this.routes.setRoutes([
+class K extends c {
+  constructor(t) {
+    super(t, _), this.workspaceAlias = O, this.repository = new A(this), this.#t = new y(void 0), this.data = this.#t.asObservable(), this.unique = this.#t.asObservablePart((s) => s?.unique), this.routes = new l(this), this.routes.setRoutes([
       {
         path: "edit/:unique",
-        component: u,
-        setup: (r, o) => {
-          const n = o.match.params.unique;
-          this.load(n);
+        component: i,
+        setup: (s, a) => {
+          const r = a.match.params.unique;
+          this.load(r);
         }
       }
     ]);
   }
-  async load(s) {
-    const { data: r } = await this.repository.requestByUnique(s);
-    r && a(this, i).setValue(r);
+  #t;
+  async load(t) {
+    const { data: s } = await this.repository.requestByUnique(t);
+    s && this.#t.setValue(s);
   }
   getData() {
-    return a(this, i).getValue();
+    return this.#t.getValue();
   }
   getUnique() {
-    var s;
-    return (s = this.getData()) == null ? void 0 : s.unique;
+    return this.getData()?.unique;
   }
   getEntityType() {
     return "issues";
   }
   destroy() {
-    a(this, i).destroy(), super.destroy();
+    this.#t.destroy(), super.destroy();
   }
 }
-i = new WeakMap();
-const T = new E(
+const _ = new m(
   "UmbWorkspaceContext",
   void 0,
-  (t) => {
-    var e;
-    return ((e = t.getEntityType) == null ? void 0 : e.call(t)) === "issues";
-  }
+  (e) => e.getEntityType?.() === "issues"
 );
 export {
-  T as CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT,
-  F as ContentAuditIssuesWorkspaceContext,
-  F as api
+  _ as CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT,
+  K as ContentAuditIssuesWorkspaceContext,
+  K as api
 };
 //# sourceMappingURL=issues-workspace.context.js.map

@@ -115,9 +115,9 @@ r([
 l = r([
   D("content-audit-metadata-table-collection-view")
 ], l);
-const $ = l;
+const g = l;
 export {
   l as ContentAuditMetdataTableCollectionViewElement,
-  $ as default
+  g as default
 };
 //# sourceMappingURL=metadata-table-collection-view.element.js.map

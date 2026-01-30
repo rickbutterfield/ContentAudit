@@ -1,20 +1,19 @@
-import { html as _, css as g, customElement as m } from "@umbraco-cms/backoffice/external/lit";
+import { html as _, css as m, customElement as g } from "@umbraco-cms/backoffice/external/lit";
 import { UmbCollectionDefaultElement as S, UMB_COLLECTION_CONTEXT as w } from "@umbraco-cms/backoffice/collection";
-import { UUITextStyles as b } from "@umbraco-cms/backoffice/external/uui";
-var y = Object.getOwnPropertyDescriptor, f = (t) => {
-  throw TypeError(t);
-}, E = (t, e, o, l) => {
-  for (var a = l > 1 ? void 0 : l ? y(e, o) : e, s = t.length - 1, h; s >= 0; s--)
-    (h = t[s]) && (a = h(a) || a);
-  return a;
-}, p = (t, e, o) => e.has(t) || f("Cannot " + o), u = (t, e, o) => (p(t, e, "read from private field"), e.get(t)), c = (t, e, o) => e.has(t) ? f("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, o), v = (t, e, o, l) => (p(t, e, "write to private field"), e.set(t, o), o), O = (t, e, o) => (p(t, e, "access private method"), o), n, i, d, C;
-let r = class extends S {
+import { UUITextStyles as x } from "@umbraco-cms/backoffice/external/uui";
+var b = Object.getOwnPropertyDescriptor, f = (e) => {
+  throw TypeError(e);
+}, y = (e, t, o, a) => {
+  for (var s = a > 1 ? void 0 : a ? b(t, o) : t, r = e.length - 1, h; r >= 0; r--)
+    (h = e[r]) && (s = h(s) || s);
+  return s;
+}, p = (e, t, o) => t.has(e) || f("Cannot " + o), u = (e, t, o) => (p(e, t, "read from private field"), t.get(e)), c = (e, t, o) => t.has(e) ? f("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, o), v = (e, t, o, a) => (p(e, t, "write to private field"), t.set(e, o), o), E = (e, t, o) => (p(e, t, "access private method"), o), n, i, d, C;
+let l = class extends S {
   constructor() {
-    super(), c(this, d), c(this, n), c(this, i, []), this.consumeContext(w, (t) => {
-      var e;
-      v(this, n, t), this.observe((e = u(this, n)) == null ? void 0 : e.items, (o) => {
-        if (o != null && (o == null ? void 0 : o.length) !== 0) {
-          const a = [...new Set(o.map((s) => s.statusCode))].sort().map((s) => ({ name: s == null ? void 0 : s.toString(), value: s == null ? void 0 : s.toString() }));
+    super(), c(this, d), c(this, n), c(this, i, []), this.consumeContext(w, (e) => {
+      v(this, n, e), this.observe(u(this, n)?.items, (t) => {
+        if (t != null && t?.length !== 0) {
+          const a = [...new Set(t.map((s) => s.statusCode))].sort().map((s) => ({ name: s?.toString(), value: s?.toString() }));
           v(this, i, [{ name: "All", value: "0" }, ...a]);
         }
       });
@@ -29,7 +28,7 @@ let r = class extends S {
 						label="Select status code..."
 						placeholder="Select status code..."
 						.options=${u(this, i)}
-						@change=${O(this, d, C)}></uui-select>
+						@change=${E(this, d, C)}></uui-select>
 				</div>
 			</umb-collection-toolbar>
 		`;
@@ -38,14 +37,13 @@ let r = class extends S {
 n = /* @__PURE__ */ new WeakMap();
 i = /* @__PURE__ */ new WeakMap();
 d = /* @__PURE__ */ new WeakSet();
-C = function(t) {
-  var o;
-  const e = t.target.value;
-  (o = u(this, n)) == null || o.setFilter({ statusCode: parseInt(e) });
+C = function(e) {
+  const t = e.target.value;
+  u(this, n)?.setFilter({ statusCode: parseInt(t) });
 };
-r.styles = [
-  b,
-  g`
+l.styles = [
+  x,
+  m`
 			:host {
 				display: flex;
 				flex-direction: column;
@@ -77,12 +75,12 @@ r.styles = [
 			}
 		`
 ];
-r = E([
-  m("content-audit-status-codes-collection")
-], r);
-const M = r;
+l = y([
+  g("content-audit-status-codes-collection")
+], l);
+const k = l;
 export {
-  r as ContentAuditStatusCodesCollectionElement,
-  M as default
+  l as ContentAuditStatusCodesCollectionElement,
+  k as default
 };
 //# sourceMappingURL=status-codes.element.js.map

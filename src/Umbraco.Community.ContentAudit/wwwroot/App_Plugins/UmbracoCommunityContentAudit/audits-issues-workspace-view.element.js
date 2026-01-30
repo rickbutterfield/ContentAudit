@@ -10,10 +10,10 @@ var I = Object.defineProperty, P = Object.getOwnPropertyDescriptor, v = (e) => {
   for (var r = a > 1 ? void 0 : a ? P(t, s) : t, c = e.length - 1, d; c >= 0; c--)
     (d = e[c]) && (r = (a ? d(t, s, r) : d(r)) || r);
   return a && r && I(t, s, r), r;
-}, f = (e, t, s) => t.has(e) || v("Cannot " + s), y = (e, t, s) => (f(e, t, "read from private field"), t.get(e)), h = (e, t, s) => t.has(e) ? v("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), $ = (e, t, s, a) => (f(e, t, "write to private field"), t.set(e, s), s), p = (e, t, s) => (f(e, t, "access private method"), s), l, n, _, b, g, w;
+}, f = (e, t, s) => t.has(e) || v("Cannot " + s), y = (e, t, s) => (f(e, t, "read from private field"), t.get(e)), h = (e, t, s) => t.has(e) ? v("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), $ = (e, t, s, a) => (f(e, t, "write to private field"), t.set(e, s), s), p = (e, t, s) => (f(e, t, "access private method"), s), n, l, _, b, g, w;
 let i = class extends x {
   constructor() {
-    super(), h(this, n), this._issues = [], h(this, l), this._tableConfig = {
+    super(), h(this, l), this._issues = [], h(this, n), this._tableConfig = {
       allowSelection: !1,
       hideIcon: !0
     }, this._tableColumns = [
@@ -39,14 +39,14 @@ let i = class extends x {
         alias: "percentOfTotal"
       }
     ], this._tableItems = [], this.consumeContext(T, (e) => {
-      $(this, l, e), p(this, n, _).call(this);
+      $(this, n, e), p(this, l, _).call(this);
     });
   }
   render() {
     return this._data ? o`
 			<div class="issues-container">
-				${p(this, n, g).call(this)}
-				${p(this, n, w).call(this)}
+				${p(this, l, g).call(this)}
+				${p(this, l, w).call(this)}
 			</div>
 		` : o`
 				<uui-box>
@@ -55,51 +55,48 @@ let i = class extends x {
 			`;
   }
 };
-l = /* @__PURE__ */ new WeakMap();
-n = /* @__PURE__ */ new WeakSet();
+n = /* @__PURE__ */ new WeakMap();
+l = /* @__PURE__ */ new WeakSet();
 _ = function() {
-  y(this, l) && (this.observe(y(this, l).data, (e) => {
+  y(this, n) && (this.observe(y(this, n).data, (e) => {
     e && (this._data = e);
-  }, "dataObserver"), this.observe(y(this, l).issues, (e) => {
-    e && (this._issues = e, p(this, n, b).call(this, e));
+  }, "dataObserver"), this.observe(y(this, n).issues, (e) => {
+    e && (this._issues = e, p(this, l, b).call(this, e));
   }, "issuesObserver"));
 };
 b = function(e) {
-  this._tableItems = e.map((t) => {
-    var s;
-    return {
-      id: t.unique,
-      entityType: "issue-type",
-      icon: "icon-alert",
-      data: [
-        {
-          columnAlias: "name",
-          value: {
-            unique: t.unique,
-            name: t.name,
-            category: t.category,
-            description: t.description
-          }
-        },
-        {
-          columnAlias: "type",
-          value: o`<content-audit-issue-type-label .type=${t.type}></content-audit-issue-type-label>`
-        },
-        {
-          columnAlias: "priority",
-          value: o`<content-audit-priority-type-label .type=${t.priority}></content-audit-priority-type-label>`
-        },
-        {
-          columnAlias: "numberOfUrls",
-          value: t.numberOfUrls
-        },
-        {
-          columnAlias: "percentOfTotal",
-          value: `${(s = t.percentOfTotal) == null ? void 0 : s.toFixed(0)}%`
+  this._tableItems = e.map((t) => ({
+    id: t.unique,
+    entityType: "issue-type",
+    icon: "icon-alert",
+    data: [
+      {
+        columnAlias: "name",
+        value: {
+          unique: t.unique,
+          name: t.name,
+          category: t.category,
+          description: t.description
         }
-      ]
-    };
-  });
+      },
+      {
+        columnAlias: "type",
+        value: o`<content-audit-issue-type-label .type=${t.type}></content-audit-issue-type-label>`
+      },
+      {
+        columnAlias: "priority",
+        value: o`<content-audit-priority-type-label .type=${t.priority}></content-audit-priority-type-label>`
+      },
+      {
+        columnAlias: "numberOfUrls",
+        value: t.numberOfUrls
+      },
+      {
+        columnAlias: "percentOfTotal",
+        value: `${t.percentOfTotal?.toFixed(0)}%`
+      }
+    ]
+  }));
 };
 g = function() {
   if (!this._data || !this._issues.length) return;

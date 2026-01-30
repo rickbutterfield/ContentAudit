@@ -1,21 +1,21 @@
-import { html as u, customElement as c } from "@umbraco-cms/backoffice/external/lit";
-import { UmbCollectionDefaultElement as m } from "@umbraco-cms/backoffice/collection";
-var a = Object.getOwnPropertyDescriptor, d = (l, n, i, r) => {
-  for (var t = r > 1 ? void 0 : r ? a(n, i) : n, e = l.length - 1, s; e >= 0; e--)
-    (s = l[e]) && (t = s(t) || t);
+import { html as i, customElement as a } from "@umbraco-cms/backoffice/external/lit";
+import { UmbCollectionDefaultElement as c } from "@umbraco-cms/backoffice/collection";
+var m = Object.getOwnPropertyDescriptor, d = (o, n, u, r) => {
+  for (var t = r > 1 ? void 0 : r ? m(n, u) : n, e = o.length - 1, s; e >= 0; e--)
+    (s = o[e]) && (t = s(t) || t);
   return t;
 };
-let o = class extends m {
+let l = class extends c {
   renderToolbar() {
-    return u``;
+    return i``;
   }
 };
-o = d([
-  c("content-audit-audits-collection")
-], o);
-const C = o;
+l = d([
+  a("content-audit-audits-collection")
+], l);
+const C = l;
 export {
-  o as ContentAuditAuditsCollectionElement,
+  l as ContentAuditAuditsCollectionElement,
   C as default
 };
 //# sourceMappingURL=audits.element.js.map

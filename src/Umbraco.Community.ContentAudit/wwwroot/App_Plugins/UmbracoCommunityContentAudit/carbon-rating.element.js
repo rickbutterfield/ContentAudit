@@ -1,7 +1,7 @@
 import { html as s, css as a, customElement as m } from "@umbraco-cms/backoffice/external/lit";
 import { UmbCollectionDefaultElement as u, UMB_COLLECTION_CONTEXT as b } from "@umbraco-cms/backoffice/collection";
 import { UUITextStyles as f } from "@umbraco-cms/backoffice/external/uui";
-var C = Object.getOwnPropertyDescriptor, p = (t, n, c, r) => {
+var C = Object.getOwnPropertyDescriptor, d = (t, n, c, r) => {
   for (var e = r > 1 ? void 0 : r ? C(n, c) : n, l = t.length - 1, i; l >= 0; l--)
     (i = t[l]) && (e = i(e) || e);
   return e;
@@ -38,7 +38,7 @@ o.styles = [
             }
 		`
 ];
-o = p([
+o = d([
   m("content-audit-carbon-rating-collection")
 ], o);
 const x = o;

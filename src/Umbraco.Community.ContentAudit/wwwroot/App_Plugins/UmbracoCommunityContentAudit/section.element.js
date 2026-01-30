@@ -16,9 +16,9 @@ let r = class extends l {
 r = p([
   a("audit-section-view")
 ], r);
-const v = r;
+const f = r;
 export {
   r as AuditSectionViewElement,
-  v as default
+  f as default
 };
 //# sourceMappingURL=section.element.js.map

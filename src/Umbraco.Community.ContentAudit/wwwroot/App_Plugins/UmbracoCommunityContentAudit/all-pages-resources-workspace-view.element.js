@@ -1,16 +1,16 @@
 import { UmbLitElement as g } from "@umbraco-cms/backoffice/lit-element";
 import { t as y } from "./index.js";
-import { r as c } from "./state.js";
+import { r as _ } from "./state.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as w } from "./all-pages-workspace.context.js";
 import { html as u, css as A } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles as T } from "@umbraco-cms/backoffice/style";
 var x = Object.defineProperty, E = Object.getOwnPropertyDescriptor, b = (t) => {
   throw TypeError(t);
 }, n = (t, e, a, i) => {
-  for (var r = i > 1 ? void 0 : i ? E(e, a) : e, p = t.length - 1, _; p >= 0; p--)
-    (_ = t[p]) && (r = (i ? _(e, a, r) : _(r)) || r);
+  for (var r = i > 1 ? void 0 : i ? E(e, a) : e, c = t.length - 1, p; c >= 0; c--)
+    (p = t[c]) && (r = (i ? p(e, a, r) : p(r)) || r);
   return i && r && x(e, a, r), r;
-}, m = (t, e, a) => e.has(t) || b("Cannot " + a), f = (t, e, a) => (m(t, e, "read from private field"), e.get(t)), v = (t, e, a) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), I = (t, e, a, i) => (m(t, e, "write to private field"), e.set(t, a), a), h = (t, e, a) => (m(t, e, "access private method"), a), l, o, C, d;
+}, d = (t, e, a) => e.has(t) || b("Cannot " + a), f = (t, e, a) => (d(t, e, "read from private field"), e.get(t)), v = (t, e, a) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), I = (t, e, a, i) => (d(t, e, "write to private field"), e.set(t, a), a), h = (t, e, a) => (d(t, e, "access private method"), a), l, o, C, m;
 let s = class extends g {
   constructor() {
     super(), v(this, o), v(this, l), this._tableConfig = {
@@ -30,8 +30,7 @@ let s = class extends g {
     });
   }
   updated(t) {
-    var e;
-    t.has("data") && this._data && ((e = this._data) == null ? void 0 : e.resources.length) !== 0 && h(this, o, d).call(this, this._data.resources);
+    t.has("data") && this._data && this._data?.resources.length !== 0 && h(this, o, m).call(this, this._data.resources);
   }
   render() {
     if (!this._data) return u`<uui-box>No data available</uui-box>`;
@@ -51,10 +50,10 @@ l = /* @__PURE__ */ new WeakMap();
 o = /* @__PURE__ */ new WeakSet();
 C = function() {
   f(this, l) && this.observe(f(this, l).data, (t) => {
-    t && (this._data = t, h(this, o, d).call(this, this._data.resources));
+    t && (this._data = t, h(this, o, m).call(this, this._data.resources));
   }, "umbCollectionItemsObserver");
 };
-d = function(t) {
+m = function(t) {
   this._tableItems = t.map((e) => ({
     id: e.unique,
     data: [
@@ -79,16 +78,16 @@ s.styles = [
 		`
 ];
 n([
-  c()
+  _()
 ], s.prototype, "_data", 2);
 n([
-  c()
+  _()
 ], s.prototype, "_tableConfig", 2);
 n([
-  c()
+  _()
 ], s.prototype, "_tableColumns", 2);
 n([
-  c()
+  _()
 ], s.prototype, "_tableItems", 2);
 s = n([
   y("content-audit-all-pages-resources-workspace-view")

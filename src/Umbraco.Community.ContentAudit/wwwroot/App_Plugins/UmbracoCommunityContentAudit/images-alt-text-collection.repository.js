@@ -1,42 +1,32 @@
-var l = (e) => {
-  throw TypeError(e);
-};
-var u = (e, o, t) => o.has(e) || l("Cannot " + t);
-var a = (e, o, t) => (u(e, o, "read from private field"), t ? t.call(e) : o.get(e)), n = (e, o, t) => o.has(e) ? l("Cannot add the same private member more than once") : o instanceof WeakSet ? o.add(e) : o.set(e, t), c = (e, o, t, r) => (u(e, o, "write to private field"), r ? r.call(e, t) : o.set(e, t), t);
-import { UmbRepositoryBase as p } from "@umbraco-cms/backoffice/repository";
-import { A } from "./index.js";
-import { tryExecute as C } from "@umbraco-cms/backoffice/resources";
-var s;
-class f {
-  constructor(o) {
-    n(this, s);
-    c(this, s, o);
+import { UmbRepositoryBase as a } from "@umbraco-cms/backoffice/repository";
+import { A as n } from "./index.js";
+import { tryExecute as c } from "@umbraco-cms/backoffice/resources";
+class l {
+  #t;
+  constructor(t) {
+    this.#t = t;
   }
-  async getCollection(o) {
-    const { data: t, error: r } = await C(a(this, s), A.getAllImages({ query: o }));
-    if (r)
-      return { error: r };
-    if (!t)
+  async getCollection(t) {
+    const { data: e, error: o } = await c(this.#t, n.getAllImages({ query: t }));
+    if (o)
+      return { error: o };
+    if (!e)
       return { data: { items: [], total: 0 } };
-    const { items: m, total: d } = t;
-    return { data: { items: m, total: d } };
+    const { items: s, total: i } = e;
+    return { data: { items: s, total: i } };
   }
 }
-s = new WeakMap();
-var i;
-class I extends p {
+class p extends a {
+  #t;
   constructor(t) {
-    super(t);
-    n(this, i);
-    c(this, i, new f(t));
+    super(t), this.#t = new l(t);
   }
   async requestCollection(t) {
-    return a(this, i).getCollection(t);
+    return this.#t.getCollection(t);
   }
 }
-i = new WeakMap();
 export {
-  I as ContentAuditImagesAltTextCollectionRepository,
-  I as default
+  p as ContentAuditImagesAltTextCollectionRepository,
+  p as default
 };
 //# sourceMappingURL=images-alt-text-collection.repository.js.map

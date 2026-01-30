@@ -1,111 +1,97 @@
-var l = (t) => {
-  throw TypeError(t);
-};
-var _ = (t, e, s) => e.has(t) || l("Cannot " + s);
-var i = (t, e, s) => (_(t, e, "read from private field"), s ? s.call(t) : e.get(t)), d = (t, e, s) => e.has(t) ? l("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), c = (t, e, s, r) => (_(t, e, "write to private field"), r ? r.call(t, s) : e.set(t, s), s);
-import { UmbContextBase as f } from "@umbraco-cms/backoffice/class-api";
-import { UmbContextToken as C } from "@umbraco-cms/backoffice/context-api";
-import { UMB_WORKSPACE_PATH_PATTERN as E, UmbWorkspaceRouteManager as g } from "@umbraco-cms/backoffice/workspace";
-import { html as y, css as P, state as O, customElement as w } from "@umbraco-cms/backoffice/external/lit";
-import { UmbLitElement as U } from "@umbraco-cms/backoffice/lit-element";
-import { ContentAuditAllPagesDetailRepository as S } from "./all-pages-detail.repository.js";
-import { UmbObjectState as b } from "@umbraco-cms/backoffice/observable-api";
-import { e as N } from "./index.js";
-import { UmbTextStyles as W } from "@umbraco-cms/backoffice/style";
-var k = Object.defineProperty, q = Object.getOwnPropertyDescriptor, m = (t) => {
-  throw TypeError(t);
-}, A = (t, e, s, r) => {
-  for (var a = r > 1 ? void 0 : r ? q(e, s) : e, n = t.length - 1, h; n >= 0; n--)
-    (h = t[n]) && (a = (r ? h(e, s, a) : h(a)) || a);
-  return r && a && k(e, s, a), a;
-}, v = (t, e, s) => e.has(t) || m("Cannot " + s), D = (t, e, s) => (v(t, e, "read from private field"), e.get(t)), R = (t, e, s) => e.has(t) ? m("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, s), L = (t, e, s, r) => (v(t, e, "write to private field"), e.set(t, s), s), u;
-let p = class extends U {
+import { UmbContextBase as _ } from "@umbraco-cms/backoffice/class-api";
+import { UmbContextToken as c } from "@umbraco-cms/backoffice/context-api";
+import { UMB_WORKSPACE_PATH_PATTERN as m, UmbWorkspaceRouteManager as A } from "@umbraco-cms/backoffice/workspace";
+import { html as v, css as T, state as f, customElement as C } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement as E } from "@umbraco-cms/backoffice/lit-element";
+import { ContentAuditAllPagesDetailRepository as g } from "./all-pages-detail.repository.js";
+import { UmbObjectState as y } from "@umbraco-cms/backoffice/observable-api";
+import { e as P } from "./index.js";
+import { UmbTextStyles as O } from "@umbraco-cms/backoffice/style";
+var w = Object.defineProperty, U = Object.getOwnPropertyDescriptor, u = (e) => {
+  throw TypeError(e);
+}, d = (e, t, s, r) => {
+  for (var a = r > 1 ? void 0 : r ? U(t, s) : t, n = e.length - 1, p; n >= 0; n--)
+    (p = e[n]) && (a = (r ? p(t, s, a) : p(a)) || a);
+  return r && a && w(t, s, a), a;
+}, h = (e, t, s) => t.has(e) || u("Cannot " + s), S = (e, t, s) => (h(e, t, "read from private field"), t.get(e)), b = (e, t, s) => t.has(e) ? u("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, s), x = (e, t, s, r) => (h(e, t, "write to private field"), t.set(e, s), s), i;
+let o = class extends E {
   constructor() {
-    super(), R(this, u), this.consumeContext(T, (t) => {
-      var e;
-      L(this, u, t), this.observe((e = D(this, u)) == null ? void 0 : e.data, (s) => {
-        this._data = s;
+    super(), b(this, i), this.consumeContext(l, (e) => {
+      x(this, i, e), this.observe(S(this, i)?.data, (t) => {
+        this._data = t;
       });
     });
   }
   render() {
-    var t;
     if (this._data)
-      return y`
-				<umb-workspace-editor back-path="${x}" .enforceNoFooter="${!0}">
+      return v`
+				<umb-workspace-editor back-path="${N}" .enforceNoFooter="${!0}">
 					<div slot="header">
-						<h3 id="headline">${(t = this._data.pageData) == null ? void 0 : t.url}</h3>
+						<h3 id="headline">${this._data.pageData?.url}</h3>
 					</div>
 					<slot></slot>
 				</umb-workspace-editor>
 			`;
   }
 };
-u = /* @__PURE__ */ new WeakMap();
-p.styles = [
-  W,
-  P`
+i = /* @__PURE__ */ new WeakMap();
+o.styles = [
+  O,
+  T`
 			:host {
 				//padding: 
 			}
 		`
 ];
-A([
-  O()
-], p.prototype, "_data", 2);
-p = A([
-  w("content-audit-all-pages-workspace-editor")
-], p);
-const x = E.generateAbsolute({
+d([
+  f()
+], o.prototype, "_data", 2);
+o = d([
+  C("content-audit-all-pages-workspace-editor")
+], o);
+const N = m.generateAbsolute({
   sectionName: "audit",
   entityType: "all-pages-root"
 });
-var o;
-class z extends f {
-  constructor(s) {
-    super(s, T);
-    d(this, o);
-    this.workspaceAlias = N, this.repository = new S(this), c(this, o, new b(void 0)), this.data = i(this, o).asObservable(), this.unique = i(this, o).asObservablePart((r) => r == null ? void 0 : r.unique), this.routes = new g(this), this.routes.setRoutes([
+class B extends _ {
+  constructor(t) {
+    super(t, l), this.workspaceAlias = P, this.repository = new g(this), this.#t = new y(void 0), this.data = this.#t.asObservable(), this.unique = this.#t.asObservablePart((s) => s?.unique), this.routes = new A(this), this.routes.setRoutes([
       {
         path: "edit/:unique",
-        component: p,
-        setup: (r, a) => {
-          const n = a.match.params.unique;
-          this.load(n);
+        component: o,
+        setup: (s, r) => {
+          const a = r.match.params.unique;
+          this.load(a);
         }
       }
     ]);
   }
-  async load(s) {
-    const { data: r } = await this.repository.requestByUnique(s);
-    r && i(this, o).setValue(r);
+  #t;
+  async load(t) {
+    const { data: s } = await this.repository.requestByUnique(t);
+    s && this.#t.setValue(s);
   }
   getData() {
-    return i(this, o).getValue();
+    return this.#t.getValue();
   }
   getUnique() {
-    var s;
-    return (s = this.getData()) == null ? void 0 : s.unique;
+    return this.getData()?.unique;
   }
   getEntityType() {
     return "all-pages";
   }
   destroy() {
-    i(this, o).destroy(), super.destroy();
+    this.#t.destroy(), super.destroy();
   }
 }
-o = new WeakMap();
-const T = new C(
+const l = new c(
   "UmbWorkspaceContext",
   void 0,
-  (t) => {
-    var e;
-    return ((e = t.getEntityType) == null ? void 0 : e.call(t)) === "all-pages";
-  }
+  (e) => e.getEntityType?.() === "all-pages"
 );
 export {
-  T as CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT,
-  z as ContentAuditAllPagesWorkspaceContext,
-  z as api
+  l as CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT,
+  B as ContentAuditAllPagesWorkspaceContext,
+  B as api
 };
 //# sourceMappingURL=all-pages-workspace.context.js.map

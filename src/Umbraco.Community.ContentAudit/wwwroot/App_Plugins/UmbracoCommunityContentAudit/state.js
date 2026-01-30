@@ -1,9 +1,4 @@
 import { f as u, u as l } from "./index.js";
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
 const p = { attribute: !0, type: String, converter: l, reflect: !1, hasChanged: u }, d = (t = p, s, e) => {
   const { kind: a, metadata: i } = e;
   let r = globalThis.litPropertyMetadata.get(i);
@@ -31,11 +26,6 @@ function h(t) {
     return i.constructor.createProperty(r, a), n ? Object.getOwnPropertyDescriptor(i, r) : void 0;
   })(t, s, e);
 }
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
 function b(t) {
   return h({ ...t, state: !0, attribute: !1 });
 }

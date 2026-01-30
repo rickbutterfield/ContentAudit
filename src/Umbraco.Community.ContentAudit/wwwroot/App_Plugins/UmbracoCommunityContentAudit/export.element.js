@@ -1,7 +1,7 @@
 import { UmbElementMixin as p } from "@umbraco-cms/backoffice/element-api";
 import { LitElement as l, html as m, css as v, customElement as h } from "@umbraco-cms/backoffice/external/lit";
-import { tryExecuteAndNotify as x } from "@umbraco-cms/backoffice/resources";
-import { A as f } from "./index.js";
+import { tryExecuteAndNotify as f } from "@umbraco-cms/backoffice/resources";
+import { A as x } from "./index.js";
 var E = Object.getOwnPropertyDescriptor, d = (t) => {
   throw TypeError(t);
 }, _ = (t, e, r, n) => {
@@ -28,7 +28,7 @@ let a = class extends p(l) {
 };
 s = /* @__PURE__ */ new WeakSet();
 u = async function() {
-  const { data: t, error: e } = await x(this, f.export());
+  const { data: t, error: e } = await f(this, x.export());
   if (t) {
     const r = new Blob([t], { type: "text/csv;charset=utf-8;" }), n = URL.createObjectURL(r), o = document.createElement("a");
     o.href = n, o.download = "content-audit-export.csv", document.body.appendChild(o), o.click(), document.body.removeChild(o), URL.revokeObjectURL(n);

@@ -6,19 +6,19 @@ import { html as o, css as E } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles as z } from "@umbraco-cms/backoffice/style";
 var U = Object.defineProperty, C = Object.getOwnPropertyDescriptor, _ = (t) => {
   throw TypeError(t);
-}, g = (t, a, e, i) => {
-  for (var n = i > 1 ? void 0 : i ? C(a, e) : a, u = t.length - 1, v; u >= 0; u--)
-    (v = t[u]) && (n = (i ? v(a, e, n) : v(n)) || n);
-  return i && n && U(a, e, n), n;
-}, p = (t, a, e) => a.has(t) || _("Cannot " + e), h = (t, a, e) => (p(t, a, "read from private field"), a.get(t)), f = (t, a, e) => a.has(t) ? _("Cannot add the same private member more than once") : a instanceof WeakSet ? a.add(t) : a.set(t, e), R = (t, a, e, i) => (p(t, a, "write to private field"), a.set(t, e), e), r = (t, a, e) => (p(t, a, "access private method"), e), d, s, b, l, m, x, w;
+}, g = (t, a, e, r) => {
+  for (var n = r > 1 ? void 0 : r ? C(a, e) : a, u = t.length - 1, v; u >= 0; u--)
+    (v = t[u]) && (n = (r ? v(a, e, n) : v(n)) || n);
+  return r && n && U(a, e, n), n;
+}, p = (t, a, e) => a.has(t) || _("Cannot " + e), h = (t, a, e) => (p(t, a, "read from private field"), a.get(t)), f = (t, a, e) => a.has(t) ? _("Cannot add the same private member more than once") : a instanceof WeakSet ? a.add(t) : a.set(t, e), R = (t, a, e, r) => (p(t, a, "write to private field"), a.set(t, e), e), i = (t, a, e) => (p(t, a, "access private method"), e), d, s, b, l, m, x, w;
 let c = class extends k {
   constructor() {
     super(), f(this, s), f(this, d), this.consumeContext(A, (t) => {
-      R(this, d, t), r(this, s, b).call(this);
+      R(this, d, t), i(this, s, b).call(this);
     });
   }
   render() {
-    return o`${r(this, s, m).call(this)}`;
+    return o`${i(this, s, m).call(this)}`;
   }
 };
 d = /* @__PURE__ */ new WeakMap();
@@ -58,18 +58,18 @@ m = function() {
 
 				<uui-box headline="URL Statistics">
 					<div class="stats-grid">
-						${r(this, s, l).call(this, "Total URLs", this._data.total)}
-						${r(this, s, l).call(this, "Internal URLs", this._data.totalInternal)}
-						${r(this, s, l).call(this, "External URLs", this._data.totalExternal)}
-						${r(this, s, l).call(this, "Asset URLs", this._data.totalAssets)}
-						${r(this, s, l).call(this, "Blocked URLs", this._data.totalBlocked)}
+						${i(this, s, l).call(this, "Total URLs", this._data.total)}
+						${i(this, s, l).call(this, "Internal URLs", this._data.totalInternal)}
+						${i(this, s, l).call(this, "External URLs", this._data.totalExternal)}
+						${i(this, s, l).call(this, "Asset URLs", this._data.totalAssets)}
+						${i(this, s, l).call(this, "Blocked URLs", this._data.totalBlocked)}
 					</div>
 				</uui-box>
 
 				<uui-box headline="Breakdown">
 					<div class="breakdown-container">
-						${r(this, s, x).call(this)}
-						${r(this, s, w).call(this)}
+						${i(this, s, x).call(this)}
+						${i(this, s, w).call(this)}
 					</div>
 				</uui-box>
 			</div>
@@ -78,35 +78,34 @@ m = function() {
 x = function() {
   if (!this._data || !this._data.total || this._data.total === 0)
     return o`<p>No data available</p>`;
-  const t = (this._data.totalInternal ?? 0) / this._data.total * 100, a = (this._data.totalExternal ?? 0) / this._data.total * 100, e = (this._data.totalAssets ?? 0) / this._data.total * 100, i = (this._data.totalBlocked ?? 0) / this._data.total * 100;
+  const t = (this._data.totalInternal ?? 0) / this._data.total * 100, a = (this._data.totalExternal ?? 0) / this._data.total * 100, e = (this._data.totalAssets ?? 0) / this._data.total * 100, r = (this._data.totalBlocked ?? 0) / this._data.total * 100;
   return o`
 			<div class="breakdown-bar">
 				<div class="bar-segment bar-internal" style="width: ${t}%" title="Internal URLs: ${this._data.totalInternal}"></div>
 				<div class="bar-segment bar-external" style="width: ${a}%" title="External URLs: ${this._data.totalExternal}"></div>
 				<div class="bar-segment bar-assets" style="width: ${e}%" title="Assets: ${this._data.totalAssets}"></div>
-				<div class="bar-segment bar-blocked" style="width: ${i}%" title="Blocked: ${this._data.totalBlocked}"></div>
+				<div class="bar-segment bar-blocked" style="width: ${r}%" title="Blocked: ${this._data.totalBlocked}"></div>
 			</div>
 		`;
 };
 w = function() {
-  var t, a, e, i;
   return o`
 			<div class="breakdown-legend">
 				<div class="legend-item">
 					<span class="legend-color bar-internal"></span>
-					<span>Internal URLs (${((t = this._data) == null ? void 0 : t.totalInternal) ?? 0})</span>
+					<span>Internal URLs (${this._data?.totalInternal ?? 0})</span>
 				</div>
 				<div class="legend-item">
 					<span class="legend-color bar-external"></span>
-					<span>External URLs (${((a = this._data) == null ? void 0 : a.totalExternal) ?? 0})</span>
+					<span>External URLs (${this._data?.totalExternal ?? 0})</span>
 				</div>
 				<div class="legend-item">
 					<span class="legend-color bar-assets"></span>
-					<span>Assets (${((e = this._data) == null ? void 0 : e.totalAssets) ?? 0})</span>
+					<span>Assets (${this._data?.totalAssets ?? 0})</span>
 				</div>
 				<div class="legend-item">
 					<span class="legend-color bar-blocked"></span>
-					<span>Blocked (${((i = this._data) == null ? void 0 : i.totalBlocked) ?? 0})</span>
+					<span>Blocked (${this._data?.totalBlocked ?? 0})</span>
 				</div>
 			</div>
 		`;

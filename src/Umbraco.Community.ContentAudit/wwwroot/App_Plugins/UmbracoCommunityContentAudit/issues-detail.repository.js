@@ -1,55 +1,45 @@
-var m = (r) => {
-  throw TypeError(r);
-};
-var d = (r, s, t) => s.has(r) || m("Cannot " + t);
-var i = (r, s, t) => (d(r, s, "read from private field"), t ? t.call(r) : s.get(r)), n = (r, s, t) => s.has(r) ? m("Cannot add the same private member more than once") : s instanceof WeakSet ? s.add(r) : s.set(r, t), h = (r, s, t, e) => (d(r, s, "write to private field"), e ? e.call(r, t) : s.set(r, t), t);
-import { UmbRepositoryBase as w } from "@umbraco-cms/backoffice/repository";
-import { CONTENT_AUDIT_ISSUES_DETAIL_STORE_CONTEXT as f } from "./issues-detail.store.js";
-import { I as y } from "./index.js";
-import { tryExecute as U } from "@umbraco-cms/backoffice/resources";
-var u;
-class l {
-  constructor(s) {
-    n(this, u);
-    h(this, u, s);
+import { UmbRepositoryBase as i } from "@umbraco-cms/backoffice/repository";
+import { CONTENT_AUDIT_ISSUES_DETAIL_STORE_CONTEXT as o } from "./issues-detail.store.js";
+import { I as a } from "./index.js";
+import { tryExecute as n } from "@umbraco-cms/backoffice/resources";
+class u {
+  #t;
+  constructor(t) {
+    this.#t = t;
   }
-  async read(s) {
-    if (!s) throw new Error("Unique is missing");
-    const { data: t, error: e } = await U(
-      i(this, u),
-      y.getIssue({ path: { id: s } })
+  async read(t) {
+    if (!t) throw new Error("Unique is missing");
+    const { data: s, error: r } = await n(
+      this.#t,
+      a.getIssue({ path: { id: t } })
     );
-    return e || !t ? { error: e } : { data: t };
+    return r || !s ? { error: r } : { data: s };
   }
 }
-u = new WeakMap();
-var a, o, c;
-class C extends w {
+class p extends i {
+  #t;
+  #s;
+  #r = new u(this);
   constructor(t) {
-    super(t);
-    n(this, a);
-    n(this, o);
-    n(this, c, new l(this));
-    h(this, a, Promise.all([
-      this.consumeContext(f, (e) => {
-        h(this, o, e);
+    super(t), this.#t = Promise.all([
+      this.consumeContext(o, (s) => {
+        this.#s = s;
       }).asPromise()
-    ]));
+    ]);
   }
   async requestByUnique(t) {
     if (!t) throw new Error("Unique is missing");
-    await i(this, a);
-    const { data: e, error: p } = await i(this, c).read(t);
-    return e && i(this, o).append(e), { data: e, error: p, asObservable: () => i(this, o).byUnique(t) };
+    await this.#t;
+    const { data: s, error: r } = await this.#r.read(t);
+    return s && this.#s.append(s), { data: s, error: r, asObservable: () => this.#s.byUnique(t) };
   }
   async byUnique(t) {
     if (!t) throw new Error("Unique is missing");
-    return await i(this, a), i(this, o).byUnique(t);
+    return await this.#t, this.#s.byUnique(t);
   }
 }
-a = new WeakMap(), o = new WeakMap(), c = new WeakMap();
 export {
-  C as ContentAuditIssuesDetailRepository,
-  C as default
+  p as ContentAuditIssuesDetailRepository,
+  p as default
 };
 //# sourceMappingURL=issues-detail.repository.js.map

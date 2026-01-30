@@ -1,104 +1,101 @@
-import { UmbLitElement as M } from "@umbraco-cms/backoffice/lit-element";
-import { UMB_WORKSPACE_MODAL as U } from "@umbraco-cms/backoffice/workspace";
-import { t as N } from "./index.js";
-import { r as _ } from "./state.js";
-import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT as k } from "./issues-workspace.context.js";
-import { html as f, css as B } from "@umbraco-cms/backoffice/external/lit";
-import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN as q } from "@umbraco-cms/backoffice/document";
-import { UmbTextStyles as L } from "@umbraco-cms/backoffice/style";
-import { UmbModalRouteRegistrationController as K } from "@umbraco-cms/backoffice/router";
-var V = Object.defineProperty, z = Object.getOwnPropertyDescriptor, w = (e) => {
-  throw TypeError(e);
-}, c = (e, t, i, a) => {
-  for (var r = a > 1 ? void 0 : a ? z(t, i) : t, s = e.length - 1, o; s >= 0; s--)
-    (o = e[s]) && (r = (a ? o(t, i, r) : o(r)) || r);
-  return a && r && V(t, i, r), r;
-}, g = (e, t, i) => t.has(e) || w("Cannot " + i), v = (e, t, i) => (g(e, t, "read from private field"), t.get(e)), b = (e, t, i) => t.has(e) ? w("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), A = (e, t, i, a) => (g(e, t, "write to private field"), t.set(e, i), i), d = (e, t, i) => (g(e, t, "access private method"), i), h, y, u, $, O, S, x, D;
-let l = class extends M {
+import { UmbLitElement as O } from "@umbraco-cms/backoffice/lit-element";
+import { UMB_WORKSPACE_MODAL as S } from "@umbraco-cms/backoffice/workspace";
+import { t as $ } from "./index.js";
+import { r as h } from "./state.js";
+import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT as x } from "./issues-workspace.context.js";
+import { html as c, css as D } from "@umbraco-cms/backoffice/external/lit";
+import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN as R } from "@umbraco-cms/backoffice/document";
+import { UmbTextStyles as W } from "@umbraco-cms/backoffice/style";
+import { UmbModalRouteRegistrationController as M } from "@umbraco-cms/backoffice/router";
+var U = Object.defineProperty, N = Object.getOwnPropertyDescriptor, v = (t) => {
+  throw TypeError(t);
+}, m = (t, e, a, i) => {
+  for (var r = i > 1 ? void 0 : i ? N(e, a) : e, l = t.length - 1, n; l >= 0; l--)
+    (n = t[l]) && (r = (i ? n(e, a, r) : n(r)) || r);
+  return i && r && U(e, a, r), r;
+}, b = (t, e, a) => e.has(t) || v("Cannot " + a), y = (t, e, a) => (b(t, e, "read from private field"), e.get(t)), f = (t, e, a) => e.has(t) ? v("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), g = (t, e, a, i) => (b(t, e, "write to private field"), e.set(t, a), a), p = (t, e, a) => (b(t, e, "access private method"), a), d, _, s, P, C, I, T, E;
+let o = class extends O {
   constructor() {
-    super(), b(this, u), this._tableConfig = {
+    super(), f(this, s), this._tableConfig = {
       allowSelection: !1,
       hideIcon: !0
-    }, this._tableItems = [], b(this, h), b(this, y), this.consumeContext(k, (e) => {
-      A(this, h, e);
-    }), d(this, u, $).call(this);
+    }, this._tableItems = [], f(this, d), f(this, _), this.consumeContext(x, (t) => {
+      g(this, d, t);
+    }), p(this, s, P).call(this);
   }
   get _tableColumns() {
-    var t, i, a, r, s, o, p;
-    let e = [];
-    return this._data != null && (e.push({
-      name: ((t = this._data) == null ? void 0 : t.images) != null ? "URL" : "Page",
+    let t = [];
+    return this._data != null && (t.push({
+      name: this._data?.images != null ? "URL" : "Page",
       alias: "url"
-    }), ((i = this._data) == null ? void 0 : i.exposedProperties) != null && ((r = (a = this._data) == null ? void 0 : a.exposedProperties) == null ? void 0 : r.length) !== 0 && this._data.exposedProperties.forEach((n) => {
-      e.push({ name: n.name, alias: n.alias, elementName: n.elementName, labelTemplate: n.labelTemplate });
-    }), ((s = this._data) == null ? void 0 : s.images) != null && ((p = (o = this._data) == null ? void 0 : o.images) == null ? void 0 : p.length) !== 0 && e.push({
+    }), this._data?.exposedProperties != null && this._data?.exposedProperties?.length !== 0 && this._data.exposedProperties.forEach((e) => {
+      t.push({ name: e.name, alias: e.alias, elementName: e.elementName, labelTemplate: e.labelTemplate });
+    }), this._data?.images != null && this._data?.images?.length !== 0 && t.push({
       name: "Found Page",
       alias: "foundPage"
-    })), e;
+    })), t;
   }
   render() {
-    return f`
-			${d(this, u, x).call(this)}
-			${d(this, u, D).call(this)}
+    return c`
+			${p(this, s, T).call(this)}
+			${p(this, s, E).call(this)}
 		`;
   }
 };
-h = /* @__PURE__ */ new WeakMap();
-y = /* @__PURE__ */ new WeakMap();
-u = /* @__PURE__ */ new WeakSet();
-$ = function() {
-  new K(this, U).addAdditionalPath(":entityType").onSetup((e) => ({ data: { entityType: e.entityType, preset: {} } })).observeRouteBuilder((e) => {
-    A(this, y, e), d(this, u, O).call(this);
+d = /* @__PURE__ */ new WeakMap();
+_ = /* @__PURE__ */ new WeakMap();
+s = /* @__PURE__ */ new WeakSet();
+P = function() {
+  new M(this, S).addAdditionalPath(":entityType").onSetup((t) => ({ data: { entityType: t.entityType, preset: {} } })).observeRouteBuilder((t) => {
+    g(this, _, t), p(this, s, C).call(this);
   });
 };
-O = function() {
-  v(this, h) && this.observe(v(this, h).data, (e) => {
-    this._data = e, d(this, u, S).call(this, e);
+C = function() {
+  y(this, d) && this.observe(y(this, d).data, (t) => {
+    this._data = t, p(this, s, I).call(this, t);
   }, "umbCollectionItemsObserver");
 };
-S = function(e) {
-  var a, r, s;
-  let t = [];
-  const i = v(this, y);
-  if (!i) throw new Error("Route builder not ready");
-  e != null && (((a = e.pages) == null ? void 0 : a.length) !== 0 && (t = (r = e == null ? void 0 : e.pages) == null ? void 0 : r.map((o) => {
-    var P, C, I, T;
-    const p = i({ entityType: "document" }) + q.generateLocal({ unique: o.unique });
-    let n = {
-      id: o.unique,
+I = function(t) {
+  let e = [];
+  const a = y(this, _);
+  if (!a) throw new Error("Route builder not ready");
+  t != null && (t.pages?.length !== 0 && (e = t?.pages?.map((i) => {
+    const r = a({ entityType: "document" }) + R.generateLocal({ unique: i.unique });
+    let l = {
+      id: i.unique,
       data: [
         {
           columnAlias: "url",
-          value: f`<a href="${p}">${(P = o.pageData) == null ? void 0 : P.url}</a>`
+          value: c`<a href="${r}">${i.pageData?.url}</a>`
         }
       ]
     };
-    return ((C = this._data) == null ? void 0 : C.exposedProperties) != null && ((T = (I = this._data) == null ? void 0 : I.exposedProperties) == null ? void 0 : T.length) !== 0 && this._data.exposedProperties.forEach((E) => {
-      const R = E.alias.split(".");
-      let m = o;
-      for (const W of R)
-        if (m && typeof m == "object")
-          m = m[W];
+    return this._data?.exposedProperties != null && this._data?.exposedProperties?.length !== 0 && this._data.exposedProperties.forEach((n) => {
+      const w = n.alias.split(".");
+      let u = i;
+      for (const A of w)
+        if (u && typeof u == "object")
+          u = u[A];
         else
           break;
-      n.data.push({ columnAlias: E.alias, value: m });
-    }), n;
-  })), (e == null ? void 0 : e.images) != null && (e == null ? void 0 : e.images.length) !== 0 && (t = (s = e == null ? void 0 : e.images) == null ? void 0 : s.map((o) => ({
-    id: o.unique,
+      l.data.push({ columnAlias: n.alias, value: u });
+    }), l;
+  })), t?.images != null && t?.images.length !== 0 && (e = t?.images?.map((i) => ({
+    id: i.unique,
     data: [
       {
         columnAlias: "url",
-        value: o.url
+        value: i.url
       },
       {
         columnAlias: "foundPage",
-        value: o.foundPage
+        value: i.foundPage
       }
     ]
-  })))), this._tableItems = t || [];
+  })))), this._tableItems = e || [];
 };
-x = function() {
-  return f`
+T = function() {
+  return c`
 			<div>
 				<umb-table
 					.config=${this._tableConfig}
@@ -108,36 +105,35 @@ x = function() {
 			</div>
 		`;
 };
-D = function() {
-  var e, t, i, a, r;
-  return f`
+E = function() {
+  return c`
 			<uui-box style="align-self: flex-start;">
 				<umb-property-layout label="Name" orientation="vertical" style="padding-top: 0;">
-					<div slot="editor">${(e = this._data) == null ? void 0 : e.name}</div>
+					<div slot="editor">${this._data?.name}</div>
 				</umb-property-layout>
 				<umb-property-layout label="Category" orientation="vertical">
-					<div slot="editor">${(t = this._data) == null ? void 0 : t.category}</div>
+					<div slot="editor">${this._data?.category}</div>
 				</umb-property-layout>
 				<umb-property-layout label="Description" orientation="vertical">
-					<div slot="editor">${(i = this._data) == null ? void 0 : i.description}</div>
+					<div slot="editor">${this._data?.description}</div>
 				</umb-property-layout>
 
 				<umb-property-layout label="Issue Type" orientation="vertical">
 					<div slot="editor">
-						<content-audit-issue-type-label .type=${(a = this._data) == null ? void 0 : a.type}></content-audit-issue-type-label>
+						<content-audit-issue-type-label .type=${this._data?.type}></content-audit-issue-type-label>
 					</div>
 				</umb-property-layout>
 				<umb-property-layout label="Issue Priority" orientation="vertical" style="padding-bottom: 0;">
 					<div slot="editor">
-						<content-audit-priority-type-label .type=${(r = this._data) == null ? void 0 : r.priority}></content-audit-priority-type-label>
+						<content-audit-priority-type-label .type=${this._data?.priority}></content-audit-priority-type-label>
 					</div>
 				</umb-property-layout>
 			</uui-box>
 		`;
 };
-l.styles = [
-  L,
-  B`
+o.styles = [
+  W,
+  D`
 			:host {
 				display: grid;
 				gap: var(--uui-size-layout-1);
@@ -146,24 +142,24 @@ l.styles = [
 			}
 		`
 ];
-c([
-  _()
-], l.prototype, "_data", 2);
-c([
-  _()
-], l.prototype, "_tableConfig", 2);
-c([
-  _()
-], l.prototype, "_tableColumns", 1);
-c([
-  _()
-], l.prototype, "_tableItems", 2);
-l = c([
-  N("content-audit-issues-details-workspace-view")
-], l);
-const ee = l;
+m([
+  h()
+], o.prototype, "_data", 2);
+m([
+  h()
+], o.prototype, "_tableConfig", 2);
+m([
+  h()
+], o.prototype, "_tableColumns", 1);
+m([
+  h()
+], o.prototype, "_tableItems", 2);
+o = m([
+  $("content-audit-issues-details-workspace-view")
+], o);
+const H = o;
 export {
-  l as ContentAuditIssuesDetailsWorkspaceViewElement,
-  ee as default
+  o as ContentAuditIssuesDetailsWorkspaceViewElement,
+  H as default
 };
 //# sourceMappingURL=issues-details-workspace-view.element.js.map

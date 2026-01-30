@@ -1,36 +1,30 @@
-var y = (t) => {
-  throw TypeError(t);
-};
-var T = (t, s, e) => s.has(t) || y("Cannot " + e);
-var a = (t, s, e) => (T(t, s, "read from private field"), e ? e.call(t) : s.get(t)), d = (t, s, e) => s.has(t) ? y("Cannot add the same private member more than once") : s instanceof WeakSet ? s.add(t) : s.set(t, e), _ = (t, s, e, r) => (T(t, s, "write to private field"), r ? r.call(t, e) : s.set(t, e), e);
-import { UmbContextBase as C } from "@umbraco-cms/backoffice/class-api";
-import { UmbContextToken as E } from "@umbraco-cms/backoffice/context-api";
-import { UMB_WORKSPACE_PATH_PATTERN as P, UmbWorkspaceRouteManager as S } from "@umbraco-cms/backoffice/workspace";
-import { UmbObjectState as A, UmbArrayState as g, UmbStringState as I, UmbBooleanState as k } from "@umbraco-cms/backoffice/observable-api";
-import { d as N, b as D, A as W, I as q } from "./index.js";
-import { html as R, state as V, customElement as x } from "@umbraco-cms/backoffice/external/lit";
-import { UmbLitElement as K } from "@umbraco-cms/backoffice/lit-element";
-import { tryExecute as b } from "@umbraco-cms/backoffice/resources";
-var B = Object.defineProperty, M = Object.getOwnPropertyDescriptor, U = (t) => {
-  throw TypeError(t);
-}, w = (t, s, e, r) => {
-  for (var i = r > 1 ? void 0 : r ? M(s, e) : s, h = t.length - 1, v; h >= 0; h--)
-    (v = t[h]) && (i = (r ? v(s, e, i) : v(i)) || i);
-  return r && i && B(s, e, i), i;
-}, O = (t, s, e) => s.has(t) || U("Cannot " + e), H = (t, s, e) => (O(t, s, "read from private field"), s.get(t)), L = (t, s, e) => s.has(t) ? U("Cannot add the same private member more than once") : s instanceof WeakSet ? s.add(t) : s.set(t, e), Y = (t, s, e, r) => (O(t, s, "write to private field"), s.set(t, e), e), c;
-let m = class extends K {
+import { UmbContextBase as m } from "@umbraco-cms/backoffice/class-api";
+import { UmbContextToken as v } from "@umbraco-cms/backoffice/context-api";
+import { UMB_WORKSPACE_PATH_PATTERN as y, UmbWorkspaceRouteManager as T } from "@umbraco-cms/backoffice/workspace";
+import { UmbObjectState as h, UmbArrayState as A, UmbStringState as b, UmbBooleanState as U } from "@umbraco-cms/backoffice/observable-api";
+import { d as w, b as O, A as f, I as C } from "./index.js";
+import { html as E, state as P, customElement as S } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement as g } from "@umbraco-cms/backoffice/lit-element";
+import { tryExecute as d } from "@umbraco-cms/backoffice/resources";
+var I = Object.defineProperty, k = Object.getOwnPropertyDescriptor, p = (s) => {
+  throw TypeError(s);
+}, c = (s, t, e, r) => {
+  for (var a = r > 1 ? void 0 : r ? k(t, e) : t, o = s.length - 1, u; o >= 0; o--)
+    (u = s[o]) && (a = (r ? u(t, e, a) : u(a)) || a);
+  return r && a && I(t, e, a), a;
+}, _ = (s, t, e) => t.has(s) || p("Cannot " + e), N = (s, t, e) => (_(s, t, "read from private field"), t.get(s)), D = (s, t, e) => t.has(s) ? p("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(s) : t.set(s, e), x = (s, t, e, r) => (_(s, t, "write to private field"), t.set(s, e), e), i;
+let n = class extends g {
   constructor() {
-    super(), L(this, c), this.consumeContext(f, (t) => {
-      var s;
-      Y(this, c, t), this.observe((s = H(this, c)) == null ? void 0 : s.data, (e) => {
-        this._data = e;
+    super(), D(this, i), this.consumeContext(l, (s) => {
+      x(this, i, s), this.observe(N(this, i)?.data, (t) => {
+        this._data = t;
       });
     });
   }
   render() {
     if (this._data)
-      return R`
-				<umb-workspace-editor back-path="${$}/edit/null" .enforceNoFooter="${!0}">
+      return E`
+				<umb-workspace-editor back-path="${W}/edit/null" .enforceNoFooter="${!0}">
 					<div slot="header">
 						<h3 id="headline">Audit Details</h3>
 					</div>
@@ -39,89 +33,82 @@ let m = class extends K {
 			`;
   }
 };
-c = /* @__PURE__ */ new WeakMap();
-w([
-  V()
-], m.prototype, "_data", 2);
-m = w([
-  x("content-audit-audits-workspace-editor")
-], m);
-const $ = P.generateAbsolute({
+i = /* @__PURE__ */ new WeakMap();
+c([
+  P()
+], n.prototype, "_data", 2);
+n = c([
+  S("content-audit-audits-workspace-editor")
+], n);
+const W = y.generateAbsolute({
   sectionName: "audit",
   entityType: "audits-root"
 });
-var n, u, p, l, o;
-class et extends C {
-  constructor(e) {
-    super(e, f);
-    d(this, n);
-    d(this, u);
-    d(this, p);
-    d(this, l);
-    d(this, o);
-    this.workspaceAlias = N, _(this, n, new A(void 0)), this.data = a(this, n).asObservable(), _(this, u, new g([], (r) => r.unique)), this.issues = a(this, u).asObservable(), this.unique = a(this, n).asObservablePart((r) => r == null ? void 0 : r.key), _(this, p, new I(D)), this.entityType = a(this, p).asObservable(), _(this, l, new k(!1)), this.isNew = a(this, l).asObservable(), _(this, o, new A(void 0)), this._internal_createUnderParent = a(this, o).asObservable(), this._internal_createUnderParentEntityType = a(this, o).asObservablePart((r) => r == null ? void 0 : r.entityType), this._internal_createUnderParentEntityUnique = a(this, o).asObservablePart((r) => r == null ? void 0 : r.unique), this.routes = new S(this), this.routes.setRoutes([
+class Y extends m {
+  constructor(t) {
+    super(t, l), this.workspaceAlias = w, this.#t = new h(void 0), this.data = this.#t.asObservable(), this.#s = new A([], (e) => e.unique), this.issues = this.#s.asObservable(), this.unique = this.#t.asObservablePart((e) => e?.key), this.#r = new b(O), this.entityType = this.#r.asObservable(), this.#a = new U(!1), this.isNew = this.#a.asObservable(), this.#e = new h(void 0), this._internal_createUnderParent = this.#e.asObservable(), this._internal_createUnderParentEntityType = this.#e.asObservablePart((e) => e?.entityType), this._internal_createUnderParentEntityUnique = this.#e.asObservablePart((e) => e?.unique), this.routes = new T(this), this.routes.setRoutes([
       {
         path: "edit/:unique",
-        component: m,
-        setup: (r, i) => {
-          const h = i.match.params.unique;
-          this.load(h);
+        component: n,
+        setup: (e, r) => {
+          const a = r.match.params.unique;
+          this.load(a);
         }
       }
     ]);
   }
+  #t;
+  #s;
+  #r;
+  #a;
+  #e;
   // Required for UMB_SUBMITTABLE_TREE_ENTITY_WORKSPACE_CONTEXT (read-only, so no-op)
   async requestSubmit() {
   }
   getIsNew() {
-    return a(this, l).getValue();
+    return this.#a.getValue();
   }
   _internal_getCreateUnderParent() {
-    return a(this, o).getValue();
+    return this.#e.getValue();
   }
-  _internal_setCreateUnderParent(e) {
-    a(this, o).setValue(e);
+  _internal_setCreateUnderParent(t) {
+    this.#e.setValue(t);
   }
-  async load(e) {
-    const { data: r } = await b(this, W.overviewByKey({ path: { id: e } }));
-    r && r.key === e && (a(this, n).setValue(r), await this.loadIssues());
+  async load(t) {
+    const { data: e } = await d(this, f.overviewByKey({ path: { id: t } }));
+    e && e.key === t && (this.#t.setValue(e), await this.loadIssues());
   }
   async loadIssues() {
-    const { data: e } = await b(this, q.getAllIssues({ query: { skip: 0, take: 100 } }));
-    if (e && e.items) {
-      const r = e.items.sort((i, h) => h.priorityScore - i.priorityScore);
-      a(this, u).setValue(r);
+    const { data: t } = await d(this, C.getAllIssues({ query: { skip: 0, take: 100 } }));
+    if (t && t.items) {
+      const e = t.items.sort((r, a) => a.priorityScore - r.priorityScore);
+      this.#s.setValue(e);
     }
   }
   getData() {
-    return a(this, n).getValue();
+    return this.#t.getValue();
   }
   getIssues() {
-    return a(this, u).getValue();
+    return this.#s.getValue();
   }
   getUnique() {
-    var e;
-    return (e = this.getData()) == null ? void 0 : e.key;
+    return this.getData()?.key;
   }
   getEntityType() {
     return "audits";
   }
   destroy() {
-    a(this, n).destroy(), a(this, u).destroy(), super.destroy();
+    this.#t.destroy(), this.#s.destroy(), super.destroy();
   }
 }
-n = new WeakMap(), u = new WeakMap(), p = new WeakMap(), l = new WeakMap(), o = new WeakMap();
-const f = new E(
+const l = new v(
   "UmbWorkspaceContext",
   void 0,
-  (t) => {
-    var s;
-    return ((s = t.getEntityType) == null ? void 0 : s.call(t)) === "audits";
-  }
+  (s) => s.getEntityType?.() === "audits"
 );
 export {
-  f as CONTENT_AUDIT_AUDITS_WORKSPACE_CONTEXT,
-  et as ContentAuditAuditsWorkspaceContext,
-  et as api
+  l as CONTENT_AUDIT_AUDITS_WORKSPACE_CONTEXT,
+  Y as ContentAuditAuditsWorkspaceContext,
+  Y as api
 };
 //# sourceMappingURL=audits-workspace.context.js.map

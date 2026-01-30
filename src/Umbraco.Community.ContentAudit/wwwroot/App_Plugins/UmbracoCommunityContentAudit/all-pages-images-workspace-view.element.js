@@ -1,14 +1,14 @@
 import { UmbLitElement as C } from "@umbraco-cms/backoffice/lit-element";
 import { t as y } from "./index.js";
-import { r as p } from "./state.js";
+import { r as _ } from "./state.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as w } from "./all-pages-workspace.context.js";
 import { html as u, css as A } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles as I } from "@umbraco-cms/backoffice/style";
 var T = Object.defineProperty, x = Object.getOwnPropertyDescriptor, b = (t) => {
   throw TypeError(t);
 }, n = (t, e, a, o) => {
-  for (var i = o > 1 ? void 0 : o ? x(e, a) : e, _ = t.length - 1, h; _ >= 0; _--)
-    (h = t[_]) && (i = (o ? h(e, a, i) : h(i)) || i);
+  for (var i = o > 1 ? void 0 : o ? x(e, a) : e, p = t.length - 1, h; p >= 0; p--)
+    (h = t[p]) && (i = (o ? h(e, a, i) : h(i)) || i);
   return o && i && T(e, a, i), i;
 }, c = (t, e, a) => e.has(t) || b("Cannot " + a), f = (t, e, a) => (c(t, e, "read from private field"), e.get(t)), v = (t, e, a) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), E = (t, e, a, o) => (c(t, e, "write to private field"), e.set(t, a), a), m = (t, e, a) => (c(t, e, "access private method"), a), l, r, g, d;
 let s = class extends C {
@@ -30,8 +30,7 @@ let s = class extends C {
     });
   }
   updated(t) {
-    var e;
-    t.has("data") && this._data && ((e = this._data) == null ? void 0 : e.images.length) !== 0 && m(this, r, d).call(this, this._data.images);
+    t.has("data") && this._data && this._data?.images.length !== 0 && m(this, r, d).call(this, this._data.images);
   }
   render() {
     if (!this._data) return u`<uui-box>No data available</uui-box>`;
@@ -79,16 +78,16 @@ s.styles = [
 		`
 ];
 n([
-  p()
+  _()
 ], s.prototype, "_data", 2);
 n([
-  p()
+  _()
 ], s.prototype, "_tableConfig", 2);
 n([
-  p()
+  _()
 ], s.prototype, "_tableColumns", 2);
 n([
-  p()
+  _()
 ], s.prototype, "_tableItems", 2);
 s = n([
   y("content-audit-all-pages-images-workspace-view")

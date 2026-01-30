@@ -1,11 +1,11 @@
 import { html as u, customElement as m } from "@umbraco-cms/backoffice/external/lit";
 import { UmbCollectionDefaultElement as s } from "@umbraco-cms/backoffice/collection";
-var a = Object.getOwnPropertyDescriptor, b = (l, n, c, r) => {
-  for (var e = r > 1 ? void 0 : r ? a(n, c) : n, t = l.length - 1, i; t >= 0; t--)
-    (i = l[t]) && (e = i(e) || e);
+var a = Object.getOwnPropertyDescriptor, b = (o, n, c, r) => {
+  for (var e = r > 1 ? void 0 : r ? a(n, c) : n, t = o.length - 1, i; t >= 0; t--)
+    (i = o[t]) && (e = i(e) || e);
   return e;
 };
-let o = class extends s {
+let l = class extends s {
   renderToolbar() {
     return u`
 			<umb-collection-toolbar slot="header">
@@ -14,12 +14,12 @@ let o = class extends s {
 		`;
   }
 };
-o = b([
+l = b([
   m("content-audit-inbound-links-collection")
-], o);
-const p = o;
+], l);
+const p = l;
 export {
-  o as ContentAuditInboundLinksCollectionElement,
+  l as ContentAuditInboundLinksCollectionElement,
   p as default
 };
 //# sourceMappingURL=inbound-links.element.js.map

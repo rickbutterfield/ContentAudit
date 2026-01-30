@@ -4,28 +4,24 @@ import { LitElement as C, html as l, state as h, customElement as g } from "@umb
 import { ContentAuditAllPagesWorkspaceContext as y, CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as E } from "./all-pages-workspace.context.js";
 var $ = Object.defineProperty, w = Object.getOwnPropertyDescriptor, v = (t) => {
   throw TypeError(t);
-}, u = (t, e, a, i) => {
-  for (var r = i > 1 ? void 0 : i ? w(e, a) : e, p = t.length - 1, _; p >= 0; p--)
-    (_ = t[p]) && (r = (i ? _(e, a, r) : _(r)) || r);
-  return i && r && $(e, a, r), r;
-}, b = (t, e, a) => e.has(t) || v("Cannot " + a), c = (t, e, a) => (b(t, e, "read from private field"), e.get(t)), m = (t, e, a) => e.has(t) ? v("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), d = (t, e, a, i) => (b(t, e, "write to private field"), e.set(t, a), a), n, o;
-let s = class extends f(C) {
+}, o = (t, e, a, u) => {
+  for (var s = u > 1 ? void 0 : u ? w(e, a) : e, p = t.length - 1, _; p >= 0; p--)
+    (_ = t[p]) && (s = (u ? _(e, a, s) : _(s)) || s);
+  return u && s && $(e, a, s), s;
+}, b = (t, e, a) => e.has(t) || v("Cannot " + a), c = (t, e, a) => (b(t, e, "read from private field"), e.get(t)), m = (t, e, a) => e.has(t) ? v("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), d = (t, e, a, u) => (b(t, e, "write to private field"), e.set(t, a), a), n, r;
+let i = class extends f(C) {
   constructor() {
-    super(), this._documentUnique = "", this._routes = [], this._activePath = "", m(this, n), m(this, o), this.consumeContext(P, (t) => {
-      var e;
+    super(), this._documentUnique = "", this._routes = [], this._activePath = "", m(this, n), m(this, r), this.consumeContext(P, (t) => {
       d(this, n, t), this.observe(
-        (e = c(this, n)) == null ? void 0 : e.unique,
-        (a) => {
-          var i;
-          this._documentUnique = a, d(this, o, new y(this)), (i = c(this, o)) == null || i.load(this._documentUnique);
+        c(this, n)?.unique,
+        (e) => {
+          this._documentUnique = e, d(this, r, new y(this)), c(this, r)?.load(this._documentUnique);
         },
         "_documentUnique"
       );
     }), this.consumeContext(E, (t) => {
-      var e;
-      d(this, o, t), this.observe((e = c(this, o)) == null ? void 0 : e.data, (a) => {
-        var i;
-        this._data = a, this._data != null && (i = this._data.pageData) != null && i.auditKey && this._createRoutes();
+      d(this, r, t), this.observe(c(this, r)?.data, (e) => {
+        this._data = e, this._data != null && this._data.pageData?.auditKey && this._createRoutes();
       }, "umbCollectionItemsObserver");
     });
   }
@@ -118,28 +114,28 @@ let s = class extends f(C) {
   }
 };
 n = /* @__PURE__ */ new WeakMap();
-o = /* @__PURE__ */ new WeakMap();
-u([
+r = /* @__PURE__ */ new WeakMap();
+o([
   h()
-], s.prototype, "_documentUnique", 2);
-u([
+], i.prototype, "_documentUnique", 2);
+o([
   h()
-], s.prototype, "_data", 2);
-u([
+], i.prototype, "_data", 2);
+o([
   h()
-], s.prototype, "_routes", 2);
-u([
+], i.prototype, "_routes", 2);
+o([
   h()
-], s.prototype, "_routerPath", 2);
-u([
+], i.prototype, "_routerPath", 2);
+o([
   h()
-], s.prototype, "_activePath", 2);
-s = u([
+], i.prototype, "_activePath", 2);
+i = o([
   g("contentaudit-workspace-view")
-], s);
-const U = s;
+], i);
+const U = i;
 export {
-  s as ContentAuditWorkspaceElement,
+  i as ContentAuditWorkspaceElement,
   U as default
 };
 //# sourceMappingURL=contentaudit-workspace-view.js.map
