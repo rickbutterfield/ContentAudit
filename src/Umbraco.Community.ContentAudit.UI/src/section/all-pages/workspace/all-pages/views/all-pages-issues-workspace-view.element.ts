@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspac
 import { IssueDto, PageAnalysisDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
-import { UmbTableConfig, UmbTableColumn, UmbTableItem } from "../../../../../interfaces";
+import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
 
 @customElement('content-audit-all-pages-issues-workspace-view')
 export class ContentAuditAllPagesIssuesWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
@@ -59,16 +59,6 @@ export class ContentAuditAllPagesIssuesWorkspaceViewElement extends UmbLitElemen
 		}, 'umbCollectionItemsObserver');
 	}
 
-	updated(changedProperties: Map<string, any>) {
-		if (changedProperties.has('data')) {
-			if (this._data) {
-				if (this._data?.issues.length !== 0) {
-					this.#createTableItems(this._data.issues);
-				}
-			}
-		}
-	}
-
 	#createTableItems(issues: IssueDto[]) {
 		this._tableItems = issues.map((issue) => {
 			return {
@@ -87,7 +77,7 @@ export class ContentAuditAllPagesIssuesWorkspaceViewElement extends UmbLitElemen
 					},
 					{
 						columnAlias: 'type',
-						value: html`<content-audit-issue-type-label .type=${issue.type}></content-audit-issue-type-label`
+						value: html`<content-audit-issue-type-label .type=${issue.type}></content-audit-issue-type-label>`
 					},
 					{
 						columnAlias: 'priority',

@@ -4,7 +4,7 @@ const workspaceView: ManifestWorkspaceView = {
     type: 'workspaceView',
     alias: 'Umbraco.Community.ContentAudit.Workspace',
     name: 'ContentAudit Workspace',
-    js: () => import('./views/contentaudit-workspace-view.js'),
+    js: () => import('./views/contentaudit-workspace-view'),
     weight: 150,
     meta: {
         label: 'Audit',

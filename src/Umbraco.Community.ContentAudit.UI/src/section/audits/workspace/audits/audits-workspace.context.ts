@@ -84,7 +84,7 @@ export class ContentAuditAuditsWorkspaceContext extends UmbContextBase {
 		
 		if (data && data.items) {
 			// Sort by priority score descending
-			const sortedIssues = data.items.sort((a, b) => b.priorityScore! - a.priorityScore!);
+			const sortedIssues = data.items.sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
 			this.#issues.setValue(sortedIssues);
 		}
 	}

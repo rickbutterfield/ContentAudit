@@ -1,11 +1,11 @@
 ﻿import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbContextToken } from "@umbraco-cms/backoffice/context-api";
-import { UMB_WORKSPACE_CONTEXT, UmbWorkspaceContext } from "@umbraco-cms/backoffice/workspace";
+import { UmbWorkspaceContext } from "@umbraco-cms/backoffice/workspace";
 import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../workspace/constants";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
 import { UmbArrayState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
-import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageAnalysisDto } from "../api";
+import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageAnalysisDto, CrawlService } from "../api";
 
 export class ContentAuditContext extends UmbControllerBase implements UmbWorkspaceContext {
 	public readonly workspaceAlias: string = CONTENT_AUDIT_WORKSPACE_ALIAS;
@@ -36,7 +36,6 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	
 	constructor(host: UmbControllerHost) {
 		super(host);
-		this.provideContext(UMB_WORKSPACE_CONTEXT, this);
 		this.provideContext(CONTENT_AUDIT_CONTEXT_TOKEN, this);
 
 		this.#repository = new ContentAuditRepository(this);
@@ -88,8 +87,12 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		}
 	}
 
+	async startCrawl() {
+		return CrawlService.startCrawl();
+	}
+
 	async getSettings() {
-		const { data} = await this.#repository.getSettings();
+		const { data } = await this.#repository.getSettings();
 
 		if (data) {
 			this.#settings.setValue(data);

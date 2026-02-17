@@ -2,7 +2,7 @@
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { PageAnalysisDto } from '../../../../../api';
-import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
+import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
 @customElement('content-audit-all-pages-table-collection-view')
 export class ContentAuditAllPagesTableCollectionViewElement extends UmbLitElement {

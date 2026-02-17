@@ -51,12 +51,12 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					</umb-property-layout>
 					<umb-property-layout label="H2s">
 						<div slot="editor">
-							<ul>${this._data?.seoData.h2s?.map((h2: string) => html`<li>${h2}</li>`)}<ul>
+							<ul>${this._data?.seoData.h2s?.map((h2: string) => html`<li>${h2}</li>`)}</ul>
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="H3s">
 						<div slot="editor">
-							<ul>${this._data?.seoData.h3s?.map((h3: string) => html`<li>${h3}</li>`)}<ul>
+							<ul>${this._data?.seoData.h3s?.map((h3: string) => html`<li>${h3}</li>`)}</ul>
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="No Index">
@@ -110,7 +110,7 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 								<uui-table-head-cell>Keyword</uui-table-head-cell>
 								<uui-table-head-cell>Density</uui-table-head-cell>
 							</uui-table-head>
-							${Object.entries(this._data?.contentAnalysis.keywordDensity!).map((value) => {
+							${Object.entries(this._data?.contentAnalysis.keywordDensity ?? {}).map((value) => {
             return html`
 									<uui-table-row>
 										<uui-table-cell>${value[0]}</uui-table-cell>
@@ -191,7 +191,7 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 									<uui-table-head-cell>Message</uui-table-head-cell>
 									<uui-table-head-cell>Type</uui-table-head-cell>
 								</uui-table-head>
-								${Object.entries(this._data?.technicalSeoData.htmlValidationErrors!).map((value) => {
+								${Object.entries(this._data?.technicalSeoData.htmlValidationErrors ?? []).map((value) => {
 									let message: ValidationMessage = value[1];
 									return html`
 										<uui-table-row>

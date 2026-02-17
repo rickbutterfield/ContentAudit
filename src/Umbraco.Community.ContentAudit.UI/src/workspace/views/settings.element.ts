@@ -1,10 +1,10 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, state } from "@umbraco-cms/backoffice/external/lit";
+﻿import { css, customElement, html, state } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { CONTENT_AUDIT_CONTEXT_TOKEN, ContentAuditContext } from "../../exports";
 import { ContentAuditSettings } from "../../api";
 
 @customElement('content-audit-settings-view')
-export class ContentAuditSettingsViewElement extends UmbElementMixin(LitElement) {
+export class ContentAuditSettingsViewElement extends UmbLitElement {
     #context?: ContentAuditContext;
 
     @state()

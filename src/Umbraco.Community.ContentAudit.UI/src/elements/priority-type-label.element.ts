@@ -1,9 +1,9 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, property } from "@umbraco-cms/backoffice/external/lit";
+﻿import { css, customElement, html, property } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { IssuePriorityConfigMap } from "../helpers";
 
 @customElement('content-audit-priority-type-label')
-export class ContentAuditPriorityTypeLabel extends UmbElementMixin(LitElement) {
+export class ContentAuditPriorityTypeLabel extends UmbLitElement {
 
     @property({ attribute: false })
     type: number = 0;

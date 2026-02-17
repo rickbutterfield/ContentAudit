@@ -27,8 +27,8 @@ export class ContentAuditIssuesDetailRepository extends UmbRepositoryBase implem
 
         const { data, error } = await this.#detailSource.read(unique);
 
-        if (data) {
-            this.#detailStore!.append(data);
+        if (data && this.#detailStore) {
+            this.#detailStore.append(data);
         }
 
         return { data, error, asObservable: () => this.#detailStore!.byUnique(unique) };

@@ -1,10 +1,10 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, property } from "@umbraco-cms/backoffice/external/lit";
+﻿import { css, customElement, html, property } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { MetricDto, MetricName, MetricRating } from "../api";
 import { UUIInterfaceColor } from "@umbraco-cms/backoffice/external/uui";
 
 @customElement('content-audit-metric-label')
-export class ContentAuditMetricLabel extends UmbElementMixin(LitElement) {
+export class ContentAuditMetricLabel extends UmbLitElement {
 
     @property({ attribute: false })
     value?: MetricDto;

@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspac
 import { LinkDto, PageAnalysisDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
-import { UmbTableConfig, UmbTableColumn, UmbTableItem } from "../../../../../interfaces";
+import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
 
 @customElement('content-audit-all-pages-resources-workspace-view')
 export class ContentAuditAllPagesResourcesWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
@@ -52,16 +52,6 @@ export class ContentAuditAllPagesResourcesWorkspaceViewElement extends UmbLitEle
 				this.#createTableItems(this._data.resources);
 			}
 		}, 'umbCollectionItemsObserver');
-	}
-
-	updated(changedProperties: Map<string, any>) {
-		if (changedProperties.has('data')) {
-			if (this._data) {
-				if (this._data?.resources.length !== 0) {
-					this.#createTableItems(this._data.resources);
-				}
-			}
-		}
 	}
 
 	#createTableItems(resources: LinkDto[]) {

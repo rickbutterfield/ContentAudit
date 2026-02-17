@@ -1,10 +1,10 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement } from "@umbraco-cms/backoffice/external/lit";
+﻿import { css, customElement, html } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
 import { AuditService } from "../../../../api";
 
 @customElement('content-audit-export')
-export class ContentAuditExportElement extends UmbElementMixin(LitElement) {
+export class ContentAuditExportElement extends UmbLitElement {
     constructor() {
         super();
     }
@@ -59,6 +59,6 @@ export default ContentAuditExportElement;
 
 declare global {
     interface HTMLElementTagNameMap {
-        'content-audit-export-root': ContentAuditExportElement;
+        'content-audit-export': ContentAuditExportElement;
     }
 }

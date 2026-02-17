@@ -1,8 +1,8 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { customElement, html, LitElement, nothing, property } from "@umbraco-cms/backoffice/external/lit";
+﻿import { customElement, html, nothing, property } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 
 @customElement('content-audit-status-code-label')
-export class ContentAuditStatusCodeLabel extends UmbElementMixin(LitElement) {
+export class ContentAuditStatusCodeLabel extends UmbLitElement {
 
     @property({ attribute: false })
     statusCode?: number;

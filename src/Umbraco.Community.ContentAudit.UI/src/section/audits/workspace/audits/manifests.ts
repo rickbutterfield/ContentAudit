@@ -30,24 +30,6 @@ export const manifests: Array<UmbExtensionManifest> = [
 			},
 		],
 	},
-	//{
-	//	type: 'workspaceView',
-	//	alias: 'Umb.WorkspaceView.ContentAudit.Audits.Details',
-	//	name: 'Audits Workspace Details View',
-	//	js: () => import('./views/audits-details-workspace-view.element'),
-	//	weight: 90,
-	//	meta: {
-	//		label: 'Details',
-	//		pathname: 'details',
-	//		icon: 'icon-info',
-	//	},
-	//	conditions: [
-	//		{
-	//			alias: UMB_WORKSPACE_CONDITION_ALIAS,
-	//			match: CONTENT_AUDIT_AUDITS_WORKSPACE_ALIAS,
-	//		},
-	//	],
-	//},
 	{
 		type: 'workspaceView',
 		alias: 'Umb.WorkspaceView.ContentAudit.Audits.Issues',

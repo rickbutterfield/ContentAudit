@@ -2,7 +2,7 @@
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { LinkGroupDto } from '../../../../../api';
-import { UmbTableColumn, UmbTableItem, UmbTableConfig } from '../../../../../exports';
+import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
 @customElement('content-audit-inbound-links-table-collection-view')
 export class ContentAuditInboundLinksTableCollectionViewElement extends UmbLitElement {

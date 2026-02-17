@@ -1,9 +1,9 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { customElement, html, LitElement, property } from "@umbraco-cms/backoffice/external/lit";
+﻿import { customElement, html, property } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { UUIInterfaceColor } from "@umbraco-cms/backoffice/external/uui";
 
 @customElement('content-audit-carbon-intensity-label')
-export class ContentAuditCarbonIntensityLabel extends UmbElementMixin(LitElement) {
+export class ContentAuditCarbonIntensityLabel extends UmbLitElement {
 
     @property({ attribute: true })
     value: string = '';

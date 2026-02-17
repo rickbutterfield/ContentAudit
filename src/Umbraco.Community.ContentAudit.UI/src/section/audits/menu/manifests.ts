@@ -24,7 +24,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 		kind: 'menuStructure',
 		alias: 'Umb.Context.ContentAudit.Audits.Menu.Structure',
 		name: 'Content Audit Audits Menu Structure Workspace Context',
-		api: () => import('./audits-menu-structure.context.js'),
+		api: () => import('./audits-menu-structure.context'),
 		meta: {
 			menuItemAlias: CONTENT_AUDIT_AUDITS_MENU_ITEM_ALIAS,
 		},
@@ -52,7 +52,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 		kind: 'menuStructure',
 		alias: 'Umb.Context.ContentAudit.AuditsRoot.Menu.Structure',
 		name: 'Content Audit Audits Root Menu Structure Workspace Context',
-		api: () => import('./audits-menu-structure.context.js'),
+		api: () => import('./audits-menu-structure.context'),
 		meta: {
 			menuItemAlias: CONTENT_AUDIT_AUDITS_MENU_ITEM_ALIAS,
 		},

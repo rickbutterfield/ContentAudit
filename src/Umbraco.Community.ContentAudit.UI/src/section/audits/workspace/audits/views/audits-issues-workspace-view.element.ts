@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_AUDITS_WORKSPACE_CONTEXT } from "../audits-workspace.cont
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 import { IssueDto, OverviewDto } from "../../../../../api";
-import { UmbTableConfig, UmbTableColumn, UmbTableItem } from "../../../../../interfaces";
+import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
 
 @customElement('content-audit-audits-issues-workspace-view')
 export class ContentAuditAuditsIssuesWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {

@@ -1,4 +1,4 @@
-﻿import { CONTENT_AUDIT_ALL_PAGES_DETAIL_REPOSITORY_ALIAS, CONTENT_AUDIT_ALL_PAGES_DETAIL_STORE_ALIAS } from './constants.js';
+﻿import { CONTENT_AUDIT_ALL_PAGES_DETAIL_REPOSITORY_ALIAS, CONTENT_AUDIT_ALL_PAGES_DETAIL_STORE_ALIAS } from './constants';
 
 export const manifests: Array<UmbExtensionManifest> = [
 	{

@@ -7,7 +7,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 		alias: 'Umb.EntityAction.ContentAudit.Audit.Delete',
 		name: 'Delete Audit Entity Action',
 		weight: 100,
-		api: () => import('./delete/delete-audit.action.js'),
+		api: () => import('./delete/delete-audit.action'),
 		forEntityTypes: [AUDIT_AUDITS_ENTITY_TYPE],
 		meta: {
 			icon: 'icon-trash',

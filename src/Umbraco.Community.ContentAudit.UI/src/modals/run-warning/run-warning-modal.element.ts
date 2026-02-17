@@ -5,7 +5,7 @@ import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 
 @customElement('content-audit-modal-run-warning')
-export class UmbBlockCatalogueModalElement extends UmbModalBaseElement<RunWarningModalData, RunWarningModalValue> {
+export class ContentAuditRunWarningModalElement extends UmbModalBaseElement<RunWarningModalData, RunWarningModalValue> {
 
     constructor() {
         super();
@@ -50,10 +50,10 @@ export class UmbBlockCatalogueModalElement extends UmbModalBaseElement<RunWarnin
     ];
 }
 
-export default UmbBlockCatalogueModalElement;
+export default ContentAuditRunWarningModalElement;
 
 declare global {
     interface HTMLElementTagNameMap {
-        'content-audit-modal-run-warning': UmbBlockCatalogueModalElement;
+        'content-audit-modal-run-warning': ContentAuditRunWarningModalElement;
     }
 }

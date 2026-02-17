@@ -98,7 +98,7 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
                     },
                     {
                         columnAlias: 'type',
-                        value: html`<content-audit-issue-type-label .type=${issue.type}></content-audit-issue-type-label`
+                        value: html`<content-audit-issue-type-label .type=${issue.type}></content-audit-issue-type-label>`
                     },
                     {
                         columnAlias: 'priority',

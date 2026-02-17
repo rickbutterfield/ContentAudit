@@ -1,6 +1,6 @@
 ﻿import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
-import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { customElement, html, LitElement, state } from "@umbraco-cms/backoffice/external/lit";
+import { customElement, html, state } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { UmbRoute, UmbRouterSlotChangeEvent, UmbRouterSlotInitEvent } from "@umbraco-cms/backoffice/router";
 import { ContentAuditAllPagesDetailsWorkspaceViewElement } from "../../section/all-pages/workspace/all-pages/views/all-pages-details-workspace-view.element";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, ContentAuditAllPagesWorkspaceContext } from "../../section/all-pages/workspace/all-pages/all-pages-workspace.context";
@@ -11,7 +11,7 @@ import ContentAuditAllPagesImagesWorkspaceViewElement from "../../section/all-pa
 import ContentAuditAllPagesIssuesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-issues-workspace-view.element";
 
 @customElement('contentaudit-workspace-view')
-export class ContentAuditWorkspaceElement extends UmbElementMixin(LitElement) {
+export class ContentAuditWorkspaceElement extends UmbLitElement {
     @state()
     private _documentUnique = '';
 

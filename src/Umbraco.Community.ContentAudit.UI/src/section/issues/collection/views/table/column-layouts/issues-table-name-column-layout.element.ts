@@ -1,8 +1,9 @@
 ﻿import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import { html, LitElement, nothing, customElement, property, css } from '@umbraco-cms/backoffice/external/lit';
+import { html, nothing, customElement, property, css } from '@umbraco-cms/backoffice/external/lit';
+import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 
 @customElement('content-audit-issues-table-name-column-layout')
-export class ContentAuditIssuesTableNameColumnLayout extends LitElement {
+export class ContentAuditIssuesTableNameColumnLayout extends UmbLitElement {
 	@property({ attribute: false })
 	value!: { unique: string; name: string, category: string, description: string };
 

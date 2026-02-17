@@ -1,10 +1,10 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { html, LitElement } from "@umbraco-cms/backoffice/external/lit";
+﻿import { html } from "@umbraco-cms/backoffice/external/lit";
 import { customElement } from "lit/decorators.js";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import ContentAuditContext from "../context/audit.context";
 
 @customElement('content-audit-workspace-root')
-export class ContentAuditWorkspaceRootElement extends UmbElementMixin(LitElement) {
+export class ContentAuditWorkspaceRootElement extends UmbLitElement {
 
 	_workspaceContext: ContentAuditContext;
 

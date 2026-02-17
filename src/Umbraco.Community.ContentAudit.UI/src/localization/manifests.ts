@@ -9,6 +9,6 @@ export const manifests: Array<ManifestLocalization> = [
 		meta: {
 			culture: 'en',
 		},
-        js: () => import('../lang/en.ts'),
+        js: () => import('../lang/en'),
 	},
 ]

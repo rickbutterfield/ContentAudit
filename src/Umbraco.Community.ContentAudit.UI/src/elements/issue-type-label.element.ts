@@ -1,9 +1,9 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { IssueTypeConfigMap } from "../helpers";
-import { css, customElement, html, LitElement, property } from "@umbraco-cms/backoffice/external/lit";
+﻿import { IssueTypeConfigMap } from "../helpers";
+import { css, customElement, html, property } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 
 @customElement('content-audit-issue-type-label')
-export class ContentAuditIssueTypeLabel extends UmbElementMixin(LitElement) {
+export class ContentAuditIssueTypeLabel extends UmbLitElement {
 
     @property({ attribute: false })
     type: number = 0;

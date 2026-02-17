@@ -1,6 +1,6 @@
-﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { css, customElement, html, LitElement, nothing, repeat, state } from "@umbraco-cms/backoffice/external/lit";
-import { IssueDto, OverviewDto, HealthScoreDto, CrawlService, CrawlDto } from "../../api";
+﻿import { css, customElement, html, nothing, state } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
+import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
@@ -9,8 +9,9 @@ import { UmbRequestReloadChildrenOfEntityEvent } from "@umbraco-cms/backoffice/e
 import { UMB_ACTION_EVENT_CONTEXT } from '@umbraco-cms/backoffice/action';
 
 @customElement('content-audit-scan-view')
-export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
-    private crawlData: CrawlDto[] = [];
+export class ContentAuditScanViewElement extends UmbLitElement {
+    @state()
+    private _crawlData: CrawlDto[] = [];
 
     #context?: ContentAuditContext;
     #modalManagerContext?: typeof UMB_MODAL_MANAGER_CONTEXT.TYPE;
@@ -94,10 +95,10 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
     }
 
     async startAudit() {
-        const { stream } = await CrawlService.startCrawl();
+        const { stream } = await this.#context!.startCrawl();
 
         this.scanRunning = true;
-        this.crawlData = [];
+        this._crawlData = [];
         this.#notificationContext?.peek("positive", {
             data: {
                 headline: 'Crawl started',
@@ -107,8 +108,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
 
         try {
             for await (const event of stream) {
-                this.crawlData.push(event);
-                this.requestUpdate();
+                this._crawlData = [...this._crawlData, event];
             }
 
             // Completed normally
@@ -171,11 +171,11 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             }
         }
         else {
-            const total = this.crawlData.length;
-            const internal = this.crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
-            const external = this.crawlData.filter(x => x.crawled && x.external && !x.asset).length;
-            const assets = this.crawlData.filter(x => x.crawled && x.asset).length;
-            const blocked = this.crawlData.filter(x => x.blocked).length;
+            const total = this._crawlData.length;
+            const internal = this._crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
+            const external = this._crawlData.filter(x => x.crawled && x.external && !x.asset).length;
+            const assets = this._crawlData.filter(x => x.crawled && x.asset).length;
+            const blocked = this._crawlData.filter(x => x.blocked).length;
 
             return html`
                 <uui-loader-bar></uui-loader-bar>
@@ -214,7 +214,7 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
             return html`
                 <uui-box headline="Latest audit" class="span-2" style="${this._latestAuditOverview?.runDate != null || this.scanRunning ? '--uui-box-default-padding: 0;' : ''}">
                     <div slot="header">
-                        ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview?.runDate!, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
+                        ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview.runDate, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
                     </div>
                     <div slot="header-actions">
                         <uui-button
@@ -376,32 +376,6 @@ export class ContentAuditScanViewElement extends UmbElementMixin(LitElement) {
                 </div>
             </uui-box>
         `;
-    }
-
-    _renderScanData() {
-        if (this.crawlData.length !== 0) {
-            const total = this.crawlData.length;
-            const internal = this.crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
-            const external = this.crawlData.filter(x => x.crawled && x.external && !x.asset).length;
-            const assets = this.crawlData.filter(x => x.crawled && x.asset).length;
-            const blocked = this.crawlData.filter(x => x.blocked).length;
-
-            return html`
-                <uui-box headline="Debug scan data" class="span-3">
-                    <p>Total: ${total}</p>
-                    <p>Internal: ${internal}</p>
-                    <p>External: ${external}</p>
-                    <p>Assets: ${assets}</p>
-                    <p>Blocked: ${blocked}</p>
-
-                    ${repeat(
-                        this.crawlData,
-                        (data) => data.url,
-                        (data) => html`${JSON.stringify(data)}<br/>`
-                    )}
-                </uui-box>
-            `
-        }
     }
 
     #renderTopIssues() {

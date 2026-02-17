@@ -5,7 +5,7 @@ export const manifests: Array<UmbExtensionManifest> = [
         type: 'repository',
         alias: 'Umb.Repository.ContentAudit.Audits',
         name: 'Content Audit Audits Repository',
-        api: () => import('./audits-tree.repository.js'),
+        api: () => import('./audits-tree.repository'),
     },
     {
         type: 'tree',

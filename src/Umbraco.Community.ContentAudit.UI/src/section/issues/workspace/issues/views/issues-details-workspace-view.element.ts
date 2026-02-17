@@ -6,7 +6,7 @@ import { IssueDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN } from '@umbraco-cms/backoffice/document';
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
-import { UmbTableConfig, UmbTableColumn, UmbTableItem } from "../../../../../interfaces";
+import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
 import { UmbModalRouteBuilder, UmbModalRouteRegistrationController } from "@umbraco-cms/backoffice/router";
 
 @customElement('content-audit-issues-details-workspace-view')
