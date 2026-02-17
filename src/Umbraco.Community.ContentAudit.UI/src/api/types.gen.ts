@@ -56,9 +56,15 @@ export type ContentAuditSettings = {
     respectRobotsTxt: boolean;
     useUmbracoContentIndex: boolean;
     useSitemapXml: boolean;
-    sitemapUrl: string;
+    sitemapUrl?: string | null;
     maxConcurrentCrawls: number;
-    baseUrl: string;
+    baseUrl?: string | null;
+    maxCrawlDurationMinutes: number;
+    useIncrementalCrawl: boolean;
+    excludePatterns: Array<string>;
+    includePatterns: Array<string>;
+    crawlDelayMs: number;
+    maxCrawlDepth: number;
 };
 
 export type ContentQualityDto = {
@@ -81,6 +87,7 @@ export type CrawlDto = {
     crawled: boolean;
     blocked: boolean;
     unique: string;
+    skipped: boolean;
 };
 
 export type EmissionsDto = {
@@ -231,6 +238,9 @@ export type PageAnalysisDto = {
     socialMediaData: SocialMediaDto;
     contentQualityData: ContentQualityDto;
     emissionsData: EmissionsDto;
+    contentHash?: string | null;
+    eTag?: string | null;
+    lastModified?: string | null;
 };
 
 export type PageDto = {
@@ -293,6 +303,15 @@ export type PerformanceDto = {
     totalBytes?: number | null;
     resourceTimings?: Array<ResourceTimingDto> | null;
     createdDate: string;
+};
+
+export type ProblemDetails = {
+    type?: string | null;
+    title?: string | null;
+    status?: number | null;
+    detail?: string | null;
+    instance?: string | null;
+    [key: string]: unknown | string | null | string | null | number | null | string | null | string | null | undefined;
 };
 
 export type ReferenceByIdModel = {
@@ -405,6 +424,15 @@ export type GetCollectionData = {
     url: '/umbraco/content-audit/management/api/v1/audit';
 };
 
+export type GetCollectionErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetCollectionError = GetCollectionErrors[keyof GetCollectionErrors];
+
 export type GetCollectionResponses = {
     /**
      * OK
@@ -427,8 +455,14 @@ export type DeleteErrors = {
     /**
      * Not Found
      */
-    404: unknown;
+    404: ProblemDetails;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
 };
+
+export type DeleteError = DeleteErrors[keyof DeleteErrors];
 
 export type DeleteResponses = {
     /**
@@ -445,6 +479,15 @@ export type GetByKeyData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/audit/{id}';
 };
+
+export type GetByKeyErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetByKeyError = GetByKeyErrors[keyof GetByKeyErrors];
 
 export type GetByKeyResponses = {
     /**
@@ -464,6 +507,15 @@ export type ExportByKeyData = {
     url: '/umbraco/content-audit/management/api/v1/audit/{id}/export';
 };
 
+export type ExportByKeyErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type ExportByKeyError = ExportByKeyErrors[keyof ExportByKeyErrors];
+
 export type ExportByKeyResponses = {
     /**
      * OK
@@ -481,6 +533,15 @@ export type OverviewByKeyData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/audit/{id}/overview';
 };
+
+export type OverviewByKeyErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type OverviewByKeyError = OverviewByKeyErrors[keyof OverviewByKeyErrors];
 
 export type OverviewByKeyResponses = {
     /**
@@ -502,6 +563,15 @@ export type GetAllImagesData = {
     url: '/umbraco/content-audit/management/api/v1/audit/all-images';
 };
 
+export type GetAllImagesErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetAllImagesError = GetAllImagesErrors[keyof GetAllImagesErrors];
+
 export type GetAllImagesResponses = {
     /**
      * OK
@@ -522,6 +592,15 @@ export type GetDuplicateContentUrlsData = {
     url: '/umbraco/content-audit/management/api/v1/audit/duplicate-content';
 };
 
+export type GetDuplicateContentUrlsErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetDuplicateContentUrlsError = GetDuplicateContentUrlsErrors[keyof GetDuplicateContentUrlsErrors];
+
 export type GetDuplicateContentUrlsResponses = {
     /**
      * OK
@@ -537,6 +616,15 @@ export type ExportData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/audit/export';
 };
+
+export type ExportErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type ExportError = ExportErrors[keyof ExportErrors];
 
 export type ExportResponses = {
     /**
@@ -558,6 +646,15 @@ export type GetExternalLinksData = {
     url: '/umbraco/content-audit/management/api/v1/audit/external-links';
 };
 
+export type GetExternalLinksErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetExternalLinksError = GetExternalLinksErrors[keyof GetExternalLinksErrors];
+
 export type GetExternalLinksResponses = {
     /**
      * OK
@@ -573,6 +670,15 @@ export type GetHealthScoreData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/audit/health-score';
 };
+
+export type GetHealthScoreErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetHealthScoreError = GetHealthScoreErrors[keyof GetHealthScoreErrors];
 
 export type GetHealthScoreResponses = {
     /**
@@ -593,6 +699,15 @@ export type GetInternalLinksData = {
     };
     url: '/umbraco/content-audit/management/api/v1/audit/internal-links';
 };
+
+export type GetInternalLinksErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetInternalLinksError = GetInternalLinksErrors[keyof GetInternalLinksErrors];
 
 export type GetInternalLinksResponses = {
     /**
@@ -615,6 +730,15 @@ export type GetLatestAuditDataData = {
     url: '/umbraco/content-audit/management/api/v1/audit/latest-data';
 };
 
+export type GetLatestAuditDataErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetLatestAuditDataError = GetLatestAuditDataErrors[keyof GetLatestAuditDataErrors];
+
 export type GetLatestAuditDataResponses = {
     /**
      * OK
@@ -634,6 +758,15 @@ export type GetPagesWithMissingMetadataData = {
     };
     url: '/umbraco/content-audit/management/api/v1/audit/missing-metadata';
 };
+
+export type GetPagesWithMissingMetadataErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetPagesWithMissingMetadataError = GetPagesWithMissingMetadataErrors[keyof GetPagesWithMissingMetadataErrors];
 
 export type GetPagesWithMissingMetadataResponses = {
     /**
@@ -655,6 +788,15 @@ export type GetOrphanedPagesData = {
     url: '/umbraco/content-audit/management/api/v1/audit/orphaned-pages';
 };
 
+export type GetOrphanedPagesErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetOrphanedPagesError = GetOrphanedPagesErrors[keyof GetOrphanedPagesErrors];
+
 export type GetOrphanedPagesResponses = {
     /**
      * OK
@@ -670,6 +812,15 @@ export type OverviewData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/audit/overview';
 };
+
+export type OverviewErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type OverviewError = OverviewErrors[keyof OverviewErrors];
 
 export type OverviewResponses = {
     /**
@@ -689,6 +840,15 @@ export type ChildrenData = {
     url: '/umbraco/content-audit/management/api/v1/tree/audit/children/{parentId}';
 };
 
+export type ChildrenErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type ChildrenError = ChildrenErrors[keyof ChildrenErrors];
+
 export type ChildrenResponses = {
     /**
      * OK
@@ -705,6 +865,15 @@ export type RootData = {
     url: '/umbraco/content-audit/management/api/v1/tree/audit/root';
 };
 
+export type RootErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type RootError = RootErrors[keyof RootErrors];
+
 export type RootResponses = {
     /**
      * OK
@@ -720,6 +889,15 @@ export type StartCrawlData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/crawl';
 };
+
+export type StartCrawlErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type StartCrawlError = StartCrawlErrors[keyof StartCrawlErrors];
 
 export type StartCrawlResponses = {
     /**
@@ -740,6 +918,15 @@ export type GetAllIssuesData = {
     url: '/umbraco/content-audit/management/api/v1/issue';
 };
 
+export type GetAllIssuesErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetAllIssuesError = GetAllIssuesErrors[keyof GetAllIssuesErrors];
+
 export type GetAllIssuesResponses = {
     /**
      * OK
@@ -758,6 +945,19 @@ export type GetIssueData = {
     url: '/umbraco/content-audit/management/api/v1/issue/{id}';
 };
 
+export type GetIssueErrors = {
+    /**
+     * Not Found
+     */
+    404: ProblemDetails;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetIssueError = GetIssueErrors[keyof GetIssueErrors];
+
 export type GetIssueResponses = {
     /**
      * OK
@@ -773,6 +973,15 @@ export type GetSettingsData = {
     query?: never;
     url: '/umbraco/content-audit/management/api/v1/settings';
 };
+
+export type GetSettingsErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetSettingsError = GetSettingsErrors[keyof GetSettingsErrors];
 
 export type GetSettingsResponses = {
     /**

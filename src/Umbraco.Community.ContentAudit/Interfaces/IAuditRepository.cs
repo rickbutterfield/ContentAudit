@@ -14,6 +14,13 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<Guid?> GetLatestAuditKey();
 
         /// <summary>
+        /// Retrieves the unique identifier of the most recent completed audit excluding a specific key
+        /// </summary>
+        /// <param name="excludeKey">The audit key to exclude (typically the current audit)</param>
+        /// <returns>The audit key if found, otherwise null</returns>
+        Task<Guid?> GetLatestCompletedAuditKeyExcluding(Guid excludeKey);
+
+        /// <summary>
         /// Gets the overview data for a specific audit
         /// </summary>
         /// <param name="auditKey">The unique identifier of the audit</param>

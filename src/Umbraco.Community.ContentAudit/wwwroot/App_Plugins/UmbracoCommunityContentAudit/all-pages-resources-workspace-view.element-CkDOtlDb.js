@@ -1,0 +1,100 @@
+import { UmbLitElement as g } from "@umbraco-cms/backoffice/lit-element";
+import { t as y } from "./index-Bkks3_By.js";
+import { r as _ } from "./state-B3HwBx2Z.js";
+import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT as w } from "./all-pages-workspace.context-BrtBjNPt.js";
+import { html as u, css as A } from "@umbraco-cms/backoffice/external/lit";
+import { UmbTextStyles as T } from "@umbraco-cms/backoffice/style";
+var x = Object.defineProperty, E = Object.getOwnPropertyDescriptor, b = (t) => {
+  throw TypeError(t);
+}, n = (t, e, a, i) => {
+  for (var r = i > 1 ? void 0 : i ? E(e, a) : e, c = t.length - 1, p; c >= 0; c--)
+    (p = t[c]) && (r = (i ? p(e, a, r) : p(r)) || r);
+  return i && r && x(e, a, r), r;
+}, d = (t, e, a) => e.has(t) || b("Cannot " + a), f = (t, e, a) => (d(t, e, "read from private field"), e.get(t)), v = (t, e, a) => e.has(t) ? b("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, a), I = (t, e, a, i) => (d(t, e, "write to private field"), e.set(t, a), a), h = (t, e, a) => (d(t, e, "access private method"), a), l, o, C, m;
+let s = class extends g {
+  constructor() {
+    super(), v(this, o), v(this, l), this._tableConfig = {
+      allowSelection: !1,
+      hideIcon: !0
+    }, this._tableColumns = [
+      {
+        name: "URL",
+        alias: "url"
+      },
+      {
+        name: "Content Type",
+        alias: "contentType"
+      }
+    ], this._tableItems = [], this.consumeContext(w, (t) => {
+      I(this, l, t), h(this, o, C).call(this);
+    });
+  }
+  updated(t) {
+    t.has("data") && this._data && this._data?.resources.length !== 0 && h(this, o, m).call(this, this._data.resources);
+  }
+  render() {
+    if (!this._data) return u`<uui-box>No data available</uui-box>`;
+    if (!this._data.resources) return u`<uui-box>No link data available</uui-box>`;
+    if (this._data.resources.length == 0) return u`<uui-box>No resources to report for this page</uui-box>`;
+    if (this._tableItems.length !== 0)
+      return u`
+				<umb-table
+					.config=${this._tableConfig}
+					.columns=${this._tableColumns}
+					.items=${this._tableItems}
+				></umb-table>
+			`;
+  }
+};
+l = /* @__PURE__ */ new WeakMap();
+o = /* @__PURE__ */ new WeakSet();
+C = function() {
+  f(this, l) && this.observe(f(this, l).data, (t) => {
+    t && (this._data = t, h(this, o, m).call(this, this._data.resources));
+  }, "umbCollectionItemsObserver");
+};
+m = function(t) {
+  this._tableItems = t.map((e) => ({
+    id: e.unique,
+    data: [
+      {
+        columnAlias: "url",
+        value: e.url
+      },
+      {
+        columnAlias: "contentType",
+        value: e.contentType
+      }
+    ]
+  }));
+};
+s.styles = [
+  T,
+  A`
+			:host {
+				display: block;
+				padding: var(--uui-size-layout-1);
+			}
+		`
+];
+n([
+  _()
+], s.prototype, "_data", 2);
+n([
+  _()
+], s.prototype, "_tableConfig", 2);
+n([
+  _()
+], s.prototype, "_tableColumns", 2);
+n([
+  _()
+], s.prototype, "_tableItems", 2);
+s = n([
+  y("content-audit-all-pages-resources-workspace-view")
+], s);
+const R = s;
+export {
+  s as ContentAuditAllPagesResourcesWorkspaceViewElement,
+  R as default
+};
+//# sourceMappingURL=all-pages-resources-workspace-view.element-CkDOtlDb.js.map

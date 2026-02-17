@@ -48,6 +48,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IRobotsService _robotsService;
         private readonly ICrawlService _crawlService;
         private readonly ICrawlResultPersistence _persistence;
+        private readonly IAuditRepository _auditRepository;
         private readonly ILogger<AuditService> _logger;
         private readonly WebRoutingSettings _webRoutingSettings;
         private readonly AuditIssueCollection _auditIssueCollection;
@@ -63,6 +64,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private Dictionary<string, PageFingerprintDto> _previousFingerprints = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentBag<PageFingerprintDto> _newFingerprints = new();
+        private Guid? _previousAuditKey;
 
         // Circuit breaker for repeated failures
         private readonly ConcurrentDictionary<string, int> _pathFailureCounts = new();
@@ -92,6 +94,7 @@ namespace Umbraco.Community.ContentAudit.Services
             IRobotsService robotsService,
             ICrawlService pageScanningService,
             ICrawlResultPersistence persistence,
+            IAuditRepository auditRepository,
             AuditIssueCollection auditIssueCollection,
             ILogger<AuditService> logger,
             IEnumerable<IUrlDiscoveryStrategy> urlDiscoveryStrategies)
@@ -99,6 +102,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _robotsService = robotsService;
             _crawlService = pageScanningService;
             _persistence = persistence;
+            _auditRepository = auditRepository;
             _auditIssueCollection = auditIssueCollection;
             _logger = logger;
             _webRoutingSettings = webRoutingSettings.CurrentValue;
@@ -174,7 +178,9 @@ namespace Umbraco.Community.ContentAudit.Services
             if (_contentAuditSettings.UseIncrementalCrawl)
             {
                 _previousFingerprints = await _persistence.GetPageFingerprintsAsync(_baseUrl, linkedToken);
-                _logger.LogInformation("Loaded {Count} fingerprints for incremental crawl", _previousFingerprints.Count);
+                _previousAuditKey = await _auditRepository.GetLatestCompletedAuditKeyExcluding(_currentAuditKey);
+                _logger.LogInformation("Loaded {Count} fingerprints for incremental crawl (previous audit: {PreviousKey})",
+                    _previousFingerprints.Count, _previousAuditKey);
             }
 
             if (_urlQueue.IsEmpty)
@@ -407,6 +413,11 @@ namespace Umbraco.Community.ContentAudit.Services
                         LastModified = changeCheck.NewLastModified ?? previousFingerprint.LastModified,
                         UmbracoUpdateDate = previousFingerprint.UmbracoUpdateDate
                     });
+
+                    if (_previousAuditKey.HasValue)
+                    {
+                        await CopyPageDataFromPreviousAuditAsync(url, matchingUmbracoNode.Key, baseUri);
+                    }
 
                     return new CrawlDto
                     {
@@ -742,6 +753,114 @@ namespace Umbraco.Community.ContentAudit.Services
                 _robotsDisallowedPaths.Keys);
 
             await _persistence.SaveCrawlStateAsync(_currentAuditKey, state);
+        }
+
+        private async Task CopyPageDataFromPreviousAuditAsync(string url, Guid unique, Uri baseUri)
+        {
+            if (!_previousAuditKey.HasValue)
+                return;
+
+            _logger.LogInformation("Copying data from previous audit for unchanged page: {Url}", url);
+
+            var pages = await _auditRepository.GetPagesByAuditKey(_previousAuditKey.Value);
+            var previousPage = pages.FirstOrDefault(p => p.Url == url);
+            if (previousPage != null)
+            {
+                var pageDto = new PageDto(previousPage);
+                pageDto.Unique = unique;
+                _pageDtos.Add(pageDto);
+
+                var seoData = await _auditRepository.GetSeoData(_previousAuditKey.Value, url);
+                var previousSeo = seoData?.FirstOrDefault();
+                if (previousSeo != null)
+                {
+                    _seoDtos.Add(new SeoDto(previousSeo));
+                }
+
+                var contentAnalysis = await _auditRepository.GetContentAnalysisData(_previousAuditKey.Value, url);
+                var previousContentAnalysis = contentAnalysis?.FirstOrDefault();
+                if (previousContentAnalysis != null)
+                {
+                    _contentAnalysisDtos.Add(new ContentAnalysisDto(previousContentAnalysis));
+                }
+
+                var performance = await _auditRepository.GetPerformanceData(_previousAuditKey.Value, url);
+                var previousPerformance = performance?.FirstOrDefault();
+                if (previousPerformance != null)
+                {
+                    _performanceDtos.Add(new PerformanceDto(previousPerformance));
+                }
+
+                var accessibility = await _auditRepository.GetAccessibilityData(_previousAuditKey.Value, url);
+                var previousAccessibility = accessibility?.FirstOrDefault();
+                if (previousAccessibility != null)
+                {
+                    _accessibilityDtos.Add(new AccessibilityDto(previousAccessibility));
+                }
+
+                var technicalSeo = await _auditRepository.GetTechnicalSeoData(_previousAuditKey.Value, url);
+                var previousTechnicalSeo = technicalSeo?.FirstOrDefault();
+                if (previousTechnicalSeo != null)
+                {
+                    _technicalSeoDtos.Add(new TechnicalSeoDto(previousTechnicalSeo));
+                }
+
+                var socialMedia = await _auditRepository.GetSocialMediaData(_previousAuditKey.Value, url);
+                var previousSocialMedia = socialMedia?.FirstOrDefault();
+                if (previousSocialMedia != null)
+                {
+                    _socialMediaDtos.Add(new SocialMediaDto(previousSocialMedia));
+                }
+
+                var contentQuality = await _auditRepository.GetContentQualityData(_previousAuditKey.Value, url);
+                var previousContentQuality = contentQuality?.FirstOrDefault();
+                if (previousContentQuality != null)
+                {
+                    _contentQualityDtos.Add(new ContentQualityDto(previousContentQuality));
+                }
+
+                var links = await _auditRepository.GetLinkData(_previousAuditKey.Value, url);
+                if (links != null)
+                {
+                    foreach (var link in links)
+                    {
+                        var linkDto = new LinkDto(link);
+                        _linkDtos.Add(linkDto);
+
+                        if (linkDto.IsExternal)
+                        {
+                            var urlQueueItem = new UrlQueueItem()
+                            {
+                                Url = linkDto.Url ?? string.Empty,
+                                IsExternal = true,
+                                IsAsset = false,
+                                SourceUrl = url,
+                                Unique = unique,
+                                Depth = 1
+                            };
+                            EnqueueUrl(urlQueueItem);
+                        }
+                    }
+                }
+
+                var resources = await _auditRepository.GetResourceData(_previousAuditKey.Value, url);
+                if (resources != null)
+                {
+                    foreach (var resource in resources)
+                    {
+                        _resourceDtos.Add(new ResourceDto(resource));
+                    }
+                }
+
+                var images = await _auditRepository.GetImageData(_previousAuditKey.Value, url);
+                if (images != null)
+                {
+                    foreach (var image in images)
+                    {
+                        _imageDtos.Add(new ImageDto(image));
+                    }
+                }
+            }
         }
 
         private async Task<double> CalculateHealthScore()

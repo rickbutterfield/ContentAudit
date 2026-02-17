@@ -14,9 +14,6 @@ export default defineConfig({
         rollupOptions: {
             external: [/^@umbraco/],
             onwarn: () => { },
-            output: {
-                chunkFileNames: '[name].js',
-            }
         },
     }
 });

@@ -1,6 +1,6 @@
 ﻿import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { css, customElement, html, LitElement } from "@umbraco-cms/backoffice/external/lit";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 import { AuditService } from "../../../../api";
 
 @customElement('content-audit-export')
@@ -10,7 +10,7 @@ export class ContentAuditExportElement extends UmbElementMixin(LitElement) {
     }
 
     async #exportCsv() {
-        const { data, error } = await tryExecuteAndNotify(this, AuditService.export());
+        const { data, error } = await tryExecute(this, AuditService.export());
 
         if (data) {
             const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });

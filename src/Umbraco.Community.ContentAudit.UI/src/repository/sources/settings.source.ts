@@ -1,6 +1,6 @@
 ﻿import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
-import { tryExecuteAndNotify } from '@umbraco-cms/backoffice/resources';
+import { tryExecute } from '@umbraco-cms/backoffice/resources';
 import { GetSettingsResponse, SettingsService } from "../../api";
 
 export interface SettingsDataSource {
@@ -15,6 +15,6 @@ export class ContentAuditSettingsDataSource implements SettingsDataSource {
     }
 
     async getSettings(): Promise<UmbDataSourceResponse<GetSettingsResponse>> {
-        return await tryExecuteAndNotify(this.#host, SettingsService.getSettings());
+        return await tryExecute(this.#host, SettingsService.getSettings());
     }
 }

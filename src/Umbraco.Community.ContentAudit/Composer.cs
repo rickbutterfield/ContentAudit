@@ -3,6 +3,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Playwright;
 using OpenIddict.Validation.AspNetCore;
 using Polly;
+using Umbraco.Cms.Api.Common.OpenApi;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
@@ -90,6 +91,7 @@ namespace Umbraco.Community.ContentAudit
                 .Bind(builder.Config.GetSection("ContentAudit"))
                 .ValidateDataAnnotations();
 
+            builder.Services.AddSingleton<IOperationIdHandler, CustomOperationIdHandler>();
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
 
             builder.Services.AddAuthorization(config =>

@@ -53,6 +53,30 @@ namespace Umbraco.Community.ContentAudit.Repositories
         }
 
         /// <inheritdoc/>
+        public async Task<Guid?> GetLatestCompletedAuditKeyExcluding(Guid excludeKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            string providerName = scope.Database.DatabaseType.GetProviderName();
+            bool isSQLite = providerName.Contains("sqlite", StringComparison.OrdinalIgnoreCase);
+
+            string sql = isSQLite
+                ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC LIMIT 1"
+                : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC";
+
+            string? latestKey = await scope.Database.ExecuteScalarAsync<string?>(sql, new object[] { (int)AuditStatus.Completed, excludeKey });
+
+            scope.Complete();
+
+            if (Guid.TryParse(latestKey, out Guid key))
+            {
+                return key;
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<OverviewSchema>> GetAuditOverviews()
         {
             using var scope = _scopeProvider.CreateScope();
