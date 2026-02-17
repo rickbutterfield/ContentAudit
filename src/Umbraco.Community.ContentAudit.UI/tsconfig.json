@@ -20,7 +20,11 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 
-		"baseUrl": "."
+		"baseUrl": ".",
+
+    "types": [
+      "@umbraco-cms/backoffice/extension-types"
+    ]
 	},
 	"include": [ "src" ]
 }
