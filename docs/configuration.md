@@ -45,7 +45,7 @@ The basic configuration for the package looks like this:
 | `MaxCrawlDurationMinutes` | `int` | `30` | Maximum duration in minutes for a crawl operation. Set to `0` for no limit. Must be between 0 and 1440 (24 hours). |
 | `UseIncrementalCrawl` | `bool` | `true` | If set to `true`, only pages that have changed since the last crawl will be re-crawled. |
 | `MaxCrawlDepth` | `int` | `0` | Maximum crawl depth from the starting URL. Set to `0` for unlimited depth. Must be between 0 and 100. |
-| `ExcludePatterns` | `string[]` | `[]` | URL patterns to exclude from crawling. Supports wildcards (`*` and `**`). Examples: `"/admin/*"`, `"*/api/**"`, `"*.pdf"`. |
+| `ExcludePatterns` | `string[]` | `[]` | Additional URL patterns to exclude from crawling. Supports wildcards (`*` and `**`). Examples: `"/admin/*"`, `"*/api/**"`, `"*.pdf"`. Note: `/media/**` is always excluded by default. |
 | `IncludePatterns` | `string[]` | `[]` | URL patterns to include in crawling. If specified, only matching URLs will be crawled. Supports wildcards (`*` and `**`). Examples: `"/blog/*"`, `"/products/**"`. |
 
 ### Rate Limiting & Timeouts

@@ -33,7 +33,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
-            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData.IsOrphaned);
+            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && x.SeoData.IsOrphaned);
         }
     }
 }

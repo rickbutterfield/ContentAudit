@@ -684,7 +684,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             // Check URL pattern exclusions (only for internal URLs)
             if (!item.IsExternal && item.Url.ShouldExcludeUrl(
-                _contentAuditSettings.ExcludePatterns,
+                Constants.Crawl.DefaultExcludePatterns.Concat(_contentAuditSettings.ExcludePatterns),
                 _contentAuditSettings.IncludePatterns))
             {
                 _logger.LogDebug("Skipping URL due to pattern exclusion: {0}", item.Url);

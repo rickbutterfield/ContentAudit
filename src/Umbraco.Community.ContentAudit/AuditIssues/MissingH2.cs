@@ -40,7 +40,7 @@ namespace Umbraco.Community.ContentAudit.AuditIssues
         /// <inheritdoc />
         public IEnumerable<PageAnalysisDto> CheckPages(IEnumerable<PageAnalysisDto> pages)
         {
-            return pages.Where(x => x.PageData.StatusCode == 200 && (x.SeoData.H2s?.Any() == false || x.SeoData.H2s?.Where(y => y == "").Any() == true));
+            return pages.Where(x => x.PageData.StatusCode == 200 && x.SeoData != null && (x.SeoData.H2s?.Any() == false || x.SeoData.H2s?.All(y => y == "") == true));
         }
     }
 }

@@ -39,6 +39,11 @@
             }
         }
 
+        internal class Crawl
+        {
+            internal static readonly string[] DefaultExcludePatterns = ["/media/**"];
+        }
+
         internal class ManagementApi
         {
             internal const string RootPath = "/umbraco/content-audit/management/api/v1";

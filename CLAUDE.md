@@ -172,7 +172,7 @@ Configuration via `appsettings.json` under `ContentAudit` section:
 - `MaxConcurrentCrawls` - Parallel crawl limit (default: 4, range: 1-20)
 - `MaxCrawlDurationMinutes` - Maximum crawl duration in minutes, 0 for no limit (default: 30)
 - `UseIncrementalCrawl` - Only re-crawl changed pages (default: true)
-- `ExcludePatterns` - URL patterns to exclude from crawling, supports wildcards (`*`, `**`)
+- `ExcludePatterns` - Additional URL patterns to exclude from crawling, supports wildcards (`*`, `**`). `/media/**` is always excluded by default.
 - `IncludePatterns` - URL patterns to include; if set, only matching URLs are crawled
 - `CrawlDelayMs` - Delay in ms between requests, can be overridden by robots.txt Crawl-delay (default: 0)
 - `MaxCrawlDepth` - Maximum crawl depth from starting URL, 0 for unlimited (default: 0)
