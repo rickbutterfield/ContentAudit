@@ -13,7 +13,6 @@ using Umbraco.Community.ContentAudit.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
-using Umbraco.Community.ContentAudit.Models.Validation;
 using Umbraco.Community.ContentAudit.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Services
@@ -27,7 +26,6 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ILogger<CrawlService> _logger;
         private readonly IBrowserPagePool _pagePool;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IValidationService _validationService;
         private readonly ContentAuditSettings _settings;
         private readonly ResiliencePipeline _playwrightRetryPipeline;
         private Uri? _baseUri;
@@ -38,19 +36,16 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <param name="logger">The logger for diagnostic information</param>
         /// <param name="pagePool">The browser page pool for page reuse</param>
         /// <param name="httpClientFactory">The HTTP client factory for making HTTP requests</param>
-        /// <param name="validationService">The validation service for HTML validation</param>
         /// <param name="settings">The content audit settings</param>
         public CrawlService(
             ILogger<CrawlService> logger,
             IBrowserPagePool pagePool,
             IHttpClientFactory httpClientFactory,
-            IValidationService validationService,
             IOptionsMonitor<ContentAuditSettings> settings)
         {
             _logger = logger;
             _pagePool = pagePool;
             _httpClientFactory = httpClientFactory;
-            _validationService = validationService;
             _settings = settings.CurrentValue;
 
             _playwrightRetryPipeline = new ResiliencePipelineBuilder()
@@ -130,7 +125,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 // Navigate to the page and wait for network idle (with retry)
                 var gotoOptions = new PageGotoOptions
                 {
-                    WaitUntil = WaitUntilState.NetworkIdle
+                    WaitUntil = WaitUntilState.DOMContentLoaded
                 };
 
                 if (_settings.PageTimeoutMs > 0)
@@ -199,8 +194,6 @@ namespace Umbraco.Community.ContentAudit.Services
                     return null;
                 }
 
-                //if (!wasRedirected)
-                //{
                 await page.AddScriptTagAsync(new PageAddScriptTagOptions
                 {
                     Url = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js"
@@ -220,11 +213,8 @@ namespace Umbraco.Community.ContentAudit.Services
                         self.webVitals.onTTFB((metric) => setWebVitalsData('TTFB', metric), { reportAllChanges: true });
                     "
                 });
-                //}
 
-                // Wait for the page to be fully loaded
                 await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
                 var analysisData = Task.Run(async () =>
                 {
@@ -338,7 +328,6 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         _logger.LogError(ex, "Error while populating SeoData for {0}", url);
                     }
-
                     try
                     {
                         var bodyText = "";
@@ -366,7 +355,6 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         _logger.LogError(ex, "Error while populating ContentAnalysis for {0}", url);
                     }
-
                     try
                     {
                         pageAnalysis.PerformanceData = new PerformanceDto
@@ -386,28 +374,26 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         _logger.LogError(ex, "Error while populating PerformanceData for {0}", url);
                     }
-
+                    // TODO: Re-enable after performance investigation
+                    // try
+                    // {
+                    //     pageAnalysis.AccessibilityData = new AccessibilityDto
+                    //     {
+                    //         Url = url,
+                    //         AccessibilityIssues = await CheckAccessibilityIssues(page),
+                    //         AriaLabelCount = await page.Locator("[aria-label]").CountAsync(),
+                    //         AriaDescribedByCount = await page.Locator("[aria-describedby]").CountAsync(),
+                    //         HasSkipToContent = await page.Locator("a[href=\"#main\"], a[href=\"#content\"]").CountAsync() > 0,
+                    //         HasProperHeadingStructure = await CheckHeadingStructure(page),
+                    //         ColorContrastIssues = await CheckColorContrastIssues(page)
+                    //     };
+                    // }
+                    // catch (Exception ex)
+                    // {
+                    //     _logger.LogError(ex, "Error while populating AccessibilityData for {0}", url);
+                    // }
                     try
                     {
-                        pageAnalysis.AccessibilityData = new AccessibilityDto
-                        {
-                            Url = url,
-                            AccessibilityIssues = await CheckAccessibilityIssues(page),
-                            AriaLabelCount = await page.Locator("[aria-label]").CountAsync(),
-                            AriaDescribedByCount = await page.Locator("[aria-describedby]").CountAsync(),
-                            HasSkipToContent = await page.Locator("a[href=\"#main\"], a[href=\"#content\"]").CountAsync() > 0,
-                            HasProperHeadingStructure = await CheckHeadingStructure(page),
-                            ColorContrastIssues = await CheckColorContrastIssues(page)
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while populating AccessibilityData for {0}", url);
-                    }
-
-                    try
-                    {
-                        var validHtml = await ValidateHtml(page);
                         pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
                         {
                             Url = url,
@@ -417,15 +403,12 @@ namespace Umbraco.Community.ContentAudit.Services
                             HasGzipCompression = response.Headers.ContainsKey("content-encoding") && response.Headers["content-encoding"].Contains("gzip"),
                             HasBrowserCaching = response.Headers.ContainsKey("cache-control") && response.Headers["cache-control"].Contains("max-age"),
                             HasHttps = url.StartsWith("https://"),
-                            HasValidHtml = validHtml?.IsValid() == true,
-                            HtmlValidationErrors = validHtml?.GetErrors()?.ToList() ?? new List<ValidationMessage>(),
                         };
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error while populating TechnicalSeoData for {0}", url);
                     }
-
                     try
                     {
                         pageAnalysis.SocialMediaData = new SocialMediaDto
@@ -442,25 +425,24 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         _logger.LogError(ex, "Error while populating SocialMediaData for {0}", url);
                     }
-
-                    try
-                    {
-                        pageAnalysis.ContentQualityData = new ContentQualityDto
-                        {
-                            Url = url,
-                            HasDuplicateContent = await CheckForDuplicateContent(page),
-                            DuplicateContentUrls = await GetDuplicateContentUrls(page),
-                            HasThinContent = await CheckForThinContent(page),
-                            ContentScore = await CalculateContentScore(page),
-                            ContentGaps = await IdentifyContentGaps(page),
-                            ContentStrengths = await IdentifyContentStrengths(page)
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while populating ContentQualityData for {0}", url);
-                    }
-
+                    // TODO: Re-enable after performance investigation
+                    // try
+                    // {
+                    //     pageAnalysis.ContentQualityData = new ContentQualityDto
+                    //     {
+                    //         Url = url,
+                    //         HasDuplicateContent = await CheckForDuplicateContent(page),
+                    //         DuplicateContentUrls = await GetDuplicateContentUrls(page),
+                    //         HasThinContent = await CheckForThinContent(page),
+                    //         ContentScore = await CalculateContentScore(page),
+                    //         ContentGaps = await IdentifyContentGaps(page),
+                    //         ContentStrengths = await IdentifyContentStrengths(page)
+                    //     };
+                    // }
+                    // catch (Exception ex)
+                    // {
+                    //     _logger.LogError(ex, "Error while populating ContentQualityData for {0}", url);
+                    // }
                     return pageAnalysis;
                 });
 
@@ -729,12 +711,6 @@ namespace Umbraco.Community.ContentAudit.Services
             // This is a simplified implementation
             // In a real implementation, you would use a color contrast algorithm
             return new List<string>();
-        }
-
-        private async Task<ValidationResult?> ValidateHtml(IPage page)
-        {
-            var content = await page.ContentAsync();
-            return await _validationService.ValidateHtmlAsync(content);
         }
 
         private async Task<string?> GetSchemaType(IPage page)

@@ -72,10 +72,10 @@
 
     <!-- Update umbraco-package.json files with current build version -->
     <!-- Assumes that the client assets have already been built to wwwroot -->
-    <Target Name="UpdatePackageManifestVersion" BeforeTargets="Build" DependsOnTargets="GetBuildVersion;GetUmbracoBuildVersion" Condition="Exists('wwwroot\App_Plugins\Umbraco.Community.BlockPreview\umbraco-package.json')">
+    <Target Name="UpdatePackageManifestVersion" BeforeTargets="Build" DependsOnTargets="GetBuildVersion;GetUmbracoBuildVersion" Condition="Exists('wwwroot\App_Plugins\UmbracoCommunityContentAudit\umbraco-package.json')">
         <Message Text="Update umbraco-package.json files with current build version" Importance="high" />
         <ItemGroup>
-            <_PackageManifestFiles Include="wwwroot\App_Plugins\Umbraco.Community.ContentAudit\umbraco-package.json" />
+            <_PackageManifestFiles Include="wwwroot\App_Plugins\UmbracoCommunityContentAudit\umbraco-package.json" />
         </ItemGroup>
         <JsonPathUpdateValue JsonFile="%(_PackageManifestFiles.FullPath)" Path="$.version" Value="&quot;$(PackageVersion)&quot;" />
     </Target>

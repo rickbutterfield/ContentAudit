@@ -107,7 +107,10 @@ namespace Umbraco.Community.ContentAudit.Services
             try
             {
                 var browser = await GetBrowserAsync();
-                var newPage = await browser.NewPageAsync();
+                var newPage = await browser.NewPageAsync(new BrowserNewPageOptions
+                {
+                    BypassCSP = true
+                });
                 _logger.LogDebug("Created new page, pool size: {ActiveCount}/{MaxPages}", _activePageCount, maxPages);
                 return newPage;
             }

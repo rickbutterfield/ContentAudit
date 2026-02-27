@@ -4,9 +4,12 @@ import { UMB_WORKSPACE_CONTEXT, UmbWorkspaceContext } from "@umbraco-cms/backoff
 import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../workspace/constants";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
-import { UmbArrayState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
-import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageAnalysisDto, CrawlService } from "../api";
+import { UmbArrayState, UmbBooleanState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
+import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageAnalysisDto, CrawlDto, CrawlService } from "../api";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
+import { UMB_SERVER_CONTEXT } from "@umbraco-cms/backoffice/server";
+import { HubConnectionBuilder, type HubConnection } from "@umbraco-cms/backoffice/external/signalr";
 
 export class ContentAuditContext extends UmbControllerBase implements UmbWorkspaceContext {
 	public readonly workspaceAlias: string = CONTENT_AUDIT_WORKSPACE_ALIAS;
@@ -35,12 +38,118 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#settings = new UmbObjectState<ContentAuditSettings | undefined>(undefined);
 	public readonly settings = this.#settings.asObservable();
 
+	#crawlData = new UmbArrayState<CrawlDto>([], (x) => x.unique);
+	public readonly crawlData = this.#crawlData.asObservable();
+
+	#isRunning = new UmbBooleanState(false);
+	public readonly isRunning = this.#isRunning.asObservable();
+
+	#connection?: HubConnection;
+	#authContext?: typeof UMB_AUTH_CONTEXT.TYPE;
+	#serverContext?: typeof UMB_SERVER_CONTEXT.TYPE;
+
 	constructor(host: UmbControllerHost) {
 		super(host);
 		this.provideContext(CONTENT_AUDIT_CONTEXT_TOKEN, this);
 		this.provideContext(UMB_WORKSPACE_CONTEXT, this);
 
 		this.#repository = new ContentAuditRepository(this);
+
+		this.consumeContext(UMB_AUTH_CONTEXT, (context) => {
+			this.#authContext = context;
+			this.#observeIsAuthorized();
+		});
+
+		this.consumeContext(UMB_SERVER_CONTEXT, (context) => {
+			this.#serverContext = context;
+		});
+	}
+
+	#observeIsAuthorized() {
+		this.observe(this.#authContext?.isAuthorized, async (isAuthorized) => {
+			if (isAuthorized === undefined) return;
+
+			if (isAuthorized) {
+				const token = await this.#authContext?.getLatestToken();
+				if (token) {
+					this.#initHubConnection(token);
+				}
+			} else {
+				this.#connection?.stop();
+				this.#connection = undefined;
+			}
+		});
+	}
+
+	#initHubConnection(token: string) {
+		const serverURL = this.#serverContext?.getServerUrl() ?? '';
+		const hubUrl = `${serverURL}/umbraco/content-audit/hub`;
+
+		this.#connection = new HubConnectionBuilder()
+			.withUrl(hubUrl, {
+				accessTokenFactory: () => token,
+			})
+			.withAutomaticReconnect()
+			.build();
+
+		this.#connection.on('crawlStarted', () => {
+			this.#isRunning.setValue(true);
+			this.#crawlData.setValue([]);
+		});
+
+		this.#connection.on('crawlProgress', (result: CrawlDto) => {
+			this.#crawlData.appendOne(result);
+		});
+
+		this.#connection.on('crawlCompleted', () => {
+			this.#isRunning.setValue(false);
+		});
+
+		this.#connection.on('crawlFailed', (_error: string) => {
+			this.#isRunning.setValue(false);
+		});
+
+		this.#connection.on('crawlCancelled', () => {
+			this.#isRunning.setValue(false);
+		});
+
+		this.#connection
+			.start()
+			.then(async () => {
+				// Hydrate current state on connect
+				try {
+					const { data } = await CrawlService.getCrawlStatus();
+					if (data) {
+						this.#isRunning.setValue(data.isRunning);
+						if (data.results?.length) {
+							this.#crawlData.setValue(data.results);
+						}
+					}
+				} catch {
+					// Status endpoint may fail if not yet available
+				}
+			})
+			.catch((err) => console.error('Content Audit SignalR connection failed', err));
+
+		this.#connection.onreconnected(async () => {
+			try {
+				const { data } = await CrawlService.getCrawlStatus();
+				if (data) {
+					this.#isRunning.setValue(data.isRunning);
+					if (data.results?.length) {
+						this.#crawlData.setValue(data.results);
+					}
+				}
+			} catch {
+				// Ignore
+			}
+		});
+	}
+
+	override hostDisconnected(): void {
+		super.hostDisconnected();
+		this.#connection?.stop();
+		this.#connection = undefined;
 	}
 
 	async #notifyError(message: string) {
@@ -107,6 +216,10 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 
 	async startCrawl() {
 		return CrawlService.startCrawl();
+	}
+
+	async cancelCrawl() {
+		return CrawlService.cancelCrawl();
 	}
 
 	async getSettings() {

@@ -2,7 +2,7 @@
 import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspace.context";
-import { PageAnalysisDto, ValidationMessage } from "../../../../../api";
+import { PageAnalysisDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 import '../../../../../elements/health-score.element';
@@ -181,28 +181,6 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					</umb-property-layout>
 					<umb-property-layout label="Has HTTPS">
 						<div slot="editor">${this._data?.technicalSeoData.hasHttps ? 'Yes' : 'No'}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Has Valid HTML">
-						<div slot="editor">${this._data?.technicalSeoData.hasValidHtml ? 'Yes' : 'No'}</div>
-					</umb-property-layout>
-					<umb-property-layout label="HTML Validation Errors">
-						<div slot="editor">
-							<uui-table>
-								<uui-table-head>
-									<uui-table-head-cell>Message</uui-table-head-cell>
-									<uui-table-head-cell>Type</uui-table-head-cell>
-								</uui-table-head>
-								${Object.entries(this._data?.technicalSeoData.htmlValidationErrors ?? []).map((value) => {
-									let message: ValidationMessage = value[1];
-									return html`
-										<uui-table-row>
-											<uui-table-cell>${message?.message}</uui-table-cell>
-											<uui-table-cell>${message?.type}</uui-table-cell>
-										</uui-table-row>	
-									`
-								})}
-								</uui-table>
-						</div>
 					</umb-property-layout>
 					<umb-property-layout label="Has Schema Markup">
 						<div slot="editor">${this._data?.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}</div>

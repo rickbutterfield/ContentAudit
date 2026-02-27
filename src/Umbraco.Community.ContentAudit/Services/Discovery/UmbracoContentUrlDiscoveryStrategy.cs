@@ -21,7 +21,8 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
         private readonly ILogger<UmbracoContentUrlDiscoveryStrategy> _logger;
 
         public string Name => "Umbraco Content Index";
-        public int Priority => 50;
+        public int Priority => 200;
+        public bool ContributesToCrawlQueue => _settings.CurrentValue.UseUmbracoContentIndex;
 
         public UmbracoContentUrlDiscoveryStrategy(
             IExamineManager examineManager,
@@ -37,13 +38,7 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
 
         public Task<IEnumerable<DiscoveredUrl>> DiscoverUrlsAsync(string baseUrl, CancellationToken cancellationToken = default)
         {
-            if (!_settings.CurrentValue.UseUmbracoContentIndex)
-            {
-                _logger.LogInformation("Umbraco content index URL discovery is disabled");
-                return Task.FromResult(Enumerable.Empty<DiscoveredUrl>());
-            }
-
-            _logger.LogInformation("Discovering URLs from Umbraco content index");
+            _logger.LogInformation("Resolving content nodes from Umbraco content index");
 
             var discoveredUrls = new List<DiscoveredUrl>();
 
@@ -51,7 +46,7 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
             {
                 var searcher = contentIndex.Searcher;
                 var query = searcher.CreateQuery("content").NativeQuery("+__IndexType:content");
-                var results = query.Execute();
+                var results = query.Execute(new Examine.Search.QueryOptions(0, int.MaxValue));
 
                 foreach (var result in results)
                 {

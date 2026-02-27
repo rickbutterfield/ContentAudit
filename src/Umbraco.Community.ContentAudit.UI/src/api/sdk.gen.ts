@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ChildrenData, ChildrenErrors, ChildrenResponses, DeleteData, DeleteErrors, DeleteResponses, ExportByKeyData, ExportByKeyErrors, ExportByKeyResponses, ExportData, ExportErrors, ExportResponses, GetAllImagesData, GetAllImagesErrors, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesErrors, GetAllIssuesResponses, GetByKeyData, GetByKeyErrors, GetByKeyResponses, GetCollectionData, GetCollectionErrors, GetCollectionResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsErrors, GetDuplicateContentUrlsResponses, GetExternalLinksData, GetExternalLinksErrors, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreErrors, GetHealthScoreResponses, GetInternalLinksData, GetInternalLinksErrors, GetInternalLinksResponses, GetIssueData, GetIssueErrors, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataErrors, GetLatestAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesErrors, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataErrors, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, OverviewByKeyData, OverviewByKeyErrors, OverviewByKeyResponses, OverviewData, OverviewErrors, OverviewResponses, RootData, RootErrors, RootResponses, StartCrawlData, StartCrawlErrors, StartCrawlResponses } from './types.gen';
+import type { CancelCrawlData, CancelCrawlErrors, CancelCrawlResponses, ChildrenData, ChildrenErrors, ChildrenResponses, DeleteData, DeleteErrors, DeleteResponses, ExportByKeyData, ExportByKeyErrors, ExportByKeyResponses, ExportData, ExportErrors, ExportResponses, GetAllImagesData, GetAllImagesErrors, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesErrors, GetAllIssuesResponses, GetByKeyData, GetByKeyErrors, GetByKeyResponses, GetCollectionData, GetCollectionErrors, GetCollectionResponses, GetCrawlStatusData, GetCrawlStatusErrors, GetCrawlStatusResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsErrors, GetDuplicateContentUrlsResponses, GetExternalLinksData, GetExternalLinksErrors, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreErrors, GetHealthScoreResponses, GetInternalLinksData, GetInternalLinksErrors, GetInternalLinksResponses, GetIssueData, GetIssueErrors, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataErrors, GetLatestAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesErrors, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataErrors, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, OverviewByKeyData, OverviewByKeyErrors, OverviewByKeyResponses, OverviewData, OverviewErrors, OverviewResponses, RootData, RootErrors, RootResponses, StartCrawlData, StartCrawlErrors, StartCrawlResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -140,9 +140,23 @@ export class AuditService {
 }
 
 export class CrawlService {
+    public static cancelCrawl<ThrowOnError extends boolean = true>(options?: Options<CancelCrawlData, ThrowOnError>) {
+        return (options?.client ?? client).post<CancelCrawlResponses, CancelCrawlErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/crawl/cancel',
+            ...options
+        });
+    }
+    
     public static startCrawl<ThrowOnError extends boolean = true>(options?: Options<StartCrawlData, ThrowOnError>) {
-        return (options?.client ?? client).sse.get<StartCrawlResponses, StartCrawlErrors, ThrowOnError>({
-            url: '/umbraco/content-audit/management/api/v1/crawl',
+        return (options?.client ?? client).post<StartCrawlResponses, StartCrawlErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/crawl/start',
+            ...options
+        });
+    }
+    
+    public static getCrawlStatus<ThrowOnError extends boolean = true>(options?: Options<GetCrawlStatusData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCrawlStatusResponses, GetCrawlStatusErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/crawl/status',
             ...options
         });
     }

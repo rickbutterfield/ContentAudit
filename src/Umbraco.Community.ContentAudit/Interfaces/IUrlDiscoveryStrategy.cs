@@ -16,6 +16,12 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         int Priority { get; }
 
         /// <summary>
+        /// Whether discovered URLs should be added to the crawl queue.
+        /// When false, URLs are only used for metadata resolution (e.g. content GUID mapping).
+        /// </summary>
+        bool ContributesToCrawlQueue => true;
+
+        /// <summary>
         /// Discovers URLs from this strategy's source
         /// </summary>
         /// <param name="baseUrl">The base URL of the website</param>

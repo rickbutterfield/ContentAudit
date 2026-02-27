@@ -92,6 +92,11 @@ export type CrawlDto = {
     skipped: boolean;
 };
 
+export type CrawlStatusDto = {
+    isRunning: boolean;
+    results: Array<CrawlDto>;
+};
+
 export type EmissionsDto = {
     emissionsPerPageView: number;
     carbonRating?: string | null;
@@ -885,14 +890,45 @@ export type RootResponses = {
 
 export type RootResponse = RootResponses[keyof RootResponses];
 
+export type CancelCrawlData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/crawl/cancel';
+};
+
+export type CancelCrawlErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type CancelCrawlError = CancelCrawlErrors[keyof CancelCrawlErrors];
+
+export type CancelCrawlResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type StartCrawlData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/umbraco/content-audit/management/api/v1/crawl';
+    url: '/umbraco/content-audit/management/api/v1/crawl/start';
 };
 
 export type StartCrawlErrors = {
+    /**
+     * Conflict
+     */
+    409: unknown;
     /**
      * Internal Server Error
      */
@@ -903,12 +939,35 @@ export type StartCrawlError = StartCrawlErrors[keyof StartCrawlErrors];
 
 export type StartCrawlResponses = {
     /**
-     * OK
+     * Accepted
      */
-    200: CrawlDto;
+    202: unknown;
 };
 
-export type StartCrawlResponse = StartCrawlResponses[keyof StartCrawlResponses];
+export type GetCrawlStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/crawl/status';
+};
+
+export type GetCrawlStatusErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetCrawlStatusError = GetCrawlStatusErrors[keyof GetCrawlStatusErrors];
+
+export type GetCrawlStatusResponses = {
+    /**
+     * OK
+     */
+    200: CrawlStatusDto;
+};
+
+export type GetCrawlStatusResponse = GetCrawlStatusResponses[keyof GetCrawlStatusResponses];
 
 export type GetAllIssuesData = {
     body?: never;

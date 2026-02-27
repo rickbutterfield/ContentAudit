@@ -20,7 +20,7 @@ ContentAudit is an Umbraco CMS package providing first-class site crawling and S
 
 ### Project Structure
 
-The solution consists of three main projects:
+The solution consists of four projects:
 
 1. **Umbraco.Community.ContentAudit** (src/)
    - Main C# backend package
@@ -38,6 +38,9 @@ The solution consists of three main projects:
 3. **Umbraco.Community.ContentAudit.SchemaGenerator** (tools/)
    - Generates JSON schema for appsettings.json configuration
 
+4. **Umbraco.Community.ContentAudit.UnitTests** (tests/)
+   - xUnit test project with FluentAssertions and Moq
+
 ### Backend Architecture
 
 **Key Services:**
@@ -53,11 +56,12 @@ The solution consists of three main projects:
 **Audit Issue System:**
 All audit issues implement `IAuditIssue` (or specialized interfaces `IAuditPageIssue`/`IAuditImageIssue`). Issues are automatically discovered via Umbraco's type scanning and registered through `AuditIssueCollectionBuilder`.
 
-Built-in issues include: MissingAltText, MetaDescriptionMissing, MissingH1, NoIndex, Orphaned, ServerError, etc.
+Built-in issues include: MissingAltText, MetaDescriptionMissing, MetaDescriptionTooLong, MissingH1, MissingH2, NoIndex, NoFollow, Orphaned, ServerError, InvalidHtml, CanonicalisedUrls, PageCarbonIntensity.
 
 **API Structure:**
 - Base path: `/umbraco/content-audit/management/api/v1`
-- Controllers in `Api/` folder organized by feature: Audit, Crawl, Issues, Settings
+- Controllers in `Api/` folder organized by feature: Audit (including Tree and Item sub-folders), Crawl, Issues, Settings
+- Audit endpoints include: Overview, ByKey, ExternalLinks, InternalLinks, DuplicateContent, HealthScore, OrphanedPages, MissingMetadata, Images, Export
 - Authorization via `AuthorizationPolicies.SectionAccessContentAudit`
 
 ### Frontend Architecture
@@ -161,11 +165,19 @@ Playwright is auto-installed on first run via the Composer:
 
 Configuration via `appsettings.json` under `ContentAudit` section:
 - `BaseUrl` - Site base URL (especially important for headless setups)
-- `UseSitemapXml` - Enable sitemap discovery
+- `UseSitemapXml` - Enable sitemap discovery (default: true)
 - `SitemapUrl` - Sitemap location (auto-discovered from robots.txt if not set)
-- `UseUmbracoContentIndex` - Use Umbraco's content index for URL discovery
-- `RespectRobotsTxt` - Honor robots.txt disallow rules
-- `MaxConcurrentCrawls` - Parallel crawl limit (default: 4)
+- `UseUmbracoContentIndex` - Use Umbraco's content index for URL discovery (default: false)
+- `RespectRobotsTxt` - Honor robots.txt disallow rules (default: true)
+- `MaxConcurrentCrawls` - Parallel crawl limit (default: 4, range: 1-20)
+- `MaxCrawlDurationMinutes` - Maximum crawl duration in minutes, 0 for no limit (default: 30)
+- `UseIncrementalCrawl` - Only re-crawl changed pages (default: true)
+- `ExcludePatterns` - URL patterns to exclude from crawling, supports wildcards (`*`, `**`)
+- `IncludePatterns` - URL patterns to include; if set, only matching URLs are crawled
+- `CrawlDelayMs` - Delay in ms between requests, can be overridden by robots.txt Crawl-delay (default: 0)
+- `MaxCrawlDepth` - Maximum crawl depth from starting URL, 0 for unlimited (default: 0)
+- `PageTimeoutMs` - Per-page navigation timeout in ms (default: 30000)
+- `ExternalRequestDelayMs` - Minimum delay in ms between requests to the same external domain (default: 200)
 
 ### Carbon Emissions Calculations
 

@@ -394,3 +394,4 @@ FodyWeavers.xsd
 
 # Claude
 nul
+.claude/settings.local.json

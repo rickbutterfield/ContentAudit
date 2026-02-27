@@ -1,4 +1,4 @@
-﻿import { css, customElement, html, nothing, state } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, nothing, state } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
@@ -33,6 +33,8 @@ export class ContentAuditScanViewElement extends UmbLitElement {
     @state()
     _healthScore?: HealthScoreDto;
 
+    #previousIsRunning = false;
+
     constructor() {
         super();
 
@@ -61,6 +63,20 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                 this._healthScore = healthScore;
             });
 
+            this.observe(context?.crawlData, (crawlData) => {
+                this._crawlData = crawlData || [];
+            });
+
+            this.observe(context?.isRunning, (isRunning) => {
+                const wasRunning = this.#previousIsRunning;
+                this.scanRunning = isRunning;
+                this.#previousIsRunning = isRunning ?? false;
+
+                if (wasRunning && !isRunning && this.isConnected) {
+                    this.#onCrawlFinished();
+                }
+            });
+
             this.#init();
         });
 
@@ -76,6 +92,23 @@ export class ContentAuditScanViewElement extends UmbLitElement {
         this.#context?.getHealthScore();
     }
 
+    async #onCrawlFinished() {
+        this.#notificationContext?.peek("default", {
+            data: { headline: 'Crawl completed', message: 'You can now view the results.' }
+        });
+
+        this.#init();
+
+        const eventContext = await this.getContext(UMB_ACTION_EVENT_CONTEXT);
+        if (eventContext) {
+            const event = new UmbRequestReloadChildrenOfEntityEvent({
+                entityType: 'audits-root',
+                unique: null,
+            });
+            eventContext.dispatchEvent(event);
+        }
+    }
+
     private async _openModal() {
         const modal = this.#modalManagerContext?.open(this, CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN, {
             data: {
@@ -85,48 +118,36 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
         const result = await modal?.onSubmit();
         if (result?.run) {
-            this.startAudit();
+            this.#startAudit();
         }
     }
 
-    async startAudit() {
-        const { stream } = await this.#context!.startCrawl();
-
-        this.scanRunning = true;
-        this._crawlData = [];
-        this.#notificationContext?.peek("positive", {
-            data: {
-                headline: 'Crawl started',
-                message: 'You will be notified when it is complete.'
-            }
-        });
-
+    async #startAudit() {
         try {
-            for await (const event of stream) {
-                this._crawlData = [...this._crawlData, event];
-            }
-
-            // Completed normally
-            this.#notificationContext?.peek("default", {
-                data: { headline: 'Crawl completed', message: 'You can now view the results.' }
+            await this.#context!.startCrawl();
+            this.#notificationContext?.peek("positive", {
+                data: {
+                    headline: 'Crawl started',
+                    message: 'You will be notified when it is complete.'
+                }
             });
         } catch (err) {
             this.#notificationContext?.peek("danger", {
-                data: { headline: 'Crawl failed', message: (err as Error).message ?? 'Unknown error' }
+                data: { headline: 'Crawl failed to start', message: (err as Error).message ?? 'Unknown error' }
             });
-        } finally {
-            this.scanRunning = false;
-            this.#init();
+        }
+    }
 
-            const eventContext = await this.getContext(UMB_ACTION_EVENT_CONTEXT);
-            if (!eventContext) {
-                throw new Error('Could not get the action event context');
-            }
-            const event = new UmbRequestReloadChildrenOfEntityEvent({
-                entityType: 'audits-root',
-                unique: null,
+    async #cancelCrawl() {
+        try {
+            await this.#context!.cancelCrawl();
+            this.#notificationContext?.peek("warning", {
+                data: { headline: 'Crawl cancelled', message: 'The crawl has been cancelled.' }
             });
-            eventContext.dispatchEvent(event);
+        } catch (err) {
+            this.#notificationContext?.peek("danger", {
+                data: { headline: 'Cancel failed', message: (err as Error).message ?? 'Unknown error' }
+            });
         }
     }
 
@@ -212,11 +233,10 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                         ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview.runDate, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
                     </div>
                     <div slot="header-actions">
-                        <uui-button
-                            look="primary"
-                            @click=${this._openModal}
-                            .state=${this.scanRunning ? "waiting" : ""}
-                        >Run new scan</uui-button>
+                        ${this.scanRunning
+                            ? html`<uui-button look="secondary" color="danger" @click=${this.#cancelCrawl}>Cancel</uui-button>`
+                            : html`<uui-button look="primary" @click=${this._openModal}>Run new scan</uui-button>`
+                        }
                     </div>
 
                     ${this.#renderScanBox()}
@@ -382,7 +402,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
             #main {
                 display: grid;
-                gap: var(--uui-size-space-5); 
+                gap: var(--uui-size-space-5);
                 grid-template-columns: 1fr 1fr 350px;
             }
 

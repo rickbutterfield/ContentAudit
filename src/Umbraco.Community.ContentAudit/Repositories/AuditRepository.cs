@@ -37,19 +37,14 @@ namespace Umbraco.Community.ContentAudit.Repositories
             bool isSQLite = providerName.Contains("sqlite", StringComparison.OrdinalIgnoreCase);
 
             string sql = isSQLite
-                ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC LIMIT 1"
-                : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] ORDER BY [RunDate] DESC";
+                ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed} ORDER BY [RunDate] DESC LIMIT 1"
+                : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed} ORDER BY [RunDate] DESC";
 
-            string? latestKey = await scope.Database.ExecuteScalarAsync<string?>(sql);
+            Guid? latestKey = await scope.Database.ExecuteScalarAsync<Guid?>(sql);
 
             scope.Complete();
 
-            if (Guid.TryParse(latestKey, out Guid key))
-            {
-                return key;
-            }
-
-            return null;
+            return latestKey;
         }
 
         /// <inheritdoc/>
@@ -64,16 +59,11 @@ namespace Umbraco.Community.ContentAudit.Repositories
                 ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC LIMIT 1"
                 : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC";
 
-            string? latestKey = await scope.Database.ExecuteScalarAsync<string?>(sql, new object[] { (int)AuditStatus.Completed, excludeKey });
+            Guid? latestKey = await scope.Database.ExecuteScalarAsync<Guid?>(sql, new object[] { (int)AuditStatus.Completed, excludeKey });
 
             scope.Complete();
 
-            if (Guid.TryParse(latestKey, out Guid key))
-            {
-                return key;
-            }
-
-            return null;
+            return latestKey;
         }
 
         /// <inheritdoc/>
@@ -82,7 +72,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
             using var scope = _scopeProvider.CreateScope();
 
             var auditOverviews = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}]", CancellationToken.None);
+                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed}", CancellationToken.None);
 
             scope.Complete();
 

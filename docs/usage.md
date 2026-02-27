@@ -41,4 +41,5 @@ The dashboard provides several views of your audit results:
 - Number of issues found on each page
 - Links to view detailed information about each page
 
-### TBD
+### Export
+- Export audit results to CSV for further analysis

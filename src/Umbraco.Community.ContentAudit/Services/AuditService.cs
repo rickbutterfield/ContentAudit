@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
-using System.Threading.Channels;
 using System.Threading.Tasks.Dataflow;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Community.ContentAudit.Composing;
@@ -30,6 +28,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ConcurrentDictionary<string, byte> _robotsDisallowedPaths = new();
         private readonly ConcurrentDictionary<string, CrawlDto> _crawlResults = new();
         private readonly ConcurrentDictionary<string, HeadResponseDto> _headResponseCache = new();
+        private readonly ConcurrentDictionary<string, byte> _enqueuedUrls = new();
 
         private readonly HashSet<KeyValuePair<Guid, string>> _umbracoContent = new();
 
@@ -50,12 +49,12 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ICrawlResultPersistence _persistence;
         private readonly IAuditRepository _auditRepository;
         private readonly IDomainRateLimiter _domainRateLimiter;
+        private readonly ICrawlStateManager _crawlStateManager;
         private readonly ILogger<AuditService> _logger;
         private readonly WebRoutingSettings _webRoutingSettings;
         private readonly AuditIssueCollection _auditIssueCollection;
         private readonly IEnumerable<IUrlDiscoveryStrategy> _urlDiscoveryStrategies;
 
-        private readonly Channel<CrawlDto> _crawlResultsChannel;
         private readonly SemaphoreSlim _crawlSemaphore;
         private int _isDiscoveryComplete;
 
@@ -97,6 +96,7 @@ namespace Umbraco.Community.ContentAudit.Services
             ICrawlResultPersistence persistence,
             IAuditRepository auditRepository,
             IDomainRateLimiter domainRateLimiter,
+            ICrawlStateManager crawlStateManager,
             AuditIssueCollection auditIssueCollection,
             ILogger<AuditService> logger,
             IEnumerable<IUrlDiscoveryStrategy> urlDiscoveryStrategies)
@@ -106,6 +106,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _persistence = persistence;
             _auditRepository = auditRepository;
             _domainRateLimiter = domainRateLimiter;
+            _crawlStateManager = crawlStateManager;
             _auditIssueCollection = auditIssueCollection;
             _logger = logger;
             _webRoutingSettings = webRoutingSettings.CurrentValue;
@@ -114,12 +115,11 @@ namespace Umbraco.Community.ContentAudit.Services
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
 
-            _crawlResultsChannel = Channel.CreateUnbounded<CrawlDto>();
             _crawlSemaphore = new SemaphoreSlim(_contentAuditSettings.MaxConcurrentCrawls);
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<CrawlDto> StartCrawl(string baseUrl, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async Task StartCrawl(string baseUrl, CancellationToken cancellationToken)
         {
             _baseUrl = !string.IsNullOrEmpty(_contentAuditSettings.BaseUrl)
                 ? _contentAuditSettings.BaseUrl
@@ -165,7 +165,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     foreach (var path in state.DisallowedPaths)
                         _robotsDisallowedPaths.TryAdd(path, 0);
 
-                    _logger.LogInformation("Restored state: {VisitedCount} visited, {PendingCount} pending",
+                    _logger.LogDebug("Restored state: {VisitedCount} visited, {PendingCount} pending",
                         state.VisitedUrls.Count(), state.PendingUrls.Count());
                 }
             }
@@ -182,7 +182,7 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 _previousFingerprints = await _persistence.GetPageFingerprintsAsync(_baseUrl, linkedToken);
                 _previousAuditKey = await _auditRepository.GetLatestCompletedAuditKeyExcluding(_currentAuditKey);
-                _logger.LogInformation("Loaded {Count} fingerprints for incremental crawl (previous audit: {PreviousKey})",
+                _logger.LogDebug("Loaded {Count} fingerprints for incremental crawl (previous audit: {PreviousKey})",
                     _previousFingerprints.Count, _previousAuditKey);
             }
 
@@ -207,95 +207,104 @@ namespace Umbraco.Community.ContentAudit.Services
                     BoundedCapacity = 100
                 });
 
-            var urlProcessingTask = Task.Run(async () =>
+            // Suppress ExecutionContext flow to prevent Umbraco's ambient scope (AsyncLocal)
+            // from leaking into Task.Run threads, which causes ObjectDisposedException
+            // when the parent scope is disposed before the child scope.
+            Task urlProcessingTask;
+            var suppressedFlow = ExecutionContext.SuppressFlow();
+            try
             {
-                try
+                urlProcessingTask = Task.Run(async () =>
                 {
-                    _logger.LogInformation("Starting URL processing with {0} initial URLs in queue", _urlQueue.Count);
-
-                    while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
+                    try
                     {
-                        _logger.LogInformation("Processing initial URL from queue: {0}", queueItem.Url);
-                        await processUrlBlock.SendAsync(queueItem, linkedToken);
-                    }
+                        _logger.LogInformation("Starting URL processing with {0} initial URLs in queue", _urlQueue.Count);
 
-                    int emptyChecks = 0;
-                    const int maxEmptyChecks = 3;
-
-                    while (Interlocked.CompareExchange(ref _isDiscoveryComplete, 0, 0) == 0 || !_urlQueue.IsEmpty)
-                    {
                         while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
                         {
-                            _logger.LogInformation("Processing newly discovered URL: {0}", queueItem.Url);
+                            _logger.LogDebug("Processing initial URL from queue: {0}", queueItem.Url);
                             await processUrlBlock.SendAsync(queueItem, linkedToken);
-                            emptyChecks = 0;
                         }
 
-                        if (_urlQueue.IsEmpty && processUrlBlock.InputCount == 0)
-                        {
-                            emptyChecks++;
-                            _logger.LogInformation("Empty state check {0}/{1}", emptyChecks, maxEmptyChecks);
+                        int emptyChecks = 0;
+                        const int maxEmptyChecks = 3;
 
-                            if (emptyChecks >= maxEmptyChecks)
+                        while (Interlocked.CompareExchange(ref _isDiscoveryComplete, 0, 0) == 0 || !_urlQueue.IsEmpty)
+                        {
+                            while (_urlQueue.TryDequeue(out UrlQueueItem? queueItem))
                             {
-                                _logger.LogInformation("No new URLs discovered after {0} checks, completing crawl", maxEmptyChecks);
-                                Interlocked.Exchange(ref _isDiscoveryComplete, 1);
-                                break;
+                                _logger.LogDebug("Processing newly discovered URL: {0}", queueItem.Url);
+                                await processUrlBlock.SendAsync(queueItem, linkedToken);
+                                emptyChecks = 0;
                             }
 
-                            await Task.Delay(EmptyQueueCheckDelayMs, linkedToken);
+                            if (_urlQueue.IsEmpty && processUrlBlock.InputCount == 0)
+                            {
+                                emptyChecks++;
+                                _logger.LogDebug("Empty state check {0}/{1}", emptyChecks, maxEmptyChecks);
+
+                                if (emptyChecks >= maxEmptyChecks)
+                                {
+                                    _logger.LogInformation("No new URLs discovered after {0} checks, completing crawl", maxEmptyChecks);
+                                    Interlocked.Exchange(ref _isDiscoveryComplete, 1);
+                                    break;
+                                }
+
+                                await Task.Delay(EmptyQueueCheckDelayMs, linkedToken);
+                            }
+                            else
+                            {
+                                emptyChecks = 0;
+                                await Task.Delay(QueuePollingDelayMs, linkedToken);
+                            }
                         }
-                        else
-                        {
-                            emptyChecks = 0;
-                            await Task.Delay(QueuePollingDelayMs, linkedToken);
-                        }
+
+                        _logger.LogInformation("URL processing complete, signaling completion");
                     }
-
-                    _logger.LogInformation("URL processing complete, signaling completion");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in URL processing task");
-                    throw;
-                }
-                finally
-                {
-                    processUrlBlock.Complete();
-                }
-            }, linkedToken);
-
-            var completionTask = Task.Run(async () =>
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in URL processing task");
+                        throw;
+                    }
+                    finally
+                    {
+                        processUrlBlock.Complete();
+                    }
+                }, linkedToken);
+            }
+            finally
             {
-                try
-                {
-                    await urlProcessingTask;
-                    await processUrlBlock.Completion;
+                suppressedFlow.Dispose();
+            }
 
-                    _logger.LogInformation("All processing complete, saving crawl results");
-                    await SaveCrawlResults();
+            try
+            {
+                await urlProcessingTask;
+                await processUrlBlock.Completion;
 
-                    _crawlResultsChannel.Writer.Complete();
-                }
-                catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-                {
-                    _logger.LogWarning("Crawl timed out after {0} minutes", _contentAuditSettings.MaxCrawlDurationMinutes);
-                    await SaveCrawlResults();
-                    _crawlResultsChannel.Writer.Complete();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during completion");
-                    await _persistence.FailAuditAsync(_currentAuditKey);
-                    _crawlResultsChannel.Writer.Complete(ex);
-                    throw;
-                }
-            }, linkedToken);
+                _logger.LogInformation("All processing complete, saving crawl results");
+                await SaveCrawlResults();
 
-            await foreach (var result in _crawlResultsChannel.Reader.ReadAllAsync(linkedToken))
-                yield return result;
-
-            await completionTask;
+                _crawlStateManager.CompleteCrawl();
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+            {
+                _logger.LogWarning("Crawl timed out after {0} minutes", _contentAuditSettings.MaxCrawlDurationMinutes);
+                await SaveCrawlResults();
+                _crawlStateManager.CompleteCrawl();
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Crawl was cancelled");
+                await SaveCrawlResults();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during completion");
+                await _persistence.FailAuditAsync(_currentAuditKey);
+                _crawlStateManager.FailCrawl();
+                throw;
+            }
         }
 
         private async Task ProcessUrlAsync(UrlQueueItem queueItem, Uri baseUri, CancellationToken cancellationToken)
@@ -316,7 +325,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     await Task.Delay(_effectiveCrawlDelayMs, cancellationToken);
                 }
 
-                _logger.LogInformation("Started processing URL: {0}", url);
+                _logger.LogDebug("Started processing URL: {0}", url);
 
                 var crawlResultKey = $"{url}|{isExternal}|{isAsset}";
 
@@ -336,13 +345,13 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         crawlResult.Blocked = true;
                         crawlResult.Crawled = false;
-                        _logger.LogInformation("Skipping URL due to circuit breaker: {0}", url);
+                        _logger.LogDebug("Skipping URL due to circuit breaker: {0}", url);
                     }
                     else if (!IsDisallowed(url))
                     {
                         if (!isAsset && !isExternal && _visitedUrls.TryAdd(url, 0))
                         {
-                            crawlResult = await CrawlInternalUrl(url, baseUri, queueItem.Depth);
+                            crawlResult = await CrawlInternalUrl(url, baseUri, queueItem.Depth, queueItem.Unique);
                             _crawlResults[crawlResultKey] = crawlResult;
 
                             // Update circuit breaker based on result
@@ -363,8 +372,8 @@ namespace Umbraco.Community.ContentAudit.Services
                         crawlResult.Blocked = true;
                         crawlResult.Crawled = true;
                     }
-                    _logger.LogInformation("Writing crawl result for URL: {0}", url);
-                    await _crawlResultsChannel.Writer.WriteAsync(crawlResult, cancellationToken);
+                    _logger.LogDebug("Writing crawl result for URL: {0}", url);
+                    _crawlStateManager.AddResult(crawlResult);
 
                     if (!isAsset && !isExternal)
                     {
@@ -377,7 +386,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
                 else
                 {
-                    _logger.LogInformation("Skipping writing crawl for URL: {0}", url);
+                    _logger.LogDebug("Skipping writing crawl for URL: {0}", url);
                 }
             }
             catch (Exception ex)
@@ -391,22 +400,26 @@ namespace Umbraco.Community.ContentAudit.Services
                 {
                     _crawlSemaphore.Release();
                 }
-                _logger.LogInformation("Finished processing URL: {0}", url);
+                _logger.LogDebug("Finished processing URL: {0}", url);
             }
         }
 
-        private async Task<CrawlDto> CrawlInternalUrl(string url, Uri baseUri, int currentDepth)
+        private async Task<CrawlDto> CrawlInternalUrl(string url, Uri baseUri, int currentDepth, Guid fallbackNodeKey = default)
         {
-            _logger.LogInformation("Starting internal crawl: {0} (depth: {1})", url, currentDepth);
+            _logger.LogDebug("Starting internal crawl: {0} (depth: {1})", url, currentDepth);
 
-            var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => x.Value == (_requestHandlerSettings.AddTrailingSlash ? url.EnsureEndsWith('/') : url));
+            var normalizedUrl = _requestHandlerSettings.AddTrailingSlash ? url.EnsureEndsWith('/') : url;
+            var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => string.Equals(x.Value, normalizedUrl, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingUmbracoNode.Key == Guid.Empty && fallbackNodeKey != Guid.Empty)
+                matchingUmbracoNode = new KeyValuePair<Guid, string>(fallbackNodeKey, normalizedUrl);
 
             if (_contentAuditSettings.UseIncrementalCrawl && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
             {
                 var changeCheck = await _crawlService.CheckPageChangedAsync(url, previousFingerprint);
                 if (!changeCheck.HasChanged)
                 {
-                    _logger.LogInformation("Page {Url} unchanged, skipping full crawl", url);
+                    _logger.LogDebug("Page {Url} unchanged, skipping full crawl", url);
 
                     _newFingerprints.Add(new PageFingerprintDto
                     {
@@ -480,7 +493,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                         if (!isCanonicalExternal)
                         {
-                            _logger.LogInformation("Following canonical URL: {Canonical} from page {Url}", canonicalUrl, url);
+                            _logger.LogDebug("Following canonical URL: {Canonical} from page {Url}", canonicalUrl, url);
                             EnqueueUrl(new UrlQueueItem
                             {
                                 Url = canonicalUrl,
@@ -525,8 +538,10 @@ namespace Umbraco.Community.ContentAudit.Services
                 _contentQualityDtos.Add(pageAnalysis.ContentQualityData);
             }
 
-            _logger.LogInformation("Found {0} links and {1} resources on page {2}",
+            _logger.LogDebug("Found {0} links and {1} resources on page {2}",
                 pageAnalysis.Links.Count(), pageAnalysis.Resources.Count(), url);
+
+            var externalHeadTasks = new List<Task>();
 
             if (pageAnalysis.SeoData?.HasNoFollow == false)
             {
@@ -537,40 +552,40 @@ namespace Umbraco.Community.ContentAudit.Services
                         var absoluteUrl = absoluteUri.AbsoluteUri;
                         bool isExternal = absoluteUri.Host != baseUri.Host;
 
-                        _logger.LogInformation("Processing discovered link: {0} from page {1}", absoluteUrl, url);
+                        link.Url = absoluteUrl;
+                        _linkDtos.Add(link);
 
                         if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
                         {
                             link.StatusCode = cachedResponse.StatusCode;
                             link.ContentType = cachedResponse.ContentType;
                         }
-                        else
+                        else if (isExternal)
                         {
-                            await _domainRateLimiter.WaitAsync(absoluteUrl);
-                            var headResponse = await _crawlService.GetHeadResponse(absoluteUrl);
-
-                            if (headResponse != null)
+                            var capturedLink = link;
+                            var capturedUrl = absoluteUrl;
+                            externalHeadTasks.Add(Task.Run(async () =>
                             {
-                                link.StatusCode = headResponse.StatusCode;
-                                link.ContentType = headResponse.ContentType;
-                                _headResponseCache.TryAdd(absoluteUrl, headResponse);
-                            }
+                                await _domainRateLimiter.WaitAsync(capturedUrl);
+                                var headResponse = await _crawlService.GetHeadResponse(capturedUrl);
+                                if (headResponse != null)
+                                {
+                                    capturedLink.StatusCode = headResponse.StatusCode;
+                                    capturedLink.ContentType = headResponse.ContentType;
+                                    _headResponseCache.TryAdd(capturedUrl, headResponse);
+                                }
+                            }));
                         }
 
-                        link.Url = absoluteUrl;
-                        _linkDtos.Add(link);
-
-                        var urlQueueItem = new UrlQueueItem()
+                        EnqueueUrl(new UrlQueueItem
                         {
                             Url = absoluteUrl,
                             IsExternal = isExternal,
                             IsAsset = false,
                             SourceUrl = url,
                             Unique = matchingUmbracoNode.Key,
-                            Depth = currentDepth + 1 // Links are one level deeper
-                        };
-
-                        EnqueueUrl(urlQueueItem);
+                            Depth = currentDepth + 1
+                        });
                     }
                 }
             }
@@ -582,7 +597,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     var absoluteUrl = absoluteUri.AbsoluteUri;
                     bool isExternal = absoluteUri.Host != baseUri.Host;
 
-                    _logger.LogInformation("Processing discovered resource: {0} from page {1}", absoluteUrl, url);
+                    _resourceDtos.Add(resource);
 
                     if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
                     {
@@ -590,37 +605,41 @@ namespace Umbraco.Community.ContentAudit.Services
                         resource.ContentType = cachedResponse.ContentType;
                         resource.Size = cachedResponse.ContentLength;
                     }
-                    else
+                    else if (isExternal)
                     {
-                        await _domainRateLimiter.WaitAsync(absoluteUrl);
-                        var headResponse = await _crawlService.GetHeadResponse(absoluteUrl);
-
-                        if (headResponse != null)
+                        var capturedResource = resource;
+                        var capturedUrl = absoluteUrl;
+                        externalHeadTasks.Add(Task.Run(async () =>
                         {
-                            resource.StatusCode = headResponse.StatusCode;
-                            resource.ContentType = headResponse.ContentType;
-                            resource.Size = headResponse.ContentLength;
-                            _headResponseCache.TryAdd(absoluteUrl, headResponse);
-                        }
+                            await _domainRateLimiter.WaitAsync(capturedUrl);
+                            var headResponse = await _crawlService.GetHeadResponse(capturedUrl);
+                            if (headResponse != null)
+                            {
+                                capturedResource.StatusCode = headResponse.StatusCode;
+                                capturedResource.ContentType = headResponse.ContentType;
+                                capturedResource.Size = headResponse.ContentLength;
+                                _headResponseCache.TryAdd(capturedUrl, headResponse);
+                            }
+                        }));
                     }
 
-                    _resourceDtos.Add(resource);
-
-                    var urlQueueItem = new UrlQueueItem()
+                    EnqueueUrl(new UrlQueueItem
                     {
                         Url = absoluteUrl,
                         IsExternal = isExternal,
                         IsAsset = true,
                         SourceUrl = url,
                         Unique = matchingUmbracoNode.Key,
-                        Depth = currentDepth + 1 // Resources are one level deeper
-                    };
-
-                    EnqueueUrl(urlQueueItem);
+                        Depth = currentDepth + 1
+                    });
                 }
             }
 
-            _logger.LogInformation("Found {0} images on page {1}", pageAnalysis.Images.Count(), url);
+            if (externalHeadTasks.Count > 0)
+            {
+                await Task.WhenAll(externalHeadTasks);
+            }
+
             foreach (var image in pageAnalysis.Images)
             {
                 _imageDtos.Add(image);
@@ -668,20 +687,26 @@ namespace Umbraco.Community.ContentAudit.Services
                 _contentAuditSettings.ExcludePatterns,
                 _contentAuditSettings.IncludePatterns))
             {
-                _logger.LogInformation("Skipping URL due to pattern exclusion: {0}", item.Url);
+                _logger.LogDebug("Skipping URL due to pattern exclusion: {0}", item.Url);
                 return;
             }
 
             // Check max crawl depth (0 = unlimited)
             if (_contentAuditSettings.MaxCrawlDepth > 0 && item.Depth > _contentAuditSettings.MaxCrawlDepth)
             {
-                _logger.LogInformation("Skipping URL due to depth limit ({Depth} > {MaxDepth}): {Url}",
+                _logger.LogDebug("Skipping URL due to depth limit ({Depth} > {MaxDepth}): {Url}",
                     item.Depth, _contentAuditSettings.MaxCrawlDepth, item.Url);
                 return;
             }
 
+            var enqueueKey = $"{item.Url}|{item.IsExternal}|{item.IsAsset}";
+            if (!_enqueuedUrls.TryAdd(enqueueKey, 0))
+            {
+                return;
+            }
+
             _urlQueue.Enqueue(item);
-            _logger.LogInformation("Enqueued new URL for crawling: {0} (IsExternal: {1}, IsAsset: {2}, Source: {3})",
+            _logger.LogDebug("Enqueued new URL for crawling: {0} (IsExternal: {1}, IsAsset: {2}, Source: {3})",
                 item.Url, item.IsExternal, item.IsAsset, item.SourceUrl ?? "Initial");
         }
 
@@ -765,7 +790,7 @@ namespace Umbraco.Community.ContentAudit.Services
             if (!_previousAuditKey.HasValue)
                 return;
 
-            _logger.LogInformation("Copying data from previous audit for unchanged page: {Url}", url);
+            _logger.LogDebug("Copying data from previous audit for unchanged page: {Url}", url);
 
             var pages = await _auditRepository.GetPagesByAuditKey(_previousAuditKey.Value);
             var previousPage = pages.FirstOrDefault(p => p.Url == url);
@@ -926,29 +951,37 @@ namespace Umbraco.Community.ContentAudit.Services
         private async Task DiscoverInitialUrlsAsync(CancellationToken cancellationToken)
         {
             var orderedStrategies = _urlDiscoveryStrategies.OrderByDescending(s => s.Priority);
-            var discoveredUrls = new Dictionary<string, DiscoveredUrl>(StringComparer.OrdinalIgnoreCase);
+            var urlsToEnqueue = new Dictionary<string, DiscoveredUrl>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var strategy in orderedStrategies)
             {
-                _logger.LogInformation("Running URL discovery strategy: {Name} (Priority: {Priority})", strategy.Name, strategy.Priority);
+                _logger.LogInformation("Running URL discovery strategy: {Name} (Priority: {Priority}, Queue: {Queue})",
+                    strategy.Name, strategy.Priority, strategy.ContributesToCrawlQueue);
 
                 try
                 {
                     var urls = await strategy.DiscoverUrlsAsync(_baseUrl!, cancellationToken);
+                    int count = 0;
 
                     foreach (var discoveredUrl in urls)
                     {
+                        count++;
                         var normalizedUrl = _requestHandlerSettings.AddTrailingSlash
                             ? discoveredUrl.Url.EnsureEndsWith('/')
                             : discoveredUrl.Url;
 
-                        if (!discoveredUrls.ContainsKey(normalizedUrl))
+                        if (discoveredUrl.ContentId.HasValue)
                         {
-                            discoveredUrls[normalizedUrl] = discoveredUrl;
+                            _umbracoContent.Add(new KeyValuePair<Guid, string>(discoveredUrl.ContentId.Value, normalizedUrl));
+                        }
+
+                        if (strategy.ContributesToCrawlQueue && !urlsToEnqueue.ContainsKey(normalizedUrl))
+                        {
+                            urlsToEnqueue[normalizedUrl] = discoveredUrl;
                         }
                     }
 
-                    _logger.LogInformation("Strategy {Name} discovered {Count} URLs", strategy.Name, urls.Count());
+                    _logger.LogInformation("Strategy {Name} discovered {Count} URLs", strategy.Name, count);
                 }
                 catch (Exception ex)
                 {
@@ -956,33 +989,34 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
             }
 
-            foreach (var kvp in discoveredUrls)
+            foreach (var kvp in urlsToEnqueue)
             {
                 var discoveredUrl = kvp.Value;
-
-                if (discoveredUrl.ContentId.HasValue)
-                {
-                    _umbracoContent.Add(new KeyValuePair<Guid, string>(discoveredUrl.ContentId.Value, kvp.Key));
-                }
 
                 if (Uri.TryCreate(_baseUri, discoveredUrl.Url, out var absoluteUri))
                 {
                     var absoluteUrl = absoluteUri.AbsoluteUri;
+                    var contentId = discoveredUrl.ContentId
+                        ?? _umbracoContent.FirstOrDefault(x => string.Equals(x.Value, kvp.Key, StringComparison.OrdinalIgnoreCase)).Key;
+
+                    if (contentId == Guid.Empty)
+                        contentId = Guid.NewGuid();
 
                     EnqueueUrl(new UrlQueueItem
                     {
                         Url = absoluteUrl,
                         IsExternal = false,
                         IsAsset = false,
-                        Unique = discoveredUrl.ContentId ?? Guid.Empty,
-                        Depth = 0 // Seed URLs start at depth 0
+                        Unique = contentId,
+                        Depth = 0
                     });
 
-                    _logger.LogInformation("Adding {Url} to the URL queue from discovery strategy", absoluteUrl);
+                    _logger.LogDebug("Adding {Url} to the URL queue from discovery strategy", absoluteUrl);
                 }
             }
 
-            _logger.LogInformation("URL discovery complete. Total unique URLs: {Count}", discoveredUrls.Count);
+            _logger.LogInformation("URL discovery complete. {ContentNodes} content nodes resolved, {QueuedUrls} URLs queued",
+                _umbracoContent.Count, urlsToEnqueue.Count);
         }
 
         private async Task GetRobots()

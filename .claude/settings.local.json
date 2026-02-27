@@ -2,12 +2,32 @@
   "permissions": {
     "allow": [
       "Bash(cat:*)",
-      "Bash(dotnet build:*)",
-      "Bash(npm run build:*)",
+      "Bash(cd:*)",
+      "Bash(cp:*)",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(dotnet build:*)",
+      "Bash(find:*)",
+      "Bash(findstr:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(robocopy:*)",
+      "Bash(xargs:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet test:*)",
+      "WebSearch",
+      "Bash(powershell -ExecutionPolicy Bypass -File D:CommunityContentAuditcompare-pages.ps1)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"D:/Community/ContentAudit/compare-pages.ps1\":*)",
+      "Bash(gh api:*)",
+      "Bash(gh issue view:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx tsc:*)"
     ],
-    "deny": [],
-    "ask": []
+    "deny": [
+      "Bash(grep:*)"
+    ],
+    "ask": [
+      "Bash(rm:*)"
+    ]
   }
 }
