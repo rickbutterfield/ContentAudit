@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
+using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -17,6 +18,7 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
     {
         private readonly IExamineManager _examineManager;
         private readonly IPublishedUrlProvider _urlProvider;
+        private readonly IUmbracoContextFactory _umbracoContextFactory;
         private readonly IOptionsMonitor<ContentAuditSettings> _settings;
         private readonly ILogger<UmbracoContentUrlDiscoveryStrategy> _logger;
 
@@ -27,11 +29,13 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
         public UmbracoContentUrlDiscoveryStrategy(
             IExamineManager examineManager,
             IPublishedUrlProvider urlProvider,
+            IUmbracoContextFactory umbracoContextFactory,
             IOptionsMonitor<ContentAuditSettings> settings,
             ILogger<UmbracoContentUrlDiscoveryStrategy> logger)
         {
             _examineManager = examineManager;
             _urlProvider = urlProvider;
+            _umbracoContextFactory = umbracoContextFactory;
             _settings = settings;
             _logger = logger;
         }
@@ -41,6 +45,10 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
             _logger.LogInformation("Resolving content nodes from Umbraco content index");
 
             var discoveredUrls = new List<DiscoveredUrl>();
+
+            // EnsureUmbracoContext creates a context when running outside an HTTP request
+            // (e.g. background Task.Run), which IPublishedUrlProvider.GetUrl requires.
+            using var contextReference = _umbracoContextFactory.EnsureUmbracoContext();
 
             if (_examineManager.TryGetIndex(UmbracoIndexes.InternalIndexName, out var contentIndex))
             {

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
+using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Services.Discovery;
@@ -18,6 +19,7 @@ public class UmbracoContentUrlDiscoveryStrategyTests
 {
     private readonly Mock<IExamineManager> _examineManager = new();
     private readonly Mock<IPublishedUrlProvider> _urlProvider = new();
+    private readonly Mock<IUmbracoContextFactory> _umbracoContextFactory = new();
     private readonly Mock<IOptionsMonitor<ContentAuditSettings>> _settings = new();
     private readonly Mock<ILogger<UmbracoContentUrlDiscoveryStrategy>> _logger = new();
 
@@ -31,6 +33,7 @@ public class UmbracoContentUrlDiscoveryStrategyTests
         return new UmbracoContentUrlDiscoveryStrategy(
             _examineManager.Object,
             _urlProvider.Object,
+            _umbracoContextFactory.Object,
             _settings.Object,
             _logger.Object);
     }

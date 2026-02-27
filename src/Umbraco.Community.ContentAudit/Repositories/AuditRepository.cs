@@ -40,7 +40,8 @@ namespace Umbraco.Community.ContentAudit.Repositories
                 ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed} ORDER BY [RunDate] DESC LIMIT 1"
                 : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed} ORDER BY [RunDate] DESC";
 
-            Guid? latestKey = await scope.Database.ExecuteScalarAsync<Guid?>(sql);
+            var scalar = await scope.Database.ExecuteScalarAsync<string>(sql);
+            Guid? latestKey = Guid.TryParse(scalar, out var parsed) ? parsed : null;
 
             scope.Complete();
 
@@ -59,7 +60,8 @@ namespace Umbraco.Community.ContentAudit.Repositories
                 ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC LIMIT 1"
                 : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC";
 
-            Guid? latestKey = await scope.Database.ExecuteScalarAsync<Guid?>(sql, new object[] { (int)AuditStatus.Completed, excludeKey });
+            var scalar = await scope.Database.ExecuteScalarAsync<string>(sql, new object[] { (int)AuditStatus.Completed, excludeKey });
+            Guid? latestKey = Guid.TryParse(scalar, out var parsed) ? parsed : null;
 
             scope.Complete();
 
