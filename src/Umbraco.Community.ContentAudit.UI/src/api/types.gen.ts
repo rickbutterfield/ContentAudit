@@ -65,6 +65,8 @@ export type ContentAuditSettings = {
     includePatterns: Array<string>;
     crawlDelayMs: number;
     maxCrawlDepth: number;
+    pageTimeoutMs: number;
+    externalRequestDelayMs: number;
 };
 
 export type ContentQualityDto = {

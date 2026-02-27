@@ -49,6 +49,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ICrawlService _crawlService;
         private readonly ICrawlResultPersistence _persistence;
         private readonly IAuditRepository _auditRepository;
+        private readonly IDomainRateLimiter _domainRateLimiter;
         private readonly ILogger<AuditService> _logger;
         private readonly WebRoutingSettings _webRoutingSettings;
         private readonly AuditIssueCollection _auditIssueCollection;
@@ -95,6 +96,7 @@ namespace Umbraco.Community.ContentAudit.Services
             ICrawlService pageScanningService,
             ICrawlResultPersistence persistence,
             IAuditRepository auditRepository,
+            IDomainRateLimiter domainRateLimiter,
             AuditIssueCollection auditIssueCollection,
             ILogger<AuditService> logger,
             IEnumerable<IUrlDiscoveryStrategy> urlDiscoveryStrategies)
@@ -103,6 +105,7 @@ namespace Umbraco.Community.ContentAudit.Services
             _crawlService = pageScanningService;
             _persistence = persistence;
             _auditRepository = auditRepository;
+            _domainRateLimiter = domainRateLimiter;
             _auditIssueCollection = auditIssueCollection;
             _logger = logger;
             _webRoutingSettings = webRoutingSettings.CurrentValue;
@@ -543,6 +546,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         }
                         else
                         {
+                            await _domainRateLimiter.WaitAsync(absoluteUrl);
                             var headResponse = await _crawlService.GetHeadResponse(absoluteUrl);
 
                             if (headResponse != null)
@@ -588,6 +592,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
                     else
                     {
+                        await _domainRateLimiter.WaitAsync(absoluteUrl);
                         var headResponse = await _crawlService.GetHeadResponse(absoluteUrl);
 
                         if (headResponse != null)

@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_OUTBOUND_LINKS_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_OUTBOUND_LINKS_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.OutboundLinks';
+const workspaceAlias = 'ContentAudit.Workspace.OutboundLinks';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.OutboundLinks.Collection',
+        alias: 'ContentAudit.Workspace.OutboundLinks.Collection',
         name: 'Content Audit Outbound Links Collection Workspace View',
         meta: {
             label: 'Collection',

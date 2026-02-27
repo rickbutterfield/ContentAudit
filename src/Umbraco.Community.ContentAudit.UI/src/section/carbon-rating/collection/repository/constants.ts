@@ -1,1 +1,1 @@
-﻿export const CONTENT_AUDIT_CARBON_RATING_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditCarbonRatingCollection";
+﻿export const CONTENT_AUDIT_CARBON_RATING_COLLECTION_REPOSITORY_ALIAS = "ContentAudit.Repository.CarbonRatingCollection";

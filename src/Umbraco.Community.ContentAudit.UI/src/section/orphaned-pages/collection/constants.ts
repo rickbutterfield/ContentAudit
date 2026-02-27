@@ -1,2 +1,2 @@
-﻿export const CONTENT_AUDIT_ORPHANED_PAGES_COLLECTION_ALIAS = 'Umb.Collection.ContentAudit.OrphanedPages';
-export const CONTENT_AUDIT_ORPHANED_PAGES_TABLE_COLLECTION_VIEW_ALIAS = 'Umb.CollectionView.ContentAudit.OrphanedPages.Table';
+﻿export const CONTENT_AUDIT_ORPHANED_PAGES_COLLECTION_ALIAS = 'ContentAudit.Collection.OrphanedPages';
+export const CONTENT_AUDIT_ORPHANED_PAGES_TABLE_COLLECTION_VIEW_ALIAS = 'ContentAudit.CollectionView.OrphanedPages.Table';

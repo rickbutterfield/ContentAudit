@@ -1,1 +1,1 @@
-﻿export const CONTENT_AUDIT_OUTBOUND_LINKS_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditOutboundLinksCollection";
+﻿export const CONTENT_AUDIT_OUTBOUND_LINKS_COLLECTION_REPOSITORY_ALIAS = "ContentAudit.Repository.OutboundLinksCollection";

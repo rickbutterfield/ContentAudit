@@ -159,7 +159,7 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 
 			.info-item strong {
 				color: var(--uui-color-text-alt);
-				font-size: 0.875rem;
+				font-size: var(--uui-type-default-size);
 			}
 
 			.stats-grid {
@@ -179,14 +179,14 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 			}
 
 			.stat-label {
-				font-size: 0.875rem;
+				font-size: var(--uui-type-default-size);
 				color: var(--uui-color-text-alt);
 				margin-bottom: var(--uui-size-space-2);
 				text-align: center;
 			}
 
 			.stat-value {
-				font-size: 2rem;
+				font-size: var(--uui-type-h3-size);
 				font-weight: 700;
 				color: var(--uui-color-text);
 			}

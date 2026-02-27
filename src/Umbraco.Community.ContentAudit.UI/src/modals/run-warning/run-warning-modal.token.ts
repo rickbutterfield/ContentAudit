@@ -8,7 +8,7 @@ export type RunWarningModalValue = {
     run: boolean;
 }
 
-export const CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN = new UmbModalToken<RunWarningModalData, RunWarningModalValue>('Umb.ContentAudit.Modal.RunWarning', {
+export const CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN = new UmbModalToken<RunWarningModalData, RunWarningModalValue>('ContentAudit.Modal.RunWarning', {
     modal: {
         type: 'dialog',
         size: 'small'

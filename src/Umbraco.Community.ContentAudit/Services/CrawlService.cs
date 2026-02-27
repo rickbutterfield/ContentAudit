@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
+using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Enums;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -26,6 +28,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IBrowserPagePool _pagePool;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IValidationService _validationService;
+        private readonly ContentAuditSettings _settings;
         private readonly ResiliencePipeline _playwrightRetryPipeline;
         private Uri? _baseUri;
 
@@ -36,16 +39,19 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <param name="pagePool">The browser page pool for page reuse</param>
         /// <param name="httpClientFactory">The HTTP client factory for making HTTP requests</param>
         /// <param name="validationService">The validation service for HTML validation</param>
+        /// <param name="settings">The content audit settings</param>
         public CrawlService(
             ILogger<CrawlService> logger,
             IBrowserPagePool pagePool,
             IHttpClientFactory httpClientFactory,
-            IValidationService validationService)
+            IValidationService validationService,
+            IOptionsMonitor<ContentAuditSettings> settings)
         {
             _logger = logger;
             _pagePool = pagePool;
             _httpClientFactory = httpClientFactory;
             _validationService = validationService;
+            _settings = settings.CurrentValue;
 
             _playwrightRetryPipeline = new ResiliencePipelineBuilder()
                 .AddRetry(new RetryStrategyOptions
@@ -122,11 +128,18 @@ namespace Umbraco.Community.ContentAudit.Services
                 });
 
                 // Navigate to the page and wait for network idle (with retry)
+                var gotoOptions = new PageGotoOptions
+                {
+                    WaitUntil = WaitUntilState.NetworkIdle
+                };
+
+                if (_settings.PageTimeoutMs > 0)
+                {
+                    gotoOptions.Timeout = _settings.PageTimeoutMs;
+                }
+
                 var response = await _playwrightRetryPipeline.ExecuteAsync(async ct =>
-                    await page.GotoAsync(url, new PageGotoOptions
-                    {
-                        WaitUntil = WaitUntilState.NetworkIdle
-                    }));
+                    await page.GotoAsync(url, gotoOptions));
 
                 var endTime = DateTime.UtcNow;
 
@@ -1042,6 +1055,12 @@ namespace Umbraco.Community.ContentAudit.Services
             try
             {
                 using var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+
+                if (_settings.PageTimeoutMs > 0)
+                {
+                    httpClient.Timeout = TimeSpan.FromMilliseconds(_settings.PageTimeoutMs);
+                }
+
                 var response = await httpClient.GetAsync(url);
 
                 var pageAnalysis = new PageAnalysisDto

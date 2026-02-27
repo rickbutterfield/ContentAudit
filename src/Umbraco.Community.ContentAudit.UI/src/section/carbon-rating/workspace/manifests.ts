@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_CARBON_RATING_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_CARBON_RATING_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.CarbonRating';
+const workspaceAlias = 'ContentAudit.Workspace.CarbonRating';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.CarbonRating.Collection',
+        alias: 'ContentAudit.Workspace.CarbonRating.Collection',
         name: 'Content Audit Carbon Rating Collection Workspace View',
         meta: {
             label: 'Collection',

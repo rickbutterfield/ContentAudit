@@ -16,7 +16,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.Issues.Collection',
+        alias: 'ContentAudit.Workspace.Issues.Collection',
         name: 'Content Audit Issues Collection Workspace View',
         meta: {
             label: 'Collection',

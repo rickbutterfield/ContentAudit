@@ -201,12 +201,12 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
             }
 
             .summary-label {
-                font-size: 0.875rem;
+                font-size: var(--uui-type-default-size);
                 color: var(--uui-color-text-alt);
             }
 
             .summary-value {
-                font-size: 1.5rem;
+                font-size: var(--uui-type-h4-size);
                 font-weight: 700;
                 color: var(--uui-color-text);
             }

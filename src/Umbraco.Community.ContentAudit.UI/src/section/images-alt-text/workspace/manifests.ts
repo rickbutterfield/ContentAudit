@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_IMAGES_ALT_TEXT_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_IMAGES_ALT_TEXT_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.ImagesAltText';
+const workspaceAlias = 'ContentAudit.Workspace.ImagesAltText';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.ImagesAltText.Collection',
+        alias: 'ContentAudit.Workspace.ImagesAltText.Collection',
         name: 'Content Audit Images Alt Text Collection Workspace View',
         meta: {
             label: 'Collection',

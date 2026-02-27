@@ -1,1 +1,1 @@
-﻿export const CONTENT_AUDIT_CORE_WEB_VITALS_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditCoreWebVitalsCollection";
+﻿export const CONTENT_AUDIT_CORE_WEB_VITALS_COLLECTION_REPOSITORY_ALIAS = "ContentAudit.Repository.CoreWebVitalsCollection";

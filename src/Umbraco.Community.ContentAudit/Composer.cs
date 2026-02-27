@@ -76,6 +76,7 @@ namespace Umbraco.Community.ContentAudit
             // Register Playwright and browser page pool as singletons
             builder.Services.AddSingleton<IPlaywright>(_ => Playwright.CreateAsync().GetAwaiter().GetResult());
             builder.Services.AddSingleton<IBrowserPagePool, BrowserPagePool>();
+            builder.Services.AddSingleton<IDomainRateLimiter, DomainRateLimiter>();
 
             // Register URL discovery strategies
             builder.Services.AddScoped<IUrlDiscoveryStrategy, SitemapUrlDiscoveryStrategy>();

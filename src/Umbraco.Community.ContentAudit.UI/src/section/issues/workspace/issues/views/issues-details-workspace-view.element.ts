@@ -174,7 +174,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
     #renderProperties() {
         return html`
 			<uui-box style="align-self: flex-start;">
-				<umb-property-layout label="Name" orientation="vertical" style="padding-top: 0;">
+				<umb-property-layout label="Name" orientation="vertical">
 					<div slot="editor">${this._data?.name}</div>
 				</umb-property-layout>
 				<umb-property-layout label="Category" orientation="vertical">
@@ -189,7 +189,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 						<content-audit-issue-type-label .type=${this._data?.type}></content-audit-issue-type-label>
 					</div>
 				</umb-property-layout>
-				<umb-property-layout label="Issue Priority" orientation="vertical" style="padding-bottom: 0;">
+				<umb-property-layout label="Issue Priority" orientation="vertical">
 					<div slot="editor">
 						<content-audit-priority-type-label .type=${this._data?.priority}></content-audit-priority-type-label>
 					</div>
@@ -214,6 +214,18 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 				padding: var(--uui-size-layout-1);
 				grid-template-columns: 1fr 350px;
 			}
+
+            umb-property-layout {
+                padding: var(--uui-size-space-4) 0;
+
+                &:first-of-type {
+                    padding-top: 0;
+                }
+
+                &:last-of-type {
+                    padding-bottom: 0;
+                }
+            }
 		`
     ]
 }

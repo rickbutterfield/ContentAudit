@@ -1,1 +1,1 @@
-﻿export const CONTENT_AUDIT_ORPHANED_PAGES_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditOrphanedPagesCollection";
+﻿export const CONTENT_AUDIT_ORPHANED_PAGES_COLLECTION_REPOSITORY_ALIAS = "ContentAudit.Repository.OrphanedPagesCollection";

@@ -1,4 +1,4 @@
-﻿export const CONTENT_AUDIT_MENU_0_ALIAS = 'Umb.Menu.ContentAudit';
-export const CONTENT_AUDIT_MENU_1_ALIAS = 'Umb.Menu.ContentMetadata';
-export const CONTENT_AUDIT_MENU_2_ALIAS = 'Umb.Menu.ContentPerformance';
-export const CONTENT_AUDIT_MENU_3_ALIAS = 'Umb.Menu.ContentTools';
+export const CONTENT_AUDIT_MENU_AUDIT_ALIAS = 'ContentAudit.Menu';
+export const CONTENT_AUDIT_MENU_METADATA_ALIAS = 'ContentAudit.Menu.Metadata';
+export const CONTENT_AUDIT_MENU_PERFORMANCE_ALIAS = 'ContentAudit.Menu.Performance';
+export const CONTENT_AUDIT_MENU_TOOLS_ALIAS = 'ContentAudit.Menu.Tools';

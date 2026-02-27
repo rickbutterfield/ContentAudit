@@ -95,5 +95,21 @@ namespace Umbraco.Community.ContentAudit.Configuration
         [DefaultValue(0)]
         [Range(0, 100, ErrorMessage = "MaxCrawlDepth must be between 0 and 100")]
         public int MaxCrawlDepth { get; set; } = 0;
+
+        /// <summary>
+        /// Timeout in milliseconds for each page navigation. Applies to both Playwright and HttpClient fallback.
+        /// Set to 0 to use Playwright's default timeout (30 seconds).
+        /// </summary>
+        [DefaultValue(30000)]
+        [Range(0, 300000, ErrorMessage = "PageTimeoutMs must be between 0 and 300000 (5 minutes)")]
+        public int PageTimeoutMs { get; set; } = 30000;
+
+        /// <summary>
+        /// Minimum delay in milliseconds between consecutive requests to the same external domain.
+        /// Applies to HEAD requests for external links and resources. Set to 0 to disable.
+        /// </summary>
+        [DefaultValue(200)]
+        [Range(0, 10000, ErrorMessage = "ExternalRequestDelayMs must be between 0 and 10000 (10 seconds)")]
+        public int ExternalRequestDelayMs { get; set; } = 200;
     }
 }

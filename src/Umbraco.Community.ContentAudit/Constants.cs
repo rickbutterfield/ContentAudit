@@ -5,7 +5,7 @@
         internal const string Alias = "ContentAudit";
         internal const string Name = "Audit";
         internal const string HttpClientName = "ContentAuditCrawler";
-        internal const string SectionAlias = "Umb.Section.ContentAudit";
+        internal const string SectionAlias = "ContentAudit.Section";
         internal const string MetadataTreeAlias = "contentMetadata";
 
         internal class Trees

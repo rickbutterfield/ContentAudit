@@ -1,1 +1,1 @@
-﻿export const CONTENT_AUDIT_ISSUES_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditIssuesCollection";
+﻿export const CONTENT_AUDIT_ISSUES_COLLECTION_REPOSITORY_ALIAS = "ContentAudit.Repository.IssuesCollection";

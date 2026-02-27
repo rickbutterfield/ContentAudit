@@ -14,7 +14,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.Audits.Overview',
+		alias: 'ContentAudit.WorkspaceView.Audits.Overview',
 		name: 'Audits Workspace Overview View',
 		js: () => import('./views/audits-overview-workspace-view.element'),
 		weight: 100,
@@ -32,7 +32,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.Audits.Issues',
+		alias: 'ContentAudit.WorkspaceView.Audits.Issues',
 		name: 'Audits Workspace Issues View',
 		js: () => import('./views/audits-issues-workspace-view.element'),
 		weight: 80,

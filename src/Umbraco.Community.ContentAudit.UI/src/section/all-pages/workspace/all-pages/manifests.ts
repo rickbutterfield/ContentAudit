@@ -14,7 +14,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.AllPages.Details',
+		alias: 'ContentAudit.WorkspaceView.AllPages.Details',
 		name: 'All Pages Workspace Details View',
 		js: () => import('./views/all-pages-details-workspace-view.element'),
 		weight: 100,
@@ -32,7 +32,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.AllPages.Links',
+		alias: 'ContentAudit.WorkspaceView.AllPages.Links',
 		name: 'All Pages Workspace Links View',
 		js: () => import('./views/all-pages-links-workspace-view.element'),
 		weight: 90,
@@ -50,7 +50,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.AllPages.Images',
+		alias: 'ContentAudit.WorkspaceView.AllPages.Images',
 		name: 'All Pages Workspace Images View',
 		js: () => import('./views/all-pages-images-workspace-view.element'),
 		weight: 80,
@@ -68,7 +68,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.AllPages.Resources',
+		alias: 'ContentAudit.WorkspaceView.AllPages.Resources',
 		name: 'All Pages Workspace Resources View',
 		js: () => import('./views/all-pages-resources-workspace-view.element'),
 		weight: 70,
@@ -86,7 +86,7 @@ export const manifests: Array<UmbExtensionManifest> = [
 	},
 	{
 		type: 'workspaceView',
-		alias: 'Umb.WorkspaceView.ContentAudit.AllPages.Issues',
+		alias: 'ContentAudit.WorkspaceView.AllPages.Issues',
 		name: 'All Pages Workspace Issues View',
 		js: () => import('./views/all-pages-issues-workspace-view.element'),
 		weight: 60,

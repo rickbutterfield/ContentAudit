@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_ORPHANED_PAGES_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_ORPHANED_PAGES_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.OrphanedPages';
+const workspaceAlias = 'ContentAudit.Workspace.OrphanedPages';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.OrphanedPages.Collection',
+        alias: 'ContentAudit.Workspace.OrphanedPages.Collection',
         name: 'Content Audit Orphaned Pages Collection Workspace View',
         meta: {
             label: 'Collection',

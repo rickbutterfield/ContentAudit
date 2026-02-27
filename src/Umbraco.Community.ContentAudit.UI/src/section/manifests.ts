@@ -14,9 +14,9 @@ import { manifests as duplicateContentManifests } from './duplicate-content/mani
 import { manifests as carbonRatingManifests } from './carbon-rating/manifests';
 import { manifests as coreWebVitalsManifests } from './core-web-vitals/manifests';
 import { manifests as exportManifests } from './export/manifests';
-import { CONTENT_AUDIT_MENU_0_ALIAS, CONTENT_AUDIT_MENU_1_ALIAS, CONTENT_AUDIT_MENU_2_ALIAS, CONTENT_AUDIT_MENU_3_ALIAS } from './constants';
+import { CONTENT_AUDIT_MENU_AUDIT_ALIAS, CONTENT_AUDIT_MENU_METADATA_ALIAS, CONTENT_AUDIT_MENU_PERFORMANCE_ALIAS, CONTENT_AUDIT_MENU_TOOLS_ALIAS } from './constants';
 
-const sectionAlias = 'Umb.Section.ContentAudit';
+const sectionAlias = 'ContentAudit.Section';
 
 const section: ManifestSection = {
     type: 'section',
@@ -30,7 +30,7 @@ const section: ManifestSection = {
 
 const sectionView: ManifestSectionView = {
     type: 'sectionView',
-    alias: 'Umb.SectionView.ContentAudit.Scan',
+    alias: 'ContentAudit.SectionView.Scan',
     name: 'Content Audit Scan Section View',
     element: () => import('./section.element'),
     meta: {
@@ -49,22 +49,22 @@ const sectionView: ManifestSectionView = {
 const menus: ManifestMenu[] = [
     {
         type: 'menu',
-        alias: CONTENT_AUDIT_MENU_0_ALIAS,
+        alias: CONTENT_AUDIT_MENU_AUDIT_ALIAS,
         name: 'Audit Menu'
     },
     {
         type: 'menu',
-        alias: CONTENT_AUDIT_MENU_1_ALIAS,
+        alias: CONTENT_AUDIT_MENU_METADATA_ALIAS,
         name: 'Content Menu'
     },
     {
         type: 'menu',
-        alias: CONTENT_AUDIT_MENU_2_ALIAS,
+        alias: CONTENT_AUDIT_MENU_PERFORMANCE_ALIAS,
         name: 'Performance Menu'
     },
     {
         type: 'menu',
-        alias: CONTENT_AUDIT_MENU_3_ALIAS,
+        alias: CONTENT_AUDIT_MENU_TOOLS_ALIAS,
         name: 'Tools Menu'
     }
 ]
@@ -73,11 +73,11 @@ const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
     {
         type: 'sectionSidebarApp',
         kind: 'menu',
-        alias: 'Umb.SidebarMenu.ContentAudit',
+        alias: 'ContentAudit.SidebarMenu',
         name: 'Content Audit Sidebar Menu',
         meta: {
             label: 'Site Audit',
-            menu: CONTENT_AUDIT_MENU_0_ALIAS
+            menu: CONTENT_AUDIT_MENU_AUDIT_ALIAS
         },
         conditions: [
             {
@@ -89,11 +89,11 @@ const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
     {
         type: 'sectionSidebarApp',
         kind: 'menu',
-        alias: 'Umb.SidebarMenu.ContentMetadata',
+        alias: 'ContentAudit.SidebarMenu.Metadata',
         name: 'Content Sidebar Menu',
         meta: {
             label: 'Content',
-            menu: CONTENT_AUDIT_MENU_1_ALIAS
+            menu: CONTENT_AUDIT_MENU_METADATA_ALIAS
         },
         conditions: [
             {
@@ -105,11 +105,11 @@ const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
     {
         type: 'sectionSidebarApp',
         kind: 'menu',
-        alias: 'Umb.SidebarMenu.ContentPerformance',
+        alias: 'ContentAudit.SidebarMenu.Performance',
         name: 'Content Performance Sidebar Menu',
         meta: {
             label: 'Performance',
-            menu: CONTENT_AUDIT_MENU_2_ALIAS
+            menu: CONTENT_AUDIT_MENU_PERFORMANCE_ALIAS
         },
         conditions: [
             {
@@ -121,11 +121,11 @@ const menuSectionSidebarApps: ManifestSectionSidebarApp[] = [
     {
         type: 'sectionSidebarApp',
         kind: 'menu',
-        alias: 'Umb.SidebarMenu.ContentTools',
+        alias: 'ContentAudit.SidebarMenu.Tools',
         name: 'Content Tools Sidebar Menu',
         meta: {
             label: 'Tools',
-            menu: CONTENT_AUDIT_MENU_3_ALIAS
+            menu: CONTENT_AUDIT_MENU_TOOLS_ALIAS
         },
         conditions: [
             {

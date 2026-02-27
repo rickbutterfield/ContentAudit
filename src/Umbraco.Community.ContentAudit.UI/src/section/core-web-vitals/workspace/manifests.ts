@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_CORE_WEB_VITALS_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_CORE_WEB_VITALS_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.CoreWebVitals';
+const workspaceAlias = 'ContentAudit.Workspace.CoreWebVitals';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.CoreWebVitals.Collection',
+        alias: 'ContentAudit.Workspace.CoreWebVitals.Collection',
         name: 'Content Audit Core Web Vitals Collection Workspace View',
         meta: {
             label: 'Collection',

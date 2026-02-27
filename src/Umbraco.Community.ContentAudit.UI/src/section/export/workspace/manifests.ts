@@ -1,6 +1,6 @@
 ﻿import { AUDIT_EXPORT_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.Export';
+const workspaceAlias = 'ContentAudit.Workspace.Export';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {

@@ -3,7 +3,7 @@ import { UmbContextToken } from "@umbraco-cms/backoffice/context-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 
 export class ContentAuditAuditsRootWorkspaceContext extends UmbContextBase {
-	public readonly workspaceAlias = 'Umb.Workspace.ContentAudit.AuditsRoot';
+	public readonly workspaceAlias = 'ContentAudit.Workspace.AuditsRoot';
 
 	constructor(host: UmbControllerHost) {
 		super(host, CONTENT_AUDIT_AUDITS_ROOT_WORKSPACE_CONTEXT);

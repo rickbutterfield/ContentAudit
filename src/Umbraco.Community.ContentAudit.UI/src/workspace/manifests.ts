@@ -14,7 +14,7 @@ const workspace: ManifestWorkspace = {
 const workspaceViews: ManifestWorkspaceView[] = [
     {
         type: 'workspaceView',
-        alias: 'Umb.WorkspaceView.ContentAudit.Scan',
+        alias: 'ContentAudit.WorkspaceView.Scan',
         name: 'Content Audit Scan Workspace View',
         element: () => import('./views/overview.element'),
         meta: {
@@ -31,7 +31,7 @@ const workspaceViews: ManifestWorkspaceView[] = [
     },
     {
         type: 'workspaceView',
-        alias: 'Umb.WorkspaceView.ContentAudit.Settings',
+        alias: 'ContentAudit.WorkspaceView.Settings',
         name: 'Content Audit Settings Workspace View',
         element: () => import('./views/settings.element'),
         meta: {

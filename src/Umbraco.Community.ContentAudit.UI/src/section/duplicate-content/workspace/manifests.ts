@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_DUPLICATE_CONTENT_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_DUPLICATE_CONTENT_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.DuplicateContent';
+const workspaceAlias = 'ContentAudit.Workspace.DuplicateContent';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.DuplicateContent.Collection',
+        alias: 'ContentAudit.Workspace.DuplicateContent.Collection',
         name: 'Content Audit Duplicate Content Collection Workspace View',
         meta: {
             label: 'Collection',

@@ -5,6 +5,7 @@ import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspac
 import { PageAnalysisDto, ValidationMessage } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
+import '../../../../../elements/health-score.element';
 
 @customElement('content-audit-all-pages-details-workspace-view')
 export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
@@ -241,39 +242,13 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
     }
 
     #renderSidebar() {
-        let scoreClass = "score--danger";
-
-        if (this._data?.healthScore) {
-            if (this._data?.healthScore.healthScore >= 90) {
-                scoreClass = "score--success";
-            }
-
-            else if (this._data?.healthScore.healthScore >= 50) {
-                scoreClass = "score--warning";
-            }
-        }
-
         return html`
 			<div>
 			${this._data?.healthScore ? html`
-				<uui-box headline="Page health">
-					<div class="score">
-						<svg viewBox="0 0 36 36" class="score__inner ${scoreClass}">
-							<path class="score__bg"
-								d="M18 2.0845
-								a 15.9155 15.9155 0 0 1 0 31.831
-								a 15.9155 15.9155 0 0 1 0 -31.831"
-							/>
-							<path class="score__fill"
-								stroke-dasharray="${this._data?.healthScore?.healthScore}, 100"
-								d="M18 2.0845
-								a 15.9155 15.9155 0 0 1 0 31.831
-								a 15.9155 15.9155 0 0 1 0 -31.831"
-							/>
-						</svg>
-						<p class="score__text">${this._data?.healthScore?.healthScore.toFixed(0)} / 100</p>
-					</div>
-				</uui-box>
+				<content-audit-health-score
+					.score=${this._data.healthScore.healthScore}
+					headline="Page health"
+				></content-audit-health-score>
 			` : ``}
 			${this._data?.pageData ? html`
 				<uui-box headline="Page">
@@ -313,68 +288,23 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 				grid-template-columns: 1fr 350px;
 			}
 
-			uui-box {
+			uui-box,
+			content-audit-health-score {
+				display: block;
 				margin-bottom: var(--uui-size-layout-1);
 			}
 
-			.score {
-    text-align: center;
-    position: relative;
-}
+			umb-property-layout {
+				padding: var(--uui-size-space-4) 0;
 
-.score__inner {
-    width: 200px;
-    height: 200px;
-}
+				&:first-of-type {
+					padding-top: 0;
+				}
 
-.score__bg {
-    fill: none;
-    stroke: #eee;
-    stroke-width: 1.75;
-}
-
-.score__fill {
-    fill: none;
-    stroke: none;
-    stroke-width: 1.75;
-    stroke-linecap: round;
-    animation: progress 1000ms ease-out forwards;
-    stroke: #000;
-}
-
-.score--danger .score__fill {
-    stroke: var(--uui-color-danger, #d42054);
-}
-
-.score--warning .score__fill {
-    stroke: var(--uui-color-warning, #fbd142);
-}
-
-.score--success .score__fill {
-    stroke: var(--uui-color-positive);
-}
-
-.score__text {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    z-index: 1;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-@keyframes progress {
-    0% {
-        stroke-dasharray: 0 100;
-    }
-}
+				&:last-of-type {
+					padding-bottom: 0;
+				}
+			}
 		`
     ]
 }

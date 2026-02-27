@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_METADATA_COLLECTION_ALIAS } from '../collection/constants';
 import { AUDIT_METADATA_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.Metadata';
+const workspaceAlias = 'ContentAudit.Workspace.Metadata';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.Metadata.Collection',
+        alias: 'ContentAudit.Workspace.Metadata.Collection',
         name: 'Content Audit Metadata Collection Workspace View',
         meta: {
             label: 'Collection',

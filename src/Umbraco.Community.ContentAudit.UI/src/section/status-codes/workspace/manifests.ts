@@ -1,7 +1,7 @@
 ﻿import { CONTENT_AUDIT_STATUS_CODES_COLLECTION_ALIAS } from '../collection';
 import { AUDIT_STATUS_CODES_ROOT_ENTITY_TYPE } from '../entity';
 
-const workspaceAlias = 'Umb.Workspace.ContentAudit.StatusCodes';
+const workspaceAlias = 'ContentAudit.Workspace.StatusCodes';
 
 export const manifests: Array<UmbExtensionManifest> = [
     {
@@ -17,7 +17,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     {
         type: 'workspaceView',
         kind: 'collection',
-        alias: 'Umb.Workspace.StatusCodes.Collection',
+        alias: 'ContentAudit.Workspace.StatusCodes.Collection',
         name: 'Content Audit Status Codes Collection Workspace View',
         meta: {
             label: 'Collection',

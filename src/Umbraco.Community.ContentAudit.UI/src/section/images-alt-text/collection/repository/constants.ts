@@ -1,1 +1,1 @@
-﻿export const CONTENT_AUDIT_IMAGES_ALT_TEXT_COLLECTION_REPOSITORY_ALIAS = "Umb.Repository.ContentAuditImagesAltTextCollection";
+﻿export const CONTENT_AUDIT_IMAGES_ALT_TEXT_COLLECTION_REPOSITORY_ALIAS = "ContentAudit.Repository.ImagesAltTextCollection";

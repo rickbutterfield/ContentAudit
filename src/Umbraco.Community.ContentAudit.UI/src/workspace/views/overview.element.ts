@@ -7,6 +7,7 @@ import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UmbRequestReloadChildrenOfEntityEvent } from "@umbraco-cms/backoffice/entity-action";
 import { UMB_ACTION_EVENT_CONTEXT } from '@umbraco-cms/backoffice/action';
+import '../../elements/health-score.element';
 
 @customElement('content-audit-scan-view')
 export class ContentAuditScanViewElement extends UmbLitElement {
@@ -31,9 +32,6 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
     @state()
     _healthScore?: HealthScoreDto;
-
-    @state()
-    _pagesWithoutErrors?: number;
 
     constructor() {
         super();
@@ -61,9 +59,6 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
             this.observe(context?.healthScore, (healthScore) => {
                 this._healthScore = healthScore;
-                if (this._healthScore != undefined) {
-                    this._pagesWithoutErrors = this._healthScore.totalPages - this._healthScore.pagesWithErrors;
-                }
             });
 
             this.#init();
@@ -231,36 +226,12 @@ export class ContentAuditScanViewElement extends UmbLitElement {
     }
 
     #renderHealthScore() {
-        if (this._healthScore !== undefined) {
-            let scoreClass = "score--danger";
-
-            if (this._healthScore.healthScore >= 90) {
-                scoreClass = "score--success";
-            }
-
-            else if (this._healthScore.healthScore >= 50) {
-                scoreClass = "score--warning";
-            }
-
+        if (this._latestAuditOverview?.runDate != null && this._healthScore !== undefined) {
             return html`
-                <uui-box headline="Site health">
-                    <div class="score">
-                        <svg viewBox="0 0 36 36" class="score__inner ${scoreClass}">
-                            <path class="score__bg"
-                                d="M18 2.0845
-                                a 15.9155 15.9155 0 0 1 0 31.831
-                                a 15.9155 15.9155 0 0 1 0 -31.831"
-                            />
-                            <path class="score__fill"
-                                stroke-dasharray="${this._healthScore.healthScore}, 100"
-                                d="M18 2.0845
-                                a 15.9155 15.9155 0 0 1 0 31.831
-                                a 15.9155 15.9155 0 0 1 0 -31.831"
-                            />
-                        </svg>
-                        <p class="score__text">${this._healthScore.healthScore.toFixed(0)} / 100</p>
-                    </div>
-                </uui-box>
+                <content-audit-health-score
+                    .score=${this._healthScore.healthScore}
+                    headline="Site health"
+                ></content-audit-health-score>
             `;
         }
     }
@@ -423,65 +394,6 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                 grid-column: span 3;
             }
 
-            .score {
-                text-align: center;
-                position: relative;
-            }
-
-            .score__inner {
-                width: 200px;
-                height: 200px;
-            }
-
-            .score__bg {
-                fill: none;
-                stroke: #eee;
-                stroke-width: 1.75;
-            }
-
-            .score__fill {
-                fill: none;
-                stroke: none;
-                stroke-width: 1.75;
-                stroke-linecap: round;
-                animation: progress 1000ms ease-out forwards;
-                stroke: #000;
-            }
-
-            .score--danger .score__fill {
-                stroke: var(--uui-color-danger, #d42054);
-            }
-
-            .score--warning .score__fill {
-                stroke: var(--uui-color-warning, #fbd142);
-            }
-
-            .score--success .score__fill {
-                stroke: var(--uui-color-positive);
-            }
-
-            .score__text {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                margin: auto;
-                z-index: 1;
-                font-size: 24px;
-                font-weight: 700;
-            }
-
-            @keyframes progress {
-                0% {
-                    stroke-dasharray: 0 100;
-                }
-            }
-
             /* Chart styles */
             .chart-container {
                 display: flex;
@@ -538,7 +450,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
             .chart-label {
                 flex: 1;
                 text-align: center;
-                font-size: 0.75rem;
+                font-size: var(--uui-type-small-size);
             }
 
             .chart-label-date {
@@ -549,7 +461,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
             .chart-label-score {
                 font-weight: 700;
-                font-size: 0.875rem;
+                font-size: var(--uui-type-default-size);
             }
 
             .chart-label-score--success {

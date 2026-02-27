@@ -48,7 +48,7 @@ export class ContentAuditMetricLabel extends UmbLitElement {
     static styles = [
         css`
             uui-tag {
-                font-size: 14px;
+                font-size: var(--uui-type-default-size);
             }
         `
     ]
