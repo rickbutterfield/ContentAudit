@@ -1024,9 +1024,13 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
+        /// <inheritdoc/>
+        public Task<PageAnalysisDto?> GetPageAnalysisLightweightAsync(string url, Uri baseUri, Guid nodeKey)
+            => GetPageAnalysisFallbackAsync(url, nodeKey);
+
         private async Task<PageAnalysisDto?> GetPageAnalysisFallbackAsync(string url, Guid nodeKey)
         {
-            _logger.LogInformation("Using HttpClient fallback for page analysis: {Url}", url);
+            _logger.LogInformation("Lightweight HttpClient crawl for page: {Url}", url);
 
             try
             {

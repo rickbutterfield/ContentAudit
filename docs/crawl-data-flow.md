@@ -4,10 +4,10 @@ This document describes what happens internally when a crawl is started, from th
 
 ## Overview
 
-A crawl runs in two optional phases:
+A crawl runs in two phases:
 
-1. **Phase 1 — Crawl** (`POST /crawl/start`): discovers and analyses every URL on the site using Playwright, collecting SEO, links, images, and performance data.
-2. **Phase 2 — Enrich** (`POST /enrich/start`): re-visits each page with Playwright specifically to collect Core Web Vitals and performance metrics. Can be triggered manually or automatically via `AutoEnrichAfterCrawl`.
+1. **Phase 1 — Crawl** (`POST /crawl/start`): discovers and analyses every URL on the site using **HttpClient only**. Fast and low-resource — collects SEO, links, images, technical headers, and fingerprint data, but not Core Web Vitals.
+2. **Phase 2 — Enrich** (`POST /enrich/start`): re-visits each page with **Playwright** to collect Core Web Vitals and full performance metrics. Can be triggered manually from the backoffice or automatically after Phase 1 via `AutoEnrichAfterCrawl`.
 
 ---
 
@@ -72,20 +72,13 @@ ProcessUrlAsync(url)
   ├─ robots.txt disallow check
   ├─ max depth check
   ├─ circuit breaker check (5 consecutive failures trips a path prefix)
-  ├─ CrawlService.GetPageAnalysis(url, baseUri, nodeKey)
-  │     ├─ [Primary]  Playwright page load
-  │     │     ├─ Route interception → collect resources and links
-  │     │     ├─ Navigate → wait for load
-  │     │     ├─ Extract SEO (title, meta, H1/H2, canonical, noindex, OG, Twitter)
-  │     │     ├─ Extract content analysis (word count, readability, keyword density)
-  │     │     ├─ Inject web-vitals.js → collect CLS, FCP, LCP, TTFB
-  │     │     ├─ Extract images (src, alt, CSS backgrounds)
-  │     │     ├─ Extract technical SEO (gzip, caching, HTTPS, charset)
-  │     │     └─ Extract social media signals
-  │     └─ [Fallback] HttpClient (on Playwright failure / timeout)
-  │           ├─ GET request
-  │           ├─ Regex-based SEO extraction
-  │           └─ Basic link / image parsing
+  ├─ CrawlService.GetPageAnalysisLightweightAsync(url, baseUri, nodeKey)
+  │     └─ HttpClient GET request
+  │           ├─ Regex-based SEO extraction (title, meta, H1, canonical, noindex, OG)
+  │           ├─ Link extraction
+  │           ├─ Image extraction (src, alt)
+  │           ├─ Technical SEO headers (gzip, caching, HTTPS, Content-Type)
+  │           └─ ETag / Last-Modified / content hash (for next incremental crawl)
   ├─ Enqueue newly discovered links (internal, not already seen)
   ├─ HEAD requests for external links (rate-limited per domain)
   └─ CrawlStateManager.AddResult(crawlDto)
@@ -98,18 +91,15 @@ Every 50 pages, collected DTOs are flushed to the database (`FlushDataToDatabase
 
 ### 5. Data collected per page
 
-| Category | Key fields |
-|---|---|
-| Page | URL, status code, redirect URL, unique GUID |
-| SEO | Title, meta description, canonical, H1–H3, noindex, nofollow, Open Graph, Twitter Card |
-| Content analysis | Word count, paragraph count, readability score, keyword density, link counts |
-| Performance | Page load time, CLS, FCP, LCP, TTI, TTFB, total bytes, resource timings |
-| Technical SEO | Content-Type, charset, gzip, browser caching, HTTPS |
-| Social media | Share buttons, Facebook/Twitter/LinkedIn pixels, social links |
-| Links | URL, source page, internal/external flag, status code |
-| Images | URL, source page, alt text, title, internal/external flag |
-| Resources | URL, source page, type (script/stylesheet), status code, size |
-| Fingerprint | ETag, Last-Modified, content SHA-256 (for next incremental crawl) |
+| Category | Key fields | Notes |
+|---|---|---|
+| Page | URL, status code, redirect URL, unique GUID | |
+| SEO | Title, meta description, canonical, H1, noindex, nofollow, Open Graph | |
+| Technical SEO | Content-Type, gzip, browser caching, HTTPS | |
+| Links | URL, source page, internal/external flag, status code | |
+| Images | URL, source page, alt text, title, internal/external flag | |
+| Fingerprint | ETag, Last-Modified, content SHA-256 | For next incremental crawl |
+| Performance | Page load time, CLS, FCP, LCP, TTI, TTFB, total bytes | **Phase 2 only** |
 
 ---
 
@@ -169,13 +159,10 @@ EnrichmentStateManager.CompleteEnrichment()
 | `umbContentAuditOverview` | 1 | Audit summary, health score, status, `IsEnriched` flag |
 | `umbContentAuditInternalPages` | 1 | One row per URL (status code, redirect, unique GUID) |
 | `umbContentAuditSeo` | 1 | SEO metrics per page |
-| `umbContentAuditContentAnalysis` | 1 | Readability and content metrics per page |
-| `umbContentAuditPerformance` | 1 + 2 | Core Web Vitals; replaced entirely by Phase 2 |
 | `umbContentAuditTechnicalSeo` | 1 | Gzip, caching, HTTPS per page |
-| `umbContentAuditSocialMedia` | 1 | Social signals per page |
 | `umbContentAuditLink` | 1 | All links found (internal and external) |
 | `umbContentAuditImage` | 1 | All images found |
-| `umbContentAuditResource` | 1 | CSS, JS, font resources found |
+| `umbContentAuditPerformance` | 2 | Core Web Vitals; written by Phase 2, replaced on re-enrich |
 | `umbContentAuditCrawlState` | 1 (temp) | Resume state; deleted on successful completion |
 | `umbContentAuditPageFingerprint` | 1 | ETag / hash per URL for next incremental crawl |
 

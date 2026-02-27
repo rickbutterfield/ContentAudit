@@ -463,7 +463,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
             }
 
-            var pageAnalysis = await _crawlService.GetPageAnalysis(url, baseUri, matchingUmbracoNode.Key);
+            var pageAnalysis = await _crawlService.GetPageAnalysisLightweightAsync(url, baseUri, matchingUmbracoNode.Key);
             if (pageAnalysis == null)
             {
                 _logger.LogWarning("Failed to get page data for URL: {0}", url);
