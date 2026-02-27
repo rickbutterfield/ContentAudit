@@ -1075,6 +1075,11 @@ namespace Umbraco.Community.ContentAudit.Services
                 var html = await response.Content.ReadAsStringAsync();
 
                 // Parse basic SEO data using regex
+                var robotsMeta = ExtractMetaContent(html, "robots");
+                var xRobotsTag = response.Headers.TryGetValues("X-Robots-Tag", out var xRobotsValues)
+                    ? string.Join(", ", xRobotsValues)
+                    : "";
+                var combinedRobots = $"{robotsMeta},{xRobotsTag}";
                 pageAnalysis.SeoData = new SeoDto
                 {
                     Url = url,
@@ -1084,11 +1089,15 @@ namespace Umbraco.Community.ContentAudit.Services
                     H2s = ExtractAllHtmlValues(html, @"<h2[^>]*>(.*?)</h2>"),
                     H3s = ExtractAllHtmlValues(html, @"<h3[^>]*>(.*?)</h3>"),
                     CanonicalUrl = ExtractLinkHref(html, "canonical"),
-                    HasNoIndex = html.Contains("noindex", StringComparison.OrdinalIgnoreCase),
-                    HasNoFollow = html.Contains("nofollow", StringComparison.OrdinalIgnoreCase),
+                    HasNoIndex = combinedRobots.Contains("noindex", StringComparison.OrdinalIgnoreCase),
+                    HasNoFollow = combinedRobots.Contains("nofollow", StringComparison.OrdinalIgnoreCase),
                     OpenGraphTitle = ExtractMetaContent(html, "og:title", "property"),
                     OpenGraphDescription = ExtractMetaContent(html, "og:description", "property"),
-                    OpenGraphImage = ExtractMetaContent(html, "og:image", "property")
+                    OpenGraphImage = ExtractMetaContent(html, "og:image", "property"),
+                    TwitterCard = ExtractMetaContent(html, "twitter:card"),
+                    TwitterTitle = ExtractMetaContent(html, "twitter:title"),
+                    TwitterDescription = ExtractMetaContent(html, "twitter:description"),
+                    TwitterImage = ExtractMetaContent(html, "twitter:image")
                 };
 
                 // Extract links
@@ -1101,13 +1110,37 @@ namespace Umbraco.Community.ContentAudit.Services
                 var eTag = response.Headers.ETag?.Tag?.Trim('"');
                 var lastModified = response.Content.Headers.LastModified?.DateTime;
 
+                var charset = response.Content.Headers.ContentType?.CharSet;
+                if (string.IsNullOrEmpty(charset))
+                    charset = ExtractHtmlValue(html, @"<meta\s+charset=""([^""]*)""");
+                if (string.IsNullOrEmpty(charset))
+                    charset = ExtractMetaContentCharset(html);
+                var schemaTypes = ExtractSchemaTypes(html);
                 pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
                 {
                     Url = url,
                     ContentType = contentType,
+                    Charset = charset,
                     HasGzipCompression = response.Content.Headers.ContentEncoding.Contains("gzip"),
                     HasBrowserCaching = response.Headers.CacheControl?.MaxAge != null,
-                    HasHttps = url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                    HasHttps = url.StartsWith("https://", StringComparison.OrdinalIgnoreCase),
+                    HasSchemaMarkup = schemaTypes.Count > 0,
+                    SchemaType = schemaTypes.Count > 0 ? string.Join(", ", schemaTypes) : null
+                };
+
+                // Content analysis — derived from already-extracted data + text extraction
+                var bodyText = ExtractBodyText(html);
+                pageAnalysis.ContentAnalysis = new ContentAnalysisDto
+                {
+                    Url = url,
+                    WordCount = CountWords(bodyText),
+                    ParagraphCount = Regex.Matches(html, @"<p[\s>]", RegexOptions.IgnoreCase).Count,
+                    Images = pageAnalysis.Images.Count,
+                    Links = pageAnalysis.Links.Count,
+                    InternalLinks = pageAnalysis.Links.Count(l => !l.IsExternal),
+                    ExternalLinks = pageAnalysis.Links.Count(l => l.IsExternal),
+                    ReadabilityScore = CalculateReadabilityScore(bodyText),
+                    KeywordDensity = CalculateKeywordDensity(bodyText)
                 };
 
                 pageAnalysis.ETag = eTag;
@@ -1165,6 +1198,38 @@ namespace Umbraco.Community.ContentAudit.Services
             pattern = $@"<link\s+href=""([^""]*)""[^>]*rel=""{Regex.Escape(rel)}""";
             match = Regex.Match(html, pattern, RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value : "";
+        }
+
+        private static string ExtractBodyText(string html)
+        {
+            // Remove script and style blocks first, then strip all tags
+            var text = Regex.Replace(html, @"<(script|style)[^>]*>.*?</\1>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            text = Regex.Replace(text, @"<[^>]+>", " ");
+            text = Regex.Replace(text, @"\s+", " ");
+            return text.Trim();
+        }
+
+        private static string ExtractMetaContentCharset(string html)
+        {
+            // Handles <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            var content = ExtractMetaContent(html, "Content-Type", "http-equiv");
+            if (string.IsNullOrEmpty(content)) return "";
+            var charsetMatch = Regex.Match(content, @"charset=([^\s;]+)", RegexOptions.IgnoreCase);
+            return charsetMatch.Success ? charsetMatch.Groups[1].Value : "";
+        }
+
+        private static List<string> ExtractSchemaTypes(string html)
+        {
+            var types = new List<string>();
+            var scriptMatches = Regex.Matches(html, @"<script\s+type=""application/ld\+json""[^>]*>(.*?)</script>",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            foreach (Match m in scriptMatches)
+            {
+                var typeMatch = Regex.Match(m.Groups[1].Value, @"""@type""\s*:\s*""([^""]+)""", RegexOptions.IgnoreCase);
+                if (typeMatch.Success)
+                    types.Add(typeMatch.Groups[1].Value);
+            }
+            return types;
         }
 
         private List<LinkDto> ExtractLinks(string html, string pageUrl)
