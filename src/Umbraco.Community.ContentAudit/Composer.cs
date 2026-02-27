@@ -76,6 +76,7 @@ namespace Umbraco.Community.ContentAudit
             builder.Services.AddScoped<ICrawlService, CrawlService>();
             builder.Services.AddScoped<IAuditService, AuditService>();
             builder.Services.AddScoped<IEmissionsService, EmissionsService>();
+            builder.Services.AddScoped<IEnrichmentService, EnrichmentService>();
 
             // Register global exception handler for API endpoints
             builder.Services.AddExceptionHandler<ContentAuditExceptionHandler>();
@@ -92,6 +93,7 @@ namespace Umbraco.Community.ContentAudit
             }
 
             builder.Services.AddSingleton<ICrawlStateManager, CrawlStateManager>();
+            builder.Services.AddSingleton<IEnrichmentStateManager, EnrichmentStateManager>();
 
             builder.Services.Configure<UmbracoPipelineOptions>(options =>
             {

@@ -111,5 +111,12 @@ namespace Umbraco.Community.ContentAudit.Configuration
         [DefaultValue(200)]
         [Range(0, 10000, ErrorMessage = "ExternalRequestDelayMs must be between 0 and 10000 (10 seconds)")]
         public int ExternalRequestDelayMs { get; set; } = 200;
+
+        /// <summary>
+        /// When true, automatically runs Playwright-based performance enrichment after each crawl completes.
+        /// When false (default), enrichment must be triggered manually via the backoffice or API.
+        /// </summary>
+        [DefaultValue(false)]
+        public bool AutoEnrichAfterCrawl { get; set; } = false;
     }
 }

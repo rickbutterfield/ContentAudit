@@ -122,6 +122,16 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// Saves or updates multiple page fingerprints
         /// </summary>
         Task SavePageFingerprintsAsync(Guid auditKey, IEnumerable<PageFingerprintDto> fingerprints, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Deletes all performance data rows for a given audit, used before re-saving enriched data
+        /// </summary>
+        Task DeletePerformanceDataAsync(Guid auditKey, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Marks an audit as enriched (Playwright performance data collected)
+        /// </summary>
+        Task SetIsEnrichedAsync(Guid auditKey, CancellationToken cancellationToken = default);
     }
 
     /// <summary>

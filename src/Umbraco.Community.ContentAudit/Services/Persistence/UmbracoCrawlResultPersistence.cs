@@ -497,5 +497,31 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
 
             scope.Complete();
         }
+
+        /// <inheritdoc/>
+        public async Task DeletePerformanceDataAsync(Guid auditKey, CancellationToken cancellationToken = default)
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            await scope.Database.ExecuteAsync(
+                $"DELETE FROM [{PerformanceSchema.TableName}] WHERE [AuditKey] = @0",
+                new object[] { auditKey });
+
+            scope.Complete();
+        }
+
+        /// <inheritdoc/>
+        public async Task SetIsEnrichedAsync(Guid auditKey, CancellationToken cancellationToken = default)
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            await scope.Database.ExecuteAsync(
+                $"UPDATE [{OverviewSchema.TableName}] SET [IsEnriched] = @0 WHERE [Key] = @1",
+                new object[] { true, auditKey });
+
+            scope.Complete();
+
+            _runtimeCache.Clear(Constants.Cache.Key);
+        }
     }
 }
