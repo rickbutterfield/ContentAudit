@@ -9,5 +9,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
 
         [JsonPropertyName("results")]
         public IReadOnlyList<CrawlDto> Results { get; set; } = [];
+
+        [JsonPropertyName("phase")]
+        public string? Phase { get; set; }
     }
 }

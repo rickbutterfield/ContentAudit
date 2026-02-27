@@ -10,6 +10,7 @@ namespace Umbraco.Community.ContentAudit.Hubs
         Task crawlCompleted();
         Task crawlFailed(string error);
         Task crawlCancelled();
+        Task crawlPhaseChanged(string phase);
 #pragma warning restore SA1300
     }
 }

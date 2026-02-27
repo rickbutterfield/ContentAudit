@@ -42,6 +42,8 @@
         internal class Crawl
         {
             internal static readonly string[] DefaultExcludePatterns = ["/media/**"];
+
+            internal const string WebVitalsScriptUrl = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js";
         }
 
         internal class ManagementApi

@@ -88,7 +88,8 @@ namespace Umbraco.Community.ContentAudit.Api.Crawl
             return Ok(new CrawlStatusDto
             {
                 IsRunning = _crawlStateManager.IsRunning,
-                Results = _crawlStateManager.CurrentResults
+                Results = _crawlStateManager.CurrentResults,
+                Phase = _crawlStateManager.CurrentPhase
             });
         }
     }

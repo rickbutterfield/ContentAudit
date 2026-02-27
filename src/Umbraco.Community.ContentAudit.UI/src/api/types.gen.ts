@@ -95,20 +95,13 @@ export type CrawlDto = {
 export type CrawlStatusDto = {
     isRunning: boolean;
     results: Array<CrawlDto>;
+    phase?: string | null;
 };
 
 export type EmissionsDto = {
     emissionsPerPageView: number;
     carbonRating?: string | null;
 };
-
-export enum EventMessageTypeModel {
-    DEFAULT = 'Default',
-    INFO = 'Info',
-    ERROR = 'Error',
-    SUCCESS = 'Success',
-    WARNING = 'Warning'
-}
 
 export type FlagModel = {
     alias: string;
@@ -207,12 +200,6 @@ export enum MetricRating {
     NEEDS_IMPROVEMENT = 'NeedsImprovement',
     POOR = 'Poor'
 }
-
-export type NotificationHeaderModel = {
-    message: string;
-    category: string;
-    type: EventMessageTypeModel;
-};
 
 export type OverviewDto = {
     id: number;

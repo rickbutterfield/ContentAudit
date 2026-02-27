@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Schemas;
+using Umbraco.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Repositories
 {
@@ -33,15 +34,13 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string providerName = scope.Database.DatabaseType.GetProviderName();
-            bool isSQLite = providerName.Contains("sqlite", StringComparison.OrdinalIgnoreCase);
+            var sql = scope.SqlContext.Sql()
+                .Select<OverviewSchema>(x => x.Key)
+                .From<OverviewSchema>()
+                .Where<OverviewSchema>(x => x.Status == (int)AuditStatus.Completed)
+                .OrderByDescending<OverviewSchema>(x => x.RunDate);
 
-            string sql = isSQLite
-                ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed} ORDER BY [RunDate] DESC LIMIT 1"
-                : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed} ORDER BY [RunDate] DESC";
-
-            var scalar = await scope.Database.ExecuteScalarAsync<object>(sql);
-            Guid? latestKey = scalar is not null && Guid.TryParse(scalar.ToString(), out var parsed) ? parsed : null;
+            var latestKey = await scope.Database.FirstOrDefaultAsync<Guid?>(sql);
 
             scope.Complete();
 
@@ -53,15 +52,13 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string providerName = scope.Database.DatabaseType.GetProviderName();
-            bool isSQLite = providerName.Contains("sqlite", StringComparison.OrdinalIgnoreCase);
+            var sql = scope.SqlContext.Sql()
+                .Select<OverviewSchema>(x => x.Key)
+                .From<OverviewSchema>()
+                .Where<OverviewSchema>(x => x.Status == (int)AuditStatus.Completed && x.Key != excludeKey)
+                .OrderByDescending<OverviewSchema>(x => x.RunDate);
 
-            string sql = isSQLite
-                ? $"SELECT [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC LIMIT 1"
-                : $"SELECT TOP 1 [Key] FROM [{OverviewSchema.TableName}] WHERE [Status] = @0 AND [Key] != @1 ORDER BY [RunDate] DESC";
-
-            var scalar = await scope.Database.ExecuteScalarAsync<object>(sql, new object[] { (int)AuditStatus.Completed, excludeKey });
-            Guid? latestKey = scalar is not null && Guid.TryParse(scalar.ToString(), out var parsed) ? parsed : null;
+            var latestKey = await scope.Database.FirstOrDefaultAsync<Guid?>(sql);
 
             scope.Complete();
 

@@ -17,6 +17,8 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public bool IsRunning { get; private set; }
 
+        public string? CurrentPhase { get; private set; }
+
         public IReadOnlyList<CrawlDto> CurrentResults
         {
             get
@@ -44,6 +46,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 _cts?.Dispose();
                 _cts = new CancellationTokenSource();
                 _results.Clear();
+                CurrentPhase = null;
                 IsRunning = true;
             }
 
@@ -57,6 +60,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 _cts?.Cancel();
             }
 
+            CurrentPhase = null;
             IsRunning = false;
             _hubContext.Clients.All.crawlCancelled();
         }
@@ -67,6 +71,7 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 _cts?.Dispose();
                 _cts = null;
+                CurrentPhase = null;
                 IsRunning = false;
             }
 
@@ -80,6 +85,7 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 _cts?.Dispose();
                 _cts = null;
+                CurrentPhase = null;
                 IsRunning = false;
                 error = "Crawl failed unexpectedly";
             }
@@ -95,6 +101,12 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             _hubContext.Clients.All.crawlProgress(result);
+        }
+
+        public void SetPhase(string phase)
+        {
+            CurrentPhase = phase;
+            _hubContext.Clients.All.crawlPhaseChanged(phase);
         }
     }
 }

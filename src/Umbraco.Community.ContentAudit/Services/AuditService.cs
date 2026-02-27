@@ -151,6 +151,7 @@ namespace Umbraco.Community.ContentAudit.Services
             if (existingAuditKey.HasValue)
             {
                 _currentAuditKey = existingAuditKey.Value;
+                _crawlStateManager.SetPhase("Resuming crawl");
                 _logger.LogInformation("Resuming incomplete audit {AuditKey}", _currentAuditKey);
 
                 var state = await _persistence.LoadCrawlStateAsync(_currentAuditKey, linkedToken);
@@ -175,6 +176,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 _logger.LogInformation("Created new audit {AuditKey}", _currentAuditKey);
 
                 await DiscoverInitialUrlsAsync(linkedToken);
+                _crawlStateManager.SetPhase("Parsing robots.txt");
                 await GetRobots();
             }
 
@@ -197,6 +199,8 @@ namespace Umbraco.Community.ContentAudit.Services
                     Depth = 0 // Starting URL is depth 0
                 });
             }
+
+            _crawlStateManager.SetPhase("Crawling pages");
 
             var processUrlBlock = new ActionBlock<UrlQueueItem>(
                 async queueItem => await ProcessUrlAsync(queueItem, _baseUri, linkedToken),
@@ -283,6 +287,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 await processUrlBlock.Completion;
 
                 _logger.LogInformation("All processing complete, saving crawl results");
+                _crawlStateManager.SetPhase("Saving results");
                 await SaveCrawlResults();
 
                 _crawlStateManager.CompleteCrawl();
@@ -290,12 +295,14 @@ namespace Umbraco.Community.ContentAudit.Services
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
                 _logger.LogWarning("Crawl timed out after {0} minutes", _contentAuditSettings.MaxCrawlDurationMinutes);
+                _crawlStateManager.SetPhase("Saving results");
                 await SaveCrawlResults();
                 _crawlStateManager.CompleteCrawl();
             }
             catch (OperationCanceledException)
             {
                 _logger.LogInformation("Crawl was cancelled");
+                _crawlStateManager.SetPhase("Saving results");
                 await SaveCrawlResults();
             }
             catch (Exception ex)
@@ -592,6 +599,9 @@ namespace Umbraco.Community.ContentAudit.Services
 
             foreach (var resource in pageAnalysis.Resources)
             {
+                if (string.Equals(resource.Url, Constants.Crawl.WebVitalsScriptUrl, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
                 if (Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
                 {
                     var absoluteUrl = absoluteUri.AbsoluteUri;
@@ -739,6 +749,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             await _persistence.UpdateAuditTotalsAsync(_currentAuditKey, metadata);
 
+            _crawlStateManager.SetPhase("Calculating health score");
             double healthScore = await CalculateHealthScore();
             await _persistence.CompleteAuditAsync(_currentAuditKey, healthScore);
             await _persistence.DeleteCrawlStateAsync(_currentAuditKey);
@@ -955,6 +966,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             foreach (var strategy in orderedStrategies)
             {
+                _crawlStateManager.SetPhase($"Discovering URLs: {strategy.Name}");
                 _logger.LogInformation("Running URL discovery strategy: {Name} (Priority: {Priority}, Queue: {Queue})",
                     strategy.Name, strategy.Priority, strategy.ContributesToCrawlQueue);
 

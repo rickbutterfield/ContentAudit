@@ -196,7 +196,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 await page.AddScriptTagAsync(new PageAddScriptTagOptions
                 {
-                    Url = "https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js"
+                    Url = Constants.Crawl.WebVitalsScriptUrl
                 });
 
                 await page.AddScriptTagAsync(new PageAddScriptTagOptions

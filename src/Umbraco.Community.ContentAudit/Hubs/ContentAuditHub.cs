@@ -19,6 +19,11 @@ namespace Umbraco.Community.ContentAudit.Hubs
             {
                 await Clients.Caller.crawlStarted();
 
+                if (_crawlStateManager.CurrentPhase is not null)
+                {
+                    await Clients.Caller.crawlPhaseChanged(_crawlStateManager.CurrentPhase);
+                }
+
                 foreach (var result in _crawlStateManager.CurrentResults)
                 {
                     await Clients.Caller.crawlProgress(result);

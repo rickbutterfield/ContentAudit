@@ -4,7 +4,7 @@ import { UMB_WORKSPACE_CONTEXT, UmbWorkspaceContext } from "@umbraco-cms/backoff
 import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../workspace/constants";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
-import { UmbArrayState, UmbBooleanState, UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
+import { UmbArrayState, UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
 import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageAnalysisDto, CrawlDto, CrawlService } from "../api";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
@@ -43,6 +43,9 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 
 	#isRunning = new UmbBooleanState(false);
 	public readonly isRunning = this.#isRunning.asObservable();
+
+	#crawlPhase = new UmbStringState('');
+	public readonly crawlPhase = this.#crawlPhase.asObservable();
 
 	#connection?: HubConnection;
 	#authContext?: typeof UMB_AUTH_CONTEXT.TYPE;
@@ -95,22 +98,30 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		this.#connection.on('crawlStarted', () => {
 			this.#isRunning.setValue(true);
 			this.#crawlData.setValue([]);
+			this.#crawlPhase.setValue('');
 		});
 
 		this.#connection.on('crawlProgress', (result: CrawlDto) => {
 			this.#crawlData.appendOne(result);
 		});
 
+		this.#connection.on('crawlPhaseChanged', (phase: string) => {
+			this.#crawlPhase.setValue(phase);
+		});
+
 		this.#connection.on('crawlCompleted', () => {
 			this.#isRunning.setValue(false);
+			this.#crawlPhase.setValue('');
 		});
 
 		this.#connection.on('crawlFailed', (_error: string) => {
 			this.#isRunning.setValue(false);
+			this.#crawlPhase.setValue('');
 		});
 
 		this.#connection.on('crawlCancelled', () => {
 			this.#isRunning.setValue(false);
+			this.#crawlPhase.setValue('');
 		});
 
 		this.#connection
@@ -121,6 +132,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 					const { data } = await CrawlService.getCrawlStatus();
 					if (data) {
 						this.#isRunning.setValue(data.isRunning);
+						this.#crawlPhase.setValue(data.phase ?? '');
 						if (data.results?.length) {
 							this.#crawlData.setValue(data.results);
 						}
@@ -136,6 +148,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 				const { data } = await CrawlService.getCrawlStatus();
 				if (data) {
 					this.#isRunning.setValue(data.isRunning);
+					this.#crawlPhase.setValue(data.phase ?? '');
 					if (data.results?.length) {
 						this.#crawlData.setValue(data.results);
 					}
