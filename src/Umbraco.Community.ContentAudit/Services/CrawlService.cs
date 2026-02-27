@@ -1080,7 +1080,9 @@ namespace Umbraco.Community.ContentAudit.Services
                     Url = url,
                     Title = ExtractHtmlValue(html, @"<title[^>]*>([^<]*)</title>"),
                     MetaDescription = ExtractMetaContent(html, "description"),
-                    H1 = ExtractHtmlValue(html, @"<h1[^>]*>([^<]*)</h1>"),
+                    H1 = ExtractHtmlValue(html, @"<h1[^>]*>(.*?)</h1>"),
+                    H2s = ExtractAllHtmlValues(html, @"<h2[^>]*>(.*?)</h2>"),
+                    H3s = ExtractAllHtmlValues(html, @"<h3[^>]*>(.*?)</h3>"),
                     CanonicalUrl = ExtractLinkHref(html, "canonical"),
                     HasNoIndex = html.Contains("noindex", StringComparison.OrdinalIgnoreCase),
                     HasNoFollow = html.Contains("nofollow", StringComparison.OrdinalIgnoreCase),
@@ -1130,7 +1132,15 @@ namespace Umbraco.Community.ContentAudit.Services
         private static string ExtractHtmlValue(string html, string pattern)
         {
             var match = Regex.Match(html, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            return match.Success ? match.Groups[1].Value.Trim() : "";
+            return match.Success ? Regex.Replace(match.Groups[1].Value, "<[^>]+>", "").Trim() : "";
+        }
+
+        private static List<string> ExtractAllHtmlValues(string html, string pattern)
+        {
+            return Regex.Matches(html, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline)
+                .Select(m => Regex.Replace(m.Groups[1].Value, "<[^>]+>", "").Trim())
+                .Where(v => !string.IsNullOrEmpty(v))
+                .ToList();
         }
 
         private static string ExtractMetaContent(string html, string name, string attribute = "name")
@@ -1182,12 +1192,16 @@ namespace Umbraco.Community.ContentAudit.Services
         private List<ImageDto> ExtractImages(string html, string pageUrl, Guid nodeKey)
         {
             var images = new List<ImageDto>();
-            var matches = Regex.Matches(html, @"<img\s+[^>]*src=""([^""]*)""[^>]*(alt=""([^""]*)"")?", RegexOptions.IgnoreCase);
+            var imgTags = Regex.Matches(html, @"<img\s+[^>]+>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-            foreach (Match match in matches)
+            foreach (Match imgTag in imgTags)
             {
-                var src = match.Groups[1].Value;
-                var alt = match.Groups.Count > 3 ? match.Groups[3].Value : "";
+                var srcMatch = Regex.Match(imgTag.Value, @"src=""([^""]*)""", RegexOptions.IgnoreCase);
+                if (!srcMatch.Success) continue;
+
+                var src = srcMatch.Groups[1].Value;
+                var altMatch = Regex.Match(imgTag.Value, @"alt=""([^""]*)""", RegexOptions.IgnoreCase);
+                var alt = altMatch.Success ? altMatch.Groups[1].Value : "";
 
                 images.Add(new ImageDto(new ResourceDto
                 {
