@@ -5,6 +5,7 @@ using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
 using Umbraco.Community.ContentAudit.Schemas;
+using Umbraco.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Services.Persistence
 {
@@ -52,9 +53,13 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var result = await scope.Database.FirstOrDefaultAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE [BaseUrl] = @0 AND [Status] = @1 ORDER BY [RunDate] DESC",
-                new object[] { baseUrl, (int)AuditStatus.InProgress });
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<OverviewSchema>()
+                .Where<OverviewSchema>(x => x.BaseUrl == baseUrl && x.Status == (int)AuditStatus.InProgress)
+                .OrderByDescending<OverviewSchema>(x => x.RunDate);
+
+            var result = await scope.Database.FirstOrDefaultAsync<OverviewSchema>(sql);
 
             scope.Complete();
 
@@ -279,9 +284,12 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var existing = await scope.Database.FirstOrDefaultAsync<CrawlStateSchema>(
-                $"SELECT * FROM [{CrawlStateSchema.TableName}] WHERE [AuditKey] = @0",
-                new object[] { auditKey });
+            var existingSql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<CrawlStateSchema>()
+                .Where<CrawlStateSchema>(x => x.AuditKey == auditKey);
+
+            var existing = await scope.Database.FirstOrDefaultAsync<CrawlStateSchema>(existingSql);
 
             var schema = new CrawlStateSchema
             {
@@ -310,9 +318,12 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var schema = await scope.Database.FirstOrDefaultAsync<CrawlStateSchema>(
-                $"SELECT * FROM [{CrawlStateSchema.TableName}] WHERE [AuditKey] = @0",
-                new object[] { auditKey });
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<CrawlStateSchema>()
+                .Where<CrawlStateSchema>(x => x.AuditKey == auditKey);
+
+            var schema = await scope.Database.FirstOrDefaultAsync<CrawlStateSchema>(sql);
 
             scope.Complete();
 
@@ -350,9 +361,12 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var schema = await scope.Database.FirstOrDefaultAsync<PageFingerprintSchema>(
-                $"SELECT * FROM [{PageFingerprintSchema.TableName}] WHERE [Url] = @0",
-                new object[] { url });
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PageFingerprintSchema>()
+                .Where<PageFingerprintSchema>(x => x.Url == url);
+
+            var schema = await scope.Database.FirstOrDefaultAsync<PageFingerprintSchema>(sql);
 
             scope.Complete();
 
@@ -374,9 +388,12 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var schemas = await scope.Database.FetchAsync<PageFingerprintSchema>(
-                $"SELECT * FROM [{PageFingerprintSchema.TableName}] WHERE [Url] LIKE @0",
-                new object[] { baseUrl + "%" });
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PageFingerprintSchema>()
+                .Where("Url LIKE @0", baseUrl + "%");
+
+            var schemas = await scope.Database.FetchAsync<PageFingerprintSchema>(sql);
 
             scope.Complete();
 
@@ -399,9 +416,12 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var existing = await scope.Database.FirstOrDefaultAsync<PageFingerprintSchema>(
-                $"SELECT * FROM [{PageFingerprintSchema.TableName}] WHERE [Url] = @0",
-                new object[] { fingerprint.Url });
+            var existingSql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PageFingerprintSchema>()
+                .Where<PageFingerprintSchema>(x => x.Url == fingerprint.Url);
+
+            var existing = await scope.Database.FirstOrDefaultAsync<PageFingerprintSchema>(existingSql);
 
             var schema = new PageFingerprintSchema
             {
@@ -435,12 +455,19 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
 
             using var scope = _scopeProvider.CreateScope();
 
+            var urls = fingerprintList.Select(f => f.Url).ToArray();
+            var existingSql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PageFingerprintSchema>()
+                .Where("Url IN (@0)", new object[] { urls });
+
+            var existingSchemas = await scope.Database.FetchAsync<PageFingerprintSchema>(existingSql);
+            var existingByUrl = existingSchemas.ToDictionary(s => s.Url, StringComparer.OrdinalIgnoreCase);
+
+            var toInsert = new List<PageFingerprintSchema>();
+
             foreach (var fingerprint in fingerprintList)
             {
-                var existing = await scope.Database.FirstOrDefaultAsync<PageFingerprintSchema>(
-                    $"SELECT * FROM [{PageFingerprintSchema.TableName}] WHERE [Url] = @0",
-                    new object[] { fingerprint.Url });
-
                 var schema = new PageFingerprintSchema
                 {
                     Url = fingerprint.Url,
@@ -452,15 +479,20 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
                     LastAuditKey = auditKey
                 };
 
-                if (existing != null)
+                if (existingByUrl.TryGetValue(fingerprint.Url, out var existing))
                 {
                     schema.Id = existing.Id;
                     await scope.Database.UpdateAsync(schema);
                 }
                 else
                 {
-                    await scope.Database.InsertAsync(schema);
+                    toInsert.Add(schema);
                 }
+            }
+
+            if (toInsert.Count > 0)
+            {
+                await scope.Database.InsertBulkAsync(toInsert);
             }
 
             scope.Complete();

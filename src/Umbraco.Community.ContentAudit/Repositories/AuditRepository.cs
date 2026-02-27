@@ -7,12 +7,6 @@ using Umbraco.Extensions;
 namespace Umbraco.Community.ContentAudit.Repositories
 {
     /// <inheritdoc/>
-    /// <remarks>
-    /// SQL queries in this class use string interpolation for table names only.
-    /// Table names are sourced from trusted compile-time constants (e.g., <see cref="OverviewSchema.TableName"/>)
-    /// and are not user-provided, making SQL injection impossible for these values.
-    /// All query parameters are properly parameterized using NPoco's parameter binding.
-    /// </remarks>
     public class AuditRepository : IAuditRepository
     {
         private readonly IScopeProvider _scopeProvider;
@@ -70,8 +64,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var auditOverviews = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE [Status] = {(int)AuditStatus.Completed}", CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<OverviewSchema>()
+                .Where<OverviewSchema>(x => x.Status == (int)AuditStatus.Completed);
+
+            var auditOverviews = await scope.Database.FetchAsync<OverviewSchema>(sql);
 
             scope.Complete();
 
@@ -83,12 +81,16 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            var latestAudit = await scope.Database.FetchAsync<OverviewSchema>(
-                $"SELECT * FROM [{OverviewSchema.TableName}] WHERE [Key] = @0", new object[] { auditKey }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<OverviewSchema>()
+                .Where<OverviewSchema>(x => x.Key == auditKey);
+
+            var latestAudit = await scope.Database.FirstOrDefaultAsync<OverviewSchema>(sql);
 
             scope.Complete();
 
-            return latestAudit.FirstOrDefault();
+            return latestAudit;
         }
 
         /// <inheritdoc/>
@@ -96,12 +98,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string sqlQuery = $@"
-                SELECT *
-                FROM [{PageSchema.TableName}]
-                WHERE AuditKey = @0";
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PageSchema>()
+                .Where<PageSchema>(x => x.AuditKey == auditKey);
 
-            var pageData = await scope.Database.FetchAsync<PageSchema>(sqlQuery, new object[] { auditKey }, CancellationToken.None);
+            var pageData = await scope.Database.FetchAsync<PageSchema>(sql);
 
             scope.Complete();
 
@@ -113,8 +115,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string seoSqlQuery = $@"SELECT * FROM [{SeoSchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var seoData = await scope.Database.FetchAsync<SeoSchema>(seoSqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<SeoSchema>()
+                .Where<SeoSchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var seoData = await scope.Database.FetchAsync<SeoSchema>(sql);
 
             scope.Complete();
 
@@ -126,8 +132,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string contentAnalysisSqlQuery = $@"SELECT * FROM [{ContentAnalysisSchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var contentAnalysisData = await scope.Database.FetchAsync<ContentAnalysisSchema>(contentAnalysisSqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<ContentAnalysisSchema>()
+                .Where<ContentAnalysisSchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var contentAnalysisData = await scope.Database.FetchAsync<ContentAnalysisSchema>(sql);
 
             scope.Complete();
 
@@ -139,8 +149,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string performanceSqlQuery = $@"SELECT * FROM [{PerformanceSchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var performanceData = await scope.Database.FetchAsync<PerformanceSchema>(performanceSqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PerformanceSchema>()
+                .Where<PerformanceSchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var performanceData = await scope.Database.FetchAsync<PerformanceSchema>(sql);
 
             scope.Complete();
 
@@ -152,8 +166,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string accessibilitySqlQuery = $@"SELECT * FROM [{AccessibilitySchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var accessibilityData = await scope.Database.FetchAsync<AccessibilitySchema>(accessibilitySqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<AccessibilitySchema>()
+                .Where<AccessibilitySchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var accessibilityData = await scope.Database.FetchAsync<AccessibilitySchema>(sql);
 
             scope.Complete();
 
@@ -165,8 +183,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string technicalSeoSqlQuery = $@"SELECT * FROM [{TechnicalSeoSchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var technicalSeoData = await scope.Database.FetchAsync<TechnicalSeoSchema>(technicalSeoSqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<TechnicalSeoSchema>()
+                .Where<TechnicalSeoSchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var technicalSeoData = await scope.Database.FetchAsync<TechnicalSeoSchema>(sql);
 
             scope.Complete();
 
@@ -178,8 +200,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string socialMediaSqlQuery = $@"SELECT * FROM [{SocialMediaSchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var socialMediaData = await scope.Database.FetchAsync<SocialMediaSchema>(socialMediaSqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<SocialMediaSchema>()
+                .Where<SocialMediaSchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var socialMediaData = await scope.Database.FetchAsync<SocialMediaSchema>(sql);
 
             scope.Complete();
 
@@ -191,8 +217,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string contentQualitySqlQuery = $@"SELECT * FROM [{ContentQualitySchema.TableName}] WHERE AuditKey = @0 AND Url = @1";
-            var contentQualityData = await scope.Database.FetchAsync<ContentQualitySchema>(contentQualitySqlQuery, new object[] { auditKey, url }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<ContentQualitySchema>()
+                .Where<ContentQualitySchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var contentQualityData = await scope.Database.FetchAsync<ContentQualitySchema>(sql);
 
             scope.Complete();
 
@@ -204,8 +234,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string linksSqlQuery = $@"SELECT * FROM [{LinkSchema.TableName}] WHERE {nameof(LinkSchema.AuditKey)} = @0 AND {nameof(LinkSchema.FoundPage)} = @1";
-            var linksData = await scope.Database.FetchAsync<LinkSchema>(linksSqlQuery, new object[] { auditKey, foundPage }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<LinkSchema>()
+                .Where<LinkSchema>(x => x.AuditKey == auditKey && x.FoundPage == foundPage);
+
+            var linksData = await scope.Database.FetchAsync<LinkSchema>(sql);
 
             scope.Complete();
 
@@ -217,8 +251,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string resourcesSqlQuery = $@"SELECT * FROM [{ResourceSchema.TableName}] WHERE {nameof(ResourceSchema.AuditKey)} = @0 AND {nameof(ResourceSchema.FoundPage)} = @1";
-            var resourcesData = await scope.Database.FetchAsync<ResourceSchema>(resourcesSqlQuery, new object[] { auditKey, foundPage }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<ResourceSchema>()
+                .Where<ResourceSchema>(x => x.AuditKey == auditKey && x.FoundPage == foundPage);
+
+            var resourcesData = await scope.Database.FetchAsync<ResourceSchema>(sql);
 
             scope.Complete();
 
@@ -230,8 +268,12 @@ namespace Umbraco.Community.ContentAudit.Repositories
         {
             using var scope = _scopeProvider.CreateScope();
 
-            string imagesSqlQuery = $@"SELECT * FROM [{ImageSchema.TableName}] WHERE {nameof(ImageSchema.AuditKey)} = @0 AND {nameof(ImageSchema.FoundPage)} = @1";
-            var imagesData = await scope.Database.FetchAsync<ImageSchema>(imagesSqlQuery, new object[] { auditKey, foundPage }, CancellationToken.None);
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<ImageSchema>()
+                .Where<ImageSchema>(x => x.AuditKey == auditKey && x.FoundPage == foundPage);
+
+            var imagesData = await scope.Database.FetchAsync<ImageSchema>(sql);
 
             scope.Complete();
 
