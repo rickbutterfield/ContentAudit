@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <PackageJsonName Condition="$(PackageJsonName) == ''">content-audit</PackageJsonName>
+    <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
+    <PackageJsonVersion Condition="$(PackageJsonVersion) == ''">2.0.0-rc6</PackageJsonVersion>
+    <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
+    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite</PackageJsonScriptsDev>
+    <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">tsc &amp;&amp; vite build</PackageJsonScriptsBuild>
+    <PackageJsonScriptsWatch Condition="$(PackageJsonScriptsWatch) == ''">vite build --watch</PackageJsonScriptsWatch>
+    <PackageJsonScriptsGenerate Condition="$(PackageJsonScriptsGenerate) == ''">openapi-ts --file openapi-ts.config.ts</PackageJsonScriptsGenerate>
+    <PackageJsonDependenciesLit Condition="$(PackageJsonDependenciesLit) == ''">^3.1.0</PackageJsonDependenciesLit>
+    <PackageJsonEnginesNode Condition="$(PackageJsonEnginesNode) == ''">&gt;=22.12.0</PackageJsonEnginesNode>
+    <PackageJsonDevdependenciesHeyApiClientFetch Condition="$(PackageJsonDevdependenciesHeyApiClientFetch) == ''">^0.13.0</PackageJsonDevdependenciesHeyApiClientFetch>
+    <PackageJsonDevdependenciesHeyApiOpenapiTs Condition="$(PackageJsonDevdependenciesHeyApiOpenapiTs) == ''">^0.85.0</PackageJsonDevdependenciesHeyApiOpenapiTs>
+    <PackageJsonDevdependenciesUmbracoCmsBackoffice Condition="$(PackageJsonDevdependenciesUmbracoCmsBackoffice) == ''">^17.2.0</PackageJsonDevdependenciesUmbracoCmsBackoffice>
+    <PackageJsonDevdependenciesTypescript Condition="$(PackageJsonDevdependenciesTypescript) == ''">^5.9.3</PackageJsonDevdependenciesTypescript>
+    <PackageJsonDevdependenciesVite Condition="$(PackageJsonDevdependenciesVite) == ''">^7.1.11</PackageJsonDevdependenciesVite>
+  </PropertyGroup>
+</Project>

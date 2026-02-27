@@ -46,9 +46,9 @@ namespace Umbraco.Community.ContentAudit.Configuration
         /// <summary>
         /// Maximum number of concurrent crawl tasks.
         /// </summary>
-        [DefaultValue(4)]
+        [DefaultValue(2)]
         [Range(1, 20, ErrorMessage = "MaxConcurrentCrawls must be between 1 and 20")]
-        public int MaxConcurrentCrawls { get; set; } = 4;
+        public int MaxConcurrentCrawls { get; set; } = 2;
 
         /// <summary>
         /// Base URL for the site under audit.
@@ -85,9 +85,9 @@ namespace Umbraco.Community.ContentAudit.Configuration
         /// Delay in milliseconds between crawl requests. Set to 0 for no delay.
         /// This can be overridden by robots.txt Crawl-delay directive if RespectRobotsTxt is enabled.
         /// </summary>
-        [DefaultValue(0)]
+        [DefaultValue(250)]
         [Range(0, 60000, ErrorMessage = "CrawlDelayMs must be between 0 and 60000 (60 seconds)")]
-        public int CrawlDelayMs { get; set; } = 0;
+        public int CrawlDelayMs { get; set; } = 250;
 
         /// <summary>
         /// Maximum crawl depth from the starting URL. Set to 0 for unlimited depth.

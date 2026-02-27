@@ -169,12 +169,12 @@ Configuration via `appsettings.json` under `ContentAudit` section:
 - `SitemapUrl` - Sitemap location (auto-discovered from robots.txt if not set)
 - `UseUmbracoContentIndex` - Use Umbraco's content index for URL discovery (default: false)
 - `RespectRobotsTxt` - Honor robots.txt disallow rules (default: true)
-- `MaxConcurrentCrawls` - Parallel crawl limit (default: 4, range: 1-20)
+- `MaxConcurrentCrawls` - Parallel crawl limit (default: 2, range: 1-20)
 - `MaxCrawlDurationMinutes` - Maximum crawl duration in minutes, 0 for no limit (default: 30)
 - `UseIncrementalCrawl` - Only re-crawl changed pages (default: true)
 - `ExcludePatterns` - Additional URL patterns to exclude from crawling, supports wildcards (`*`, `**`). `/media/**` is always excluded by default.
 - `IncludePatterns` - URL patterns to include; if set, only matching URLs are crawled
-- `CrawlDelayMs` - Delay in ms between requests, can be overridden by robots.txt Crawl-delay (default: 0)
+- `CrawlDelayMs` - Delay in ms between requests, can be overridden by robots.txt Crawl-delay (default: 250)
 - `MaxCrawlDepth` - Maximum crawl depth from starting URL, 0 for unlimited (default: 0)
 - `PageTimeoutMs` - Per-page navigation timeout in ms (default: 30000)
 - `ExternalRequestDelayMs` - Minimum delay in ms between requests to the same external domain (default: 200)
