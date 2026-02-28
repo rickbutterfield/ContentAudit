@@ -511,6 +511,18 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
         }
 
         /// <inheritdoc/>
+        public async Task DeletePerformanceDataForUrlAsync(Guid auditKey, string url, CancellationToken cancellationToken = default)
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            await scope.Database.ExecuteAsync(
+                $"DELETE FROM [{PerformanceSchema.TableName}] WHERE [AuditKey] = @0 AND [Url] = @1",
+                new object[] { auditKey, url });
+
+            scope.Complete();
+        }
+
+        /// <inheritdoc/>
         public async Task SetIsEnrichedAsync(Guid auditKey, CancellationToken cancellationToken = default)
         {
             using var scope = _scopeProvider.CreateScope();

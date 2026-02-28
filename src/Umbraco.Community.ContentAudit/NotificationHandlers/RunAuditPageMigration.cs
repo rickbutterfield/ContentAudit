@@ -77,7 +77,8 @@ namespace Umbraco.Community.ContentAudit.NotificationHandlers
                 .To<MigrateToAuditKeyMigration>("contentaudit-migrate-to-auditkey")
                 .To<AddCrawlStateMigration>("contentaudit-add-crawlstate")
                 .To<AddPageFingerprintMigration>("contentaudit-add-pagefingerprint")
-                .To<AddIsEnrichedMigration>("contentaudit-add-isenriched");
+                .To<AddIsEnrichedMigration>("contentaudit-add-isenriched")
+                .To<AddCompositeIndexesMigration>("contentaudit-add-composite-indexes");
 
             var upgrader = new Upgrader(migrationPlan);
             await upgrader.ExecuteAsync(

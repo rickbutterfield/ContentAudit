@@ -47,6 +47,9 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#crawlPhase = new UmbStringState('');
 	public readonly crawlPhase = this.#crawlPhase.asObservable();
 
+	#pageEnrichingUrl = new UmbStringState('');
+	public readonly pageEnrichingUrl = this.#pageEnrichingUrl.asObservable();
+
 	#connection?: HubConnection;
 	#authContext?: typeof UMB_AUTH_CONTEXT.TYPE;
 	#serverContext?: typeof UMB_SERVER_CONTEXT.TYPE;
@@ -122,6 +125,18 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		this.#connection.on('crawlCancelled', () => {
 			this.#isRunning.setValue(false);
 			this.#crawlPhase.setValue('');
+		});
+
+		this.#connection.on('pageEnrichStarted', (url: string) => {
+			this.#pageEnrichingUrl.setValue(url);
+		});
+
+		this.#connection.on('pageEnrichCompleted', (_url: string) => {
+			this.#pageEnrichingUrl.setValue('');
+		});
+
+		this.#connection.on('pageEnrichFailed', (_url: string) => {
+			this.#pageEnrichingUrl.setValue('');
 		});
 
 		this.#connection

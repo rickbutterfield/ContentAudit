@@ -110,8 +110,8 @@ namespace Umbraco.Community.ContentAudit
             });
 
             // Register URL discovery strategies
-            builder.Services.AddScoped<IUrlDiscoveryStrategy, SitemapUrlDiscoveryStrategy>();
             builder.Services.AddScoped<IUrlDiscoveryStrategy, UmbracoContentUrlDiscoveryStrategy>();
+            builder.Services.AddScoped<IUrlDiscoveryStrategy, SitemapUrlDiscoveryStrategy>();
 
             // Register crawl result persistence
             builder.Services.AddScoped<ICrawlResultPersistence, UmbracoCrawlResultPersistence>();

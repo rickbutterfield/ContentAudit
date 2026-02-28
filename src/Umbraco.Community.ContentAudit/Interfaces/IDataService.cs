@@ -30,6 +30,14 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<List<PageAnalysisDto>> GetLatestAuditData(string filter = "", int statusCode = 0);
 
         /// <summary>
+        /// Gets lightweight audit data for the list view (pages + content type only)
+        /// </summary>
+        /// <param name="filter">Optional text filter to apply to URLs</param>
+        /// <param name="statusCode">Optional HTTP status code filter (0 for all)</param>
+        /// <returns>List of lightweight page items matching the criteria</returns>
+        Task<List<PageListItemDto>> GetLatestAuditDataLightweight(string filter = "", int statusCode = 0);
+
+        /// <summary>
         /// Gets the latest audit data for a specific page
         /// </summary>
         /// <param name="unique">The unique identifier of the page</param>

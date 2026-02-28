@@ -75,6 +75,7 @@ namespace Umbraco.Community.ContentAudit.Schemas
         /// <summary>
         /// Gets or sets whether Playwright performance enrichment has been run for this audit.
         /// </summary>
+        [Constraint(Default = "0")]
         public bool IsEnriched { get; set; }
 
         /// <summary>

@@ -66,8 +66,8 @@ namespace Umbraco.Community.ContentAudit.Configuration
         /// <summary>
         /// Whether to use incremental crawls (only re-crawl changed pages).
         /// </summary>
-        [DefaultValue(true)]
-        public bool UseIncrementalCrawl { get; set; } = true;
+        [DefaultValue(false)]
+        public bool UseIncrementalCrawl { get; set; } = false;
 
         /// <summary>
         /// URL patterns to exclude from crawling. Supports wildcards (* and **).

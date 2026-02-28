@@ -67,6 +67,7 @@ export type ContentAuditSettings = {
     maxCrawlDepth: number;
     pageTimeoutMs: number;
     externalRequestDelayMs: number;
+    autoEnrichAfterCrawl: boolean;
 };
 
 export type ContentQualityDto = {
@@ -101,6 +102,12 @@ export type CrawlStatusDto = {
 export type EmissionsDto = {
     emissionsPerPageView: number;
     carbonRating?: string | null;
+};
+
+export type EnrichStatusDto = {
+    isRunning: boolean;
+    auditKey?: string | null;
+    results: Array<CrawlDto>;
 };
 
 export type FlagModel = {
@@ -248,6 +255,13 @@ export type PageDto = {
     statusCode: number;
 };
 
+export type PageListItemDto = {
+    unique: string;
+    entityType: string;
+    pageData: PageDto;
+    contentType?: string | null;
+};
+
 export type PagedAuditTreeItemResponseModel = {
     total: number;
     items: Array<AuditTreeItemResponseModel>;
@@ -281,6 +295,11 @@ export type PagedPageAnalysisDtoModel = {
 export type PagedPageDtoModel = {
     total: number;
     items: Array<PageDto>;
+};
+
+export type PagedPageListItemDtoModel = {
+    total: number;
+    items: Array<PageListItemDto>;
 };
 
 export type PerformanceDto = {
@@ -737,7 +756,7 @@ export type GetLatestAuditDataResponses = {
     /**
      * OK
      */
-    200: PagedPageAnalysisDtoModel;
+    200: PagedPageListItemDtoModel;
 };
 
 export type GetLatestAuditDataResponse = GetLatestAuditDataResponses[keyof GetLatestAuditDataResponses];
@@ -955,6 +974,128 @@ export type GetCrawlStatusResponses = {
 };
 
 export type GetCrawlStatusResponse = GetCrawlStatusResponses[keyof GetCrawlStatusResponses];
+
+export type CancelEnrichData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/enrich/cancel';
+};
+
+export type CancelEnrichErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type CancelEnrichError = CancelEnrichErrors[keyof CancelEnrichErrors];
+
+export type CancelEnrichResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type EnrichPageData = {
+    body?: never;
+    path?: never;
+    query?: {
+        url?: string;
+        pageUnique?: string;
+        auditKey?: string;
+    };
+    url: '/umbraco/content-audit/management/api/v1/enrich/page';
+};
+
+export type EnrichPageErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+    /**
+     * Conflict
+     */
+    409: unknown;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type EnrichPageError = EnrichPageErrors[keyof EnrichPageErrors];
+
+export type EnrichPageResponses = {
+    /**
+     * OK
+     */
+    200: PerformanceDto;
+};
+
+export type EnrichPageResponse = EnrichPageResponses[keyof EnrichPageResponses];
+
+export type StartEnrichData = {
+    body?: never;
+    path?: never;
+    query?: {
+        auditKey?: string;
+    };
+    url: '/umbraco/content-audit/management/api/v1/enrich/start';
+};
+
+export type StartEnrichErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+    /**
+     * Conflict
+     */
+    409: unknown;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type StartEnrichError = StartEnrichErrors[keyof StartEnrichErrors];
+
+export type StartEnrichResponses = {
+    /**
+     * Accepted
+     */
+    202: unknown;
+};
+
+export type GetEnrichStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/enrich/status';
+};
+
+export type GetEnrichStatusErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetEnrichStatusError = GetEnrichStatusErrors[keyof GetEnrichStatusErrors];
+
+export type GetEnrichStatusResponses = {
+    /**
+     * OK
+     */
+    200: EnrichStatusDto;
+};
+
+export type GetEnrichStatusResponse = GetEnrichStatusResponses[keyof GetEnrichStatusResponses];
 
 export type GetAllIssuesData = {
     body?: never;

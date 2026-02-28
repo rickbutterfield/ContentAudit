@@ -16,6 +16,9 @@ namespace Umbraco.Community.ContentAudit.Hubs
         Task enrichCompleted(Guid auditKey);
         Task enrichFailed(string error);
         Task enrichCancelled();
+        Task pageEnrichStarted(string url);
+        Task pageEnrichCompleted(string url);
+        Task pageEnrichFailed(string url);
 #pragma warning restore SA1300
     }
 }

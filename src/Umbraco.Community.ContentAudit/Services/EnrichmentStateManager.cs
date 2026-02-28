@@ -104,5 +104,46 @@ namespace Umbraco.Community.ContentAudit.Services
 
             _hubContext.Clients.All.enrichProgress(result);
         }
+
+        public bool IsPageEnriching { get; private set; }
+
+        public string? PageEnrichingUrl { get; private set; }
+
+        public bool StartPageEnrichment(string url)
+        {
+            lock (_lock)
+            {
+                if (IsPageEnriching || IsRunning)
+                    return false;
+
+                IsPageEnriching = true;
+                PageEnrichingUrl = url;
+            }
+
+            _hubContext.Clients.All.pageEnrichStarted(url);
+            return true;
+        }
+
+        public void CompletePageEnrichment(string url)
+        {
+            lock (_lock)
+            {
+                IsPageEnriching = false;
+                PageEnrichingUrl = null;
+            }
+
+            _hubContext.Clients.All.pageEnrichCompleted(url);
+        }
+
+        public void FailPageEnrichment(string url)
+        {
+            lock (_lock)
+            {
+                IsPageEnriching = false;
+                PageEnrichingUrl = null;
+            }
+
+            _hubContext.Clients.All.pageEnrichFailed(url);
+        }
     }
 }

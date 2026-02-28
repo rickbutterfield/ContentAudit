@@ -13,5 +13,11 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         void CompleteEnrichment();
         void FailEnrichment(string error);
         void AddResult(CrawlDto result);
+
+        bool IsPageEnriching { get; }
+        string? PageEnrichingUrl { get; }
+        bool StartPageEnrichment(string url);
+        void CompletePageEnrichment(string url);
+        void FailPageEnrichment(string url);
     }
 }

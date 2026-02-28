@@ -1,4 +1,4 @@
-﻿using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.Cache;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Models;
@@ -67,196 +67,219 @@ namespace Umbraco.Community.ContentAudit.Services
             return await GetLatestAuditDataInternal(filter, statusCode);
         }
 
-        /// <summary>
-        /// Internal method to retrieve and process latest audit data with optional filtering.
-        /// </summary>
-        /// <param name="filter">Optional filter string to search URLs.</param>
-        /// <param name="statusCode">Optional HTTP status code filter.</param>
-        /// <param name="auditKey">Optional audit key to query a specific audit run.</param>
-        /// <returns>A list of <see cref="PageAnalysisDto"/> containing page analysis data.</returns>
-        private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0, Guid? auditKey = default)
+        /// <inheritdoc/>
+        public async Task<List<PageListItemDto>> GetLatestAuditDataLightweight(string filter = "", int statusCode = 0)
         {
-            var results = new List<PageAnalysisDto>();
-            if (!auditKey.HasValue)
-                auditKey = await _auditRepository.GetLatestAuditKey();
+            var results = new List<PageListItemDto>();
+            var auditKey = await _auditRepository.GetLatestAuditKey();
 
             if (!auditKey.HasValue)
                 return results;
 
-            var pageData = await _runtimeCache.GetCacheItemAsync(Constants.Cache.Key,
-                async () =>
-                {
-                    return await _auditRepository.GetPagesByAuditKey(auditKey.Value);
-                }, TimeSpan.FromMinutes(30));
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return results;
 
-            if (pageData != null && pageData.Any())
+            var filteredData = FilterPages(pageData, filter, statusCode);
+
+            var technicalSeoData = await _auditRepository.GetAllTechnicalSeoDataByAuditKey(auditKey.Value);
+            var technicalSeoLookup = technicalSeoData
+                .GroupBy(x => x.Url ?? "")
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var page in filteredData)
             {
-                var filteredData = pageData.AsEnumerable();
-
-                if (!string.IsNullOrEmpty(filter))
+                var item = new PageListItemDto
                 {
-                    filteredData = filteredData.Where(x => x.Url?.ToLower().Contains(filter.ToLower()) == true);
+                    PageData = new PageDto(page),
+                    EntityType = "document",
+                    Unique = page.Unique
+                };
+
+                if (!string.IsNullOrEmpty(page.Url) && technicalSeoLookup.TryGetValue(page.Url, out var techSeo))
+                {
+                    item.ContentType = techSeo.ContentType;
                 }
 
-                if (statusCode != 0)
-                {
-                    filteredData = filteredData.Where(x => x.StatusCode == statusCode);
-                }
-
-                foreach (var page in filteredData)
-                {
-                    var result = await PopulatePageAnalysisData(page, auditKey.Value);
-                    results.Add(result);
-                }
+                results.Add(item);
             }
 
             return results;
         }
 
-        /// <summary>
-        /// Populates comprehensive analysis data for a single page.
-        /// </summary>
-        /// <param name="page">The page schema to populate data for.</param>
-        /// <param name="auditKey">The Guid key of the audit run.</param>
-        /// <returns>A <see cref="PageAnalysisDto"/> containing comprehensive page analysis data.</returns>
-        private async Task<PageAnalysisDto> PopulatePageAnalysisData(PageSchema page, Guid auditKey)
+        private async Task<List<PageAnalysisDto>> GetLatestAuditDataInternal(string filter = "", int statusCode = 0, Guid? auditKey = default)
         {
-            var result = new PageAnalysisDto();
-            result.PageData = new PageDto(page);
+            if (!auditKey.HasValue)
+                auditKey = await _auditRepository.GetLatestAuditKey();
 
-            result.EntityType = "document";
-            result.Unique = result.PageData.Unique;
+            if (!auditKey.HasValue)
+                return [];
 
-            // Get SEO data
-            if (!string.IsNullOrEmpty(page.Url))
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return [];
+
+            var filteredData = FilterPages(pageData, filter, statusCode).ToList();
+            return await PopulateAllPagesAnalysisData(filteredData, auditKey.Value);
+        }
+
+        private async Task<IEnumerable<PageSchema>?> GetCachedPages(Guid auditKey)
+        {
+            return await _runtimeCache.GetCacheItemAsync(Constants.Cache.Key,
+                async () => await _auditRepository.GetPagesByAuditKey(auditKey),
+                TimeSpan.FromMinutes(30));
+        }
+
+        private static IEnumerable<PageSchema> FilterPages(IEnumerable<PageSchema> pages, string filter, int statusCode)
+        {
+            var filtered = pages.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(filter))
             {
-                var seoData = await _auditRepository.GetSeoData(auditKey, page.Url);
-                var firstSeoData = seoData?.FirstOrDefault();
-                if (firstSeoData != null)
-                {
-                    result.SeoData = new SeoDto(firstSeoData);
-                }
-
-                // Get content analysis data
-                var contentAnalysisData = await _auditRepository.GetContentAnalysisData(auditKey, page.Url);
-                var firstContentAnalysis = contentAnalysisData?.FirstOrDefault();
-                if (firstContentAnalysis != null)
-                {
-                    result.ContentAnalysis = new ContentAnalysisDto(firstContentAnalysis);
-                }
-
-                // Get performance data
-                var performanceData = await _auditRepository.GetPerformanceData(auditKey, page.Url);
-                var firstPerformanceData = performanceData?.FirstOrDefault();
-                if (firstPerformanceData != null)
-                {
-                    result.PerformanceData = new PerformanceDto(firstPerformanceData);
-
-                    if (result.PerformanceData.TotalBytes.HasValue)
-                    {
-                        result.EmissionsData = new();
-
-                        var score = _emissionsService.PerVisit(result.PerformanceData.TotalBytes.Value, false, false, true);
-                        if (score.Total.HasValue)
-                        {
-                            result.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
-                        }
-                        result.EmissionsData.CarbonRating = score.Rating;
-                    }
-                }
-
-                // Get accessibility data
-                var accessibilityData = await _auditRepository.GetAccessibilityData(auditKey, page.Url);
-                var firstAccessibilityData = accessibilityData?.FirstOrDefault();
-                if (firstAccessibilityData != null)
-                {
-                    result.AccessibilityData = new AccessibilityDto(firstAccessibilityData);
-                }
-
-                // Get technical SEO data
-                var technicalSeoData = await _auditRepository.GetTechnicalSeoData(auditKey, page.Url);
-                var firstTechnicalSeoData = technicalSeoData?.FirstOrDefault();
-                if (firstTechnicalSeoData != null)
-                {
-                    result.TechnicalSeoData = new TechnicalSeoDto(firstTechnicalSeoData);
-                }
-
-                // Get social media data
-                var socialMediaData = await _auditRepository.GetSocialMediaData(auditKey, page.Url);
-                var firstSocialMediaData = socialMediaData?.FirstOrDefault();
-                if (firstSocialMediaData != null)
-                {
-                    result.SocialMediaData = new SocialMediaDto(firstSocialMediaData);
-                }
-
-                // Get content quality data
-                var contentQualityData = await _auditRepository.GetContentQualityData(auditKey, page.Url);
-                var firstContentQualityData = contentQualityData?.FirstOrDefault();
-                if (firstContentQualityData != null)
-                {
-                    result.ContentQualityData = new ContentQualityDto(firstContentQualityData);
-                }
-
-                // Get links
-                var linksData = await _auditRepository.GetLinkData(auditKey, page.Url);
-                if (linksData != null)
-                {
-                    result.Links = linksData.Select(x => new LinkDto(x)).ToList();
-                }
-
-                // Get resources
-                var resourcesData = await _auditRepository.GetResourceData(auditKey, page.Url);
-                if (resourcesData != null)
-                {
-                    result.Resources = resourcesData.Select(x => new ResourceDto(x)).ToList();
-                }
-
-                // Get images
-                var imagesData = await _auditRepository.GetImageData(auditKey, page.Url);
-                if (imagesData != null)
-                {
-                    result.Images = imagesData.Select(x => new ImageDto(x)).ToList();
-                }
+                filtered = filtered.Where(x => x.Url?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true);
             }
 
-            return result;
+            if (statusCode != 0)
+            {
+                filtered = filtered.Where(x => x.StatusCode == statusCode);
+            }
+
+            return filtered;
+        }
+
+        private async Task<List<PageAnalysisDto>> PopulateAllPagesAnalysisData(List<PageSchema> pages, Guid auditKey)
+        {
+            var seoData = await _auditRepository.GetAllSeoDataByAuditKey(auditKey);
+            var contentAnalysisData = await _auditRepository.GetAllContentAnalysisDataByAuditKey(auditKey);
+            var performanceData = await _auditRepository.GetAllPerformanceDataByAuditKey(auditKey);
+            var accessibilityData = await _auditRepository.GetAllAccessibilityDataByAuditKey(auditKey);
+            var technicalSeoData = await _auditRepository.GetAllTechnicalSeoDataByAuditKey(auditKey);
+            var socialMediaData = await _auditRepository.GetAllSocialMediaDataByAuditKey(auditKey);
+            var contentQualityData = await _auditRepository.GetAllContentQualityDataByAuditKey(auditKey);
+            var linksData = await _auditRepository.GetAllLinkDataByAuditKey(auditKey);
+            var resourcesData = await _auditRepository.GetAllResourceDataByAuditKey(auditKey);
+            var imagesData = await _auditRepository.GetAllImageDataByAuditKey(auditKey);
+
+            var seoLookup = seoData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var contentAnalysisLookup = contentAnalysisData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var performanceLookup = performanceData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var accessibilityLookup = accessibilityData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var technicalSeoLookup = technicalSeoData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var socialMediaLookup = socialMediaData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var contentQualityLookup = contentQualityData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var linksLookup = linksData.GroupBy(x => x.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var resourcesLookup = resourcesData.GroupBy(x => x.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var imagesLookup = imagesData.GroupBy(x => x.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+
+            var results = new List<PageAnalysisDto>(pages.Count);
+
+            foreach (var page in pages)
+            {
+                var result = new PageAnalysisDto
+                {
+                    PageData = new PageDto(page),
+                    EntityType = "document"
+                };
+                result.Unique = result.PageData.Unique;
+
+                var url = page.Url ?? "";
+
+                if (!string.IsNullOrEmpty(url))
+                {
+                    if (seoLookup.TryGetValue(url, out var seo))
+                        result.SeoData = new SeoDto(seo);
+
+                    if (contentAnalysisLookup.TryGetValue(url, out var ca))
+                        result.ContentAnalysis = new ContentAnalysisDto(ca);
+
+                    if (performanceLookup.TryGetValue(url, out var perf))
+                    {
+                        result.PerformanceData = new PerformanceDto(perf);
+
+                        if (result.PerformanceData.TotalBytes.HasValue)
+                        {
+                            result.EmissionsData = new();
+                            var score = _emissionsService.PerVisit(result.PerformanceData.TotalBytes.Value, false, false, true);
+                            if (score.Total.HasValue)
+                            {
+                                result.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                            }
+                            result.EmissionsData.CarbonRating = score.Rating;
+                        }
+                    }
+
+                    if (accessibilityLookup.TryGetValue(url, out var acc))
+                        result.AccessibilityData = new AccessibilityDto(acc);
+
+                    if (technicalSeoLookup.TryGetValue(url, out var techSeo))
+                        result.TechnicalSeoData = new TechnicalSeoDto(techSeo);
+
+                    if (socialMediaLookup.TryGetValue(url, out var sm))
+                        result.SocialMediaData = new SocialMediaDto(sm);
+
+                    if (contentQualityLookup.TryGetValue(url, out var cq))
+                        result.ContentQualityData = new ContentQualityDto(cq);
+
+                    if (linksLookup.TryGetValue(url, out var links))
+                        result.Links = links.Select(x => new LinkDto(x)).ToList();
+
+                    if (resourcesLookup.TryGetValue(url, out var resources))
+                        result.Resources = resources.Select(x => new ResourceDto(x)).ToList();
+
+                    if (imagesLookup.TryGetValue(url, out var images))
+                        result.Images = images.Select(x => new ImageDto(x)).ToList();
+                }
+
+                results.Add(result);
+            }
+
+            return results;
         }
 
         /// <inheritdoc/>
         public async Task<PageAnalysisDto> GetLatestPageAuditData(Guid unique)
         {
             var result = new PageAnalysisDto();
-            var latestData = await GetLatestAuditData();
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return result;
 
-            if (latestData != null && latestData.Any())
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return result;
+
+            var pageSchema = pageData.FirstOrDefault(x => x.Unique == unique);
+            if (pageSchema == null)
+                return result;
+
+            var singlePageList = new List<PageSchema>(1) { pageSchema };
+            var populated = await PopulateAllPagesAnalysisData(singlePageList, auditKey.Value);
+            var page = populated.FirstOrDefault();
+            if (page == null)
+                return result;
+
+            int totalIssues = _pageIssues.Count;
+
+            result = page;
+            result.Issues = new();
+
+            var singleAnalysisList = new List<PageAnalysisDto>(1) { page };
+            foreach (var issue in _pageIssues)
             {
-                var page = latestData.FirstOrDefault(x => x.PageData.Unique == unique);
-                if (page != null)
+                var issueCheck = issue.CheckPages(singleAnalysisList);
+
+                if (issueCheck != null && issueCheck.Any())
                 {
-                    int totalIssues = _pageIssues.Count;
-
-                    result = page;
-                    result.Issues = new();
-
-                    var singlePageList = new List<PageAnalysisDto>(1) { page };
-                    foreach (var issue in _pageIssues)
-                    {
-                        var issueCheck = issue.CheckPages(singlePageList);
-
-                        if (issueCheck != null && issueCheck.Any())
-                        {
-                            var auditIssue = new IssueDto(issue);
-                            auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                            result.Issues.Add(auditIssue);
-                        }
-                    }
-
-                    result.HealthScore = new()
-                    {
-                        HealthScore = ((double)(totalIssues - result.Issues.Count) / totalIssues) * 100.0,
-                    };
+                    var auditIssue = new IssueDto(issue);
+                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                    result.Issues.Add(auditIssue);
                 }
             }
+
+            result.HealthScore = new()
+            {
+                HealthScore = ((double)(totalIssues - result.Issues.Count) / totalIssues) * 100.0,
+            };
 
             return result;
         }
@@ -264,26 +287,35 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<List<PageDto>> GetOrphanedPages(string filter = "")
         {
-            var result = new List<PageDto>();
-            var pageData = await GetLatestAuditData();
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
 
-            if (pageData != null && pageData.Any())
-            {
-                var filtered = pageData.Where(x => x.SeoData?.IsOrphaned == true);
-                result.AddRange(filtered.Select(x => x.PageData));
-            }
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return [];
 
-            return result;
+            var seoData = await _auditRepository.GetAllSeoDataByAuditKey(auditKey.Value);
+            var orphanedUrls = seoData.Where(x => x.IsOrphaned).Select(x => x.Url).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return pageData
+                .Where(x => !string.IsNullOrEmpty(x.Url) && orphanedUrls.Contains(x.Url))
+                .Select(x => new PageDto(x))
+                .ToList();
         }
 
         /// <inheritdoc/>
         public async Task<List<ImageDto>> GetAllImages(string filter = "")
         {
-            var latestAuditData = await GetLatestAuditData(filter);
-            var images = latestAuditData.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>())
-                .Where(x => x?.IsBackground == false);
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
 
-            return images.ToList();
+            var imageData = await _auditRepository.GetAllImageDataByAuditKey(auditKey.Value);
+            return imageData
+                .Where(x => !x.IsBackground)
+                .Select(x => new ImageDto(x))
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -295,10 +327,7 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<List<PageAnalysisDto>> GetPagesWithMissingMetadata(string filter = "")
         {
-            var result = new List<PageAnalysisDto>();
-            var pageData = await GetLatestAuditData();
-            result.AddRange(pageData);
-            return result;
+            return await GetLatestAuditData();
         }
 
         /// <inheritdoc/>
@@ -325,7 +354,6 @@ namespace Umbraco.Community.ContentAudit.Services
                         {
                             NumberOfUrls = pagesWithIssues,
                             PercentOfTotal = percent,
-                            Pages = issueCheck
                         };
 
                         auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
@@ -348,7 +376,6 @@ namespace Umbraco.Community.ContentAudit.Services
                         {
                             NumberOfUrls = imagesWithIssues,
                             PercentOfTotal = percent,
-                            Images = issueCheck
                         };
 
                         auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
@@ -412,59 +439,41 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<List<LinkGroupDto>> GetExternalLinks(string filter = "")
         {
-            var results = new List<LinkGroupDto>();
-            var latestAuditData = await GetLatestAuditData(filter);
-            var linkData = latestAuditData.SelectMany(x => x.Links ?? Enumerable.Empty<LinkDto>())
-                .Where(x => x?.IsExternal == true);
-
-            if (linkData.Any())
-            {
-                var groupedData = linkData.GroupBy(x => x.Url).ToList();
-                foreach (var group in groupedData.Where(g => g.Key != null))
-                {
-                    var linkGroup = new LinkGroupDto()
-                    {
-                        Url = group.Key,
-                        ContentType = group.FirstOrDefault()?.ContentType,
-                        StatusCode = group.FirstOrDefault()?.StatusCode,
-                        Links = group.ToList()
-                    };
-                    results.Add(linkGroup);
-                }
-
-                results = results.OrderByDescending(x => x.Links?.Count).ToList();
-            }
-
-            return results;
+            return await GetLinkGroups(isExternal: true);
         }
 
         /// <inheritdoc/>
         public async Task<List<LinkGroupDto>> GetInternalLinks(string filter = "")
         {
+            return await GetLinkGroups(isExternal: false);
+        }
+
+        private async Task<List<LinkGroupDto>> GetLinkGroups(bool isExternal)
+        {
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
+
+            var allLinks = await _auditRepository.GetAllLinkDataByAuditKey(auditKey.Value);
+            var linkData = allLinks
+                .Where(x => x.IsExternal == isExternal)
+                .Select(x => new LinkDto(x));
+
             var results = new List<LinkGroupDto>();
-            var latestAuditData = await GetLatestAuditData(filter);
-            var linkData = latestAuditData.SelectMany(x => x.Links ?? Enumerable.Empty<LinkDto>())
-                .Where(x => x?.IsExternal == false);
+            var groupedData = linkData.GroupBy(x => x.Url).ToList();
 
-            if (linkData.Any())
+            foreach (var group in groupedData.Where(g => g.Key != null))
             {
-                var groupedData = linkData.GroupBy(x => x.Url).ToList();
-                foreach (var group in groupedData.Where(g => g.Key != null))
+                results.Add(new LinkGroupDto
                 {
-                    var linkGroup = new LinkGroupDto()
-                    {
-                        Url = group.Key,
-                        ContentType = group.FirstOrDefault()?.ContentType,
-                        StatusCode = group.FirstOrDefault()?.StatusCode,
-                        Links = group.ToList()
-                    };
-                    results.Add(linkGroup);
-                }
-
-                results = results.OrderByDescending(x => x.Links?.Count).ToList();
+                    Url = group.Key,
+                    ContentType = group.FirstOrDefault()?.ContentType,
+                    StatusCode = group.FirstOrDefault()?.StatusCode,
+                    Links = group.ToList()
+                });
             }
 
-            return results;
+            return results.OrderByDescending(x => x.Links?.Count).ToList();
         }
 
         /// <inheritdoc/>
@@ -497,11 +506,6 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        /// <summary>
-        /// Calculates a normalized priority score (0-10) for an issue based on type, priority, and prevalence.
-        /// </summary>
-        /// <param name="issue">The issue to calculate the priority score for.</param>
-        /// <returns>A priority score between 0.0 and 10.0, where higher indicates higher priority.</returns>
         private double CalculatePriorityScore(IssueDto issue)
         {
             ArgumentNullException.ThrowIfNull(issue);
@@ -510,11 +514,9 @@ namespace Umbraco.Community.ContentAudit.Services
             const double TYPE_WEIGHT = 0.30;
             const double PERCENTAGE_WEIGHT = 0.20;
 
-            // Safely handle nullable percentage and clamp without relying on generic Math.Clamp overload
             double percentValue = issue.PercentOfTotal.GetValueOrDefault(0.0);
             double validPercentage = Math.Min(Math.Max(percentValue, 0.0), 100.0);
 
-            // Safely handle nullable enums/values for Priority and Type - default to 1 if null
             int priorityValue = issue.Priority is null ? 1 : (int)issue.Priority;
             int typeValue = issue.Type is null ? 1 : (int)issue.Type;
 

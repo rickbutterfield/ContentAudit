@@ -1,11 +1,11 @@
-﻿import { UmbRepositoryBase } from '@umbraco-cms/backoffice/repository';
+import { UmbRepositoryBase } from '@umbraco-cms/backoffice/repository';
 import type { UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditAllPagesCollectionDataSource } from "./all-pages-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { PageAnalysisDto } from '../../../../api';
+import { PageListItemDto } from '../../../../api';
 import { ContentAuditAllPagesCollectionFilterModel } from '../types';
 
-export class ContentAuditAllPagesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageAnalysisDto, ContentAuditAllPagesCollectionFilterModel> {
+export class ContentAuditAllPagesCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageListItemDto, ContentAuditAllPagesCollectionFilterModel> {
     #collectionSource: ContentAuditAllPagesCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

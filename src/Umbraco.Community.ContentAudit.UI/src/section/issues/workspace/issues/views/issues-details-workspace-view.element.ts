@@ -1,13 +1,11 @@
 ﻿import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { UMB_WORKSPACE_MODAL, UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
+import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT } from "../issues-workspace.context";
 import { IssueDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
-import { UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN } from '@umbraco-cms/backoffice/document';
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
-import { UmbModalRouteBuilder, UmbModalRouteRegistrationController } from "@umbraco-cms/backoffice/router";
 
 @customElement('content-audit-issues-details-workspace-view')
 export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
@@ -55,29 +53,14 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
     private _tableItems: Array<UmbTableItem> = [];
 
     #workspaceContext?: typeof CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT.TYPE;
-    #routeBuilder?: UmbModalRouteBuilder;
 
     constructor() {
         super();
 
         this.consumeContext(CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT, (instance) => {
             this.#workspaceContext = instance;
+            this.#observeCollectionItems();
         });
-
-        this.#registerModalRoute();
-    }
-
-    #registerModalRoute() {
-        new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
-            .addAdditionalPath(':entityType')
-            .onSetup((params) => {
-                return { data: { entityType: params.entityType, preset: {} } };
-            })
-            .observeRouteBuilder((routeBuilder) => {
-                this.#routeBuilder = routeBuilder;
-
-                this.#observeCollectionItems();
-            });
     }
 
     #observeCollectionItems() {
@@ -91,22 +74,15 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
     #createTableItems(data: IssueDto | undefined) {
         let tableItems: UmbTableItem[] | undefined = [];
 
-        const routeBuilder = this.#routeBuilder;
-        if (!routeBuilder) throw new Error('Route builder not ready');
-
         if (data != null) {
             if (data.pages?.length !== 0) {
                 tableItems = data?.pages?.map((page) => {
-                    const modalEditPath =
-                        routeBuilder({ entityType: 'document' }) +
-                        UMB_EDIT_DOCUMENT_WORKSPACE_PATH_PATTERN.generateLocal({ unique: page.unique! });
-
                     let tableItem: UmbTableItem = {
                         id: page.unique,
                         data: [
                             {
                                 columnAlias: 'url',
-                                value: html`<a href="${modalEditPath}">${page.pageData?.url}</a>`
+                                value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.pageData?.url}</a>`
                             }
                         ]
                     };

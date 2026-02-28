@@ -118,5 +118,50 @@ namespace Umbraco.Community.ContentAudit.Services
 
             await _persistence.SetIsEnrichedAsync(auditKey, cancellationToken);
         }
+
+        /// <inheritdoc/>
+        public async Task<PerformanceDto?> EnrichPageAsync(Guid auditKey, string url, Guid pageUnique, string absoluteRootUrl, CancellationToken cancellationToken = default)
+        {
+            var overview = await _auditRepository.GetAuditOverview(auditKey);
+            if (overview is null)
+            {
+                _logger.LogWarning("Per-page enrichment requested for unknown audit key {AuditKey}", auditKey);
+                return null;
+            }
+
+            var baseUrl = overview.BaseUrl ?? absoluteRootUrl;
+            Uri baseUri;
+            try
+            {
+                baseUri = new Uri(baseUrl);
+            }
+            catch (UriFormatException)
+            {
+                _logger.LogWarning("Invalid base URL for per-page enrichment: {BaseUrl}", baseUrl);
+                return null;
+            }
+
+            PageAnalysisDto? analysis = null;
+            try
+            {
+                analysis = await _crawlService.GetPageAnalysis(url, baseUri, pageUnique);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Playwright per-page enrichment failed for {Url}", url);
+                return null;
+            }
+
+            if (analysis?.PerformanceData?.PageLoadTime.HasValue != true)
+                return null;
+
+            analysis.PerformanceData.AuditKey = auditKey;
+            analysis.PerformanceData.Url = url;
+
+            await _persistence.DeletePerformanceDataForUrlAsync(auditKey, url, cancellationToken);
+            await _persistence.SavePerformanceAsync(auditKey, [analysis.PerformanceData], cancellationToken);
+
+            return analysis.PerformanceData;
+        }
     }
 }

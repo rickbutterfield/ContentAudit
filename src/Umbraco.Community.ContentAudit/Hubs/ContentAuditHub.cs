@@ -44,6 +44,11 @@ namespace Umbraco.Community.ContentAudit.Hubs
                 }
             }
 
+            if (_enrichmentStateManager.IsPageEnriching && _enrichmentStateManager.PageEnrichingUrl is not null)
+            {
+                await Clients.Caller.pageEnrichStarted(_enrichmentStateManager.PageEnrichingUrl);
+            }
+
             await base.OnConnectedAsync();
         }
     }

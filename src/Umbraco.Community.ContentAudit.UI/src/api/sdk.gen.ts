@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CancelCrawlData, CancelCrawlErrors, CancelCrawlResponses, ChildrenData, ChildrenErrors, ChildrenResponses, DeleteData, DeleteErrors, DeleteResponses, ExportByKeyData, ExportByKeyErrors, ExportByKeyResponses, ExportData, ExportErrors, ExportResponses, GetAllImagesData, GetAllImagesErrors, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesErrors, GetAllIssuesResponses, GetByKeyData, GetByKeyErrors, GetByKeyResponses, GetCollectionData, GetCollectionErrors, GetCollectionResponses, GetCrawlStatusData, GetCrawlStatusErrors, GetCrawlStatusResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsErrors, GetDuplicateContentUrlsResponses, GetExternalLinksData, GetExternalLinksErrors, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreErrors, GetHealthScoreResponses, GetInternalLinksData, GetInternalLinksErrors, GetInternalLinksResponses, GetIssueData, GetIssueErrors, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataErrors, GetLatestAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesErrors, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataErrors, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, OverviewByKeyData, OverviewByKeyErrors, OverviewByKeyResponses, OverviewData, OverviewErrors, OverviewResponses, RootData, RootErrors, RootResponses, StartCrawlData, StartCrawlErrors, StartCrawlResponses } from './types.gen';
+import type { CancelCrawlData, CancelCrawlErrors, CancelCrawlResponses, CancelEnrichData, CancelEnrichErrors, CancelEnrichResponses, ChildrenData, ChildrenErrors, ChildrenResponses, DeleteData, DeleteErrors, DeleteResponses, EnrichPageData, EnrichPageErrors, EnrichPageResponses, ExportByKeyData, ExportByKeyErrors, ExportByKeyResponses, ExportData, ExportErrors, ExportResponses, GetAllImagesData, GetAllImagesErrors, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesErrors, GetAllIssuesResponses, GetByKeyData, GetByKeyErrors, GetByKeyResponses, GetCollectionData, GetCollectionErrors, GetCollectionResponses, GetCrawlStatusData, GetCrawlStatusErrors, GetCrawlStatusResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsErrors, GetDuplicateContentUrlsResponses, GetEnrichStatusData, GetEnrichStatusErrors, GetEnrichStatusResponses, GetExternalLinksData, GetExternalLinksErrors, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreErrors, GetHealthScoreResponses, GetInternalLinksData, GetInternalLinksErrors, GetInternalLinksResponses, GetIssueData, GetIssueErrors, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataErrors, GetLatestAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesErrors, GetOrphanedPagesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataErrors, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, OverviewByKeyData, OverviewByKeyErrors, OverviewByKeyResponses, OverviewData, OverviewErrors, OverviewResponses, RootData, RootErrors, RootResponses, StartCrawlData, StartCrawlErrors, StartCrawlResponses, StartEnrichData, StartEnrichErrors, StartEnrichResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -157,6 +157,36 @@ export class CrawlService {
     public static getCrawlStatus<ThrowOnError extends boolean = true>(options?: Options<GetCrawlStatusData, ThrowOnError>) {
         return (options?.client ?? client).get<GetCrawlStatusResponses, GetCrawlStatusErrors, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/crawl/status',
+            ...options
+        });
+    }
+}
+
+export class EnrichService {
+    public static cancelEnrich<ThrowOnError extends boolean = true>(options?: Options<CancelEnrichData, ThrowOnError>) {
+        return (options?.client ?? client).post<CancelEnrichResponses, CancelEnrichErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/enrich/cancel',
+            ...options
+        });
+    }
+    
+    public static enrichPage<ThrowOnError extends boolean = true>(options?: Options<EnrichPageData, ThrowOnError>) {
+        return (options?.client ?? client).post<EnrichPageResponses, EnrichPageErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/enrich/page',
+            ...options
+        });
+    }
+    
+    public static startEnrich<ThrowOnError extends boolean = true>(options?: Options<StartEnrichData, ThrowOnError>) {
+        return (options?.client ?? client).post<StartEnrichResponses, StartEnrichErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/enrich/start',
+            ...options
+        });
+    }
+    
+    public static getEnrichStatus<ThrowOnError extends boolean = true>(options?: Options<GetEnrichStatusData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetEnrichStatusResponses, GetEnrichStatusErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/enrich/status',
             ...options
         });
     }

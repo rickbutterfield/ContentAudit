@@ -129,6 +129,11 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task DeletePerformanceDataAsync(Guid auditKey, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Deletes performance data for a specific URL within an audit
+        /// </summary>
+        Task DeletePerformanceDataForUrlAsync(Guid auditKey, string url, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Marks an audit as enriched (Playwright performance data collected)
         /// </summary>
         Task SetIsEnrichedAsync(Guid auditKey, CancellationToken cancellationToken = default);
