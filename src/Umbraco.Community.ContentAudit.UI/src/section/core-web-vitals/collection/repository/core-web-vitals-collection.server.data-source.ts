@@ -1,4 +1,4 @@
-﻿import { UmbCollectionDataSource } from "@umbraco-cms/backoffice/collection";
+import { UmbCollectionDataSource } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { AuditService, PageAnalysisDto } from "../../../../api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
@@ -12,7 +12,7 @@ export class ContentAuditCoreWebVitalsCollectionDataSource implements UmbCollect
     }
 
 	async getCollection(filter: ContentAuditCoreWebVitalsCollectionFilterModel) {
-		const { data, error } = await tryExecute(this.#host, AuditService.getLatestAuditData({ query: filter }));
+		const { data, error } = await tryExecute(this.#host, AuditService.getPagesWithMissingMetadata({ query: { skip: filter.skip, take: filter.take, filter: filter.filter } }));
 
 		if (error) {
 			return { error };

@@ -347,8 +347,8 @@ namespace Umbraco.Community.ContentAudit.Services
                             InternalLinks = await page.Locator("a[href]").CountAsync() > 0 ? await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length") : 0,
                             ReadabilityScore = CalculateReadabilityScore(bodyText),
                             KeywordDensity = CalculateKeywordDensity(bodyText),
-                            //MissingAltTextImages = await page.Locator("img:not([alt])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([alt])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : "",
-                            //MissingTitleImages = await page.Locator("img:not([title])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([title])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : ""
+                            MissingAltTextImages = await page.Locator("img:not([alt])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([alt])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : "",
+                            MissingTitleImages = await page.Locator("img:not([title])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([title])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : ""
                         };
                     }
                     catch (Exception ex)
@@ -1024,9 +1024,13 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
+        /// <inheritdoc/>
+        public Task<PageAnalysisDto?> GetPageAnalysisLightweightAsync(string url, Uri baseUri, Guid nodeKey)
+            => GetPageAnalysisFallbackAsync(url, nodeKey);
+
         private async Task<PageAnalysisDto?> GetPageAnalysisFallbackAsync(string url, Guid nodeKey)
         {
-            _logger.LogInformation("Using HttpClient fallback for page analysis: {Url}", url);
+            _logger.LogInformation("Lightweight HttpClient crawl for page: {Url}", url);
 
             try
             {
@@ -1071,18 +1075,29 @@ namespace Umbraco.Community.ContentAudit.Services
                 var html = await response.Content.ReadAsStringAsync();
 
                 // Parse basic SEO data using regex
+                var robotsMeta = ExtractMetaContent(html, "robots");
+                var xRobotsTag = response.Headers.TryGetValues("X-Robots-Tag", out var xRobotsValues)
+                    ? string.Join(", ", xRobotsValues)
+                    : "";
+                var combinedRobots = $"{robotsMeta},{xRobotsTag}";
                 pageAnalysis.SeoData = new SeoDto
                 {
                     Url = url,
                     Title = ExtractHtmlValue(html, @"<title[^>]*>([^<]*)</title>"),
                     MetaDescription = ExtractMetaContent(html, "description"),
-                    H1 = ExtractHtmlValue(html, @"<h1[^>]*>([^<]*)</h1>"),
+                    H1 = ExtractHtmlValue(html, @"<h1[^>]*>(.*?)</h1>"),
+                    H2s = ExtractAllHtmlValues(html, @"<h2[^>]*>(.*?)</h2>"),
+                    H3s = ExtractAllHtmlValues(html, @"<h3[^>]*>(.*?)</h3>"),
                     CanonicalUrl = ExtractLinkHref(html, "canonical"),
-                    HasNoIndex = html.Contains("noindex", StringComparison.OrdinalIgnoreCase),
-                    HasNoFollow = html.Contains("nofollow", StringComparison.OrdinalIgnoreCase),
+                    HasNoIndex = combinedRobots.Contains("noindex", StringComparison.OrdinalIgnoreCase),
+                    HasNoFollow = combinedRobots.Contains("nofollow", StringComparison.OrdinalIgnoreCase),
                     OpenGraphTitle = ExtractMetaContent(html, "og:title", "property"),
                     OpenGraphDescription = ExtractMetaContent(html, "og:description", "property"),
-                    OpenGraphImage = ExtractMetaContent(html, "og:image", "property")
+                    OpenGraphImage = ExtractMetaContent(html, "og:image", "property"),
+                    TwitterCard = ExtractMetaContent(html, "twitter:card"),
+                    TwitterTitle = ExtractMetaContent(html, "twitter:title"),
+                    TwitterDescription = ExtractMetaContent(html, "twitter:description"),
+                    TwitterImage = ExtractMetaContent(html, "twitter:image")
                 };
 
                 // Extract links
@@ -1091,17 +1106,44 @@ namespace Umbraco.Community.ContentAudit.Services
                 // Extract images
                 pageAnalysis.Images = ExtractImages(html, url, nodeKey);
 
+                // Extract resources (scripts and stylesheets)
+                pageAnalysis.Resources = ExtractResources(html, url, nodeKey);
+
                 // Technical SEO data
                 var eTag = response.Headers.ETag?.Tag?.Trim('"');
                 var lastModified = response.Content.Headers.LastModified?.DateTime;
 
+                var charset = response.Content.Headers.ContentType?.CharSet;
+                if (string.IsNullOrEmpty(charset))
+                    charset = ExtractHtmlValue(html, @"<meta\s+charset=""([^""]*)""");
+                if (string.IsNullOrEmpty(charset))
+                    charset = ExtractMetaContentCharset(html);
+                var schemaTypes = ExtractSchemaTypes(html);
                 pageAnalysis.TechnicalSeoData = new TechnicalSeoDto
                 {
                     Url = url,
                     ContentType = contentType,
+                    Charset = charset,
                     HasGzipCompression = response.Content.Headers.ContentEncoding.Contains("gzip"),
                     HasBrowserCaching = response.Headers.CacheControl?.MaxAge != null,
-                    HasHttps = url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                    HasHttps = url.StartsWith("https://", StringComparison.OrdinalIgnoreCase),
+                    HasSchemaMarkup = schemaTypes.Count > 0,
+                    SchemaType = schemaTypes.Count > 0 ? string.Join(", ", schemaTypes) : null
+                };
+
+                // Content analysis — derived from already-extracted data + text extraction
+                var bodyText = ExtractBodyText(html);
+                pageAnalysis.ContentAnalysis = new ContentAnalysisDto
+                {
+                    Url = url,
+                    WordCount = CountWords(bodyText),
+                    ParagraphCount = Regex.Matches(html, @"<p[\s>]", RegexOptions.IgnoreCase).Count,
+                    Images = pageAnalysis.Images.Count,
+                    Links = pageAnalysis.Links.Count,
+                    InternalLinks = pageAnalysis.Links.Count(l => !l.IsExternal),
+                    ExternalLinks = pageAnalysis.Links.Count(l => l.IsExternal),
+                    ReadabilityScore = CalculateReadabilityScore(bodyText),
+                    KeywordDensity = CalculateKeywordDensity(bodyText)
                 };
 
                 pageAnalysis.ETag = eTag;
@@ -1126,7 +1168,15 @@ namespace Umbraco.Community.ContentAudit.Services
         private static string ExtractHtmlValue(string html, string pattern)
         {
             var match = Regex.Match(html, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            return match.Success ? match.Groups[1].Value.Trim() : "";
+            return match.Success ? Regex.Replace(match.Groups[1].Value, "<[^>]+>", "").Trim() : "";
+        }
+
+        private static List<string> ExtractAllHtmlValues(string html, string pattern)
+        {
+            return Regex.Matches(html, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline)
+                .Select(m => Regex.Replace(m.Groups[1].Value, "<[^>]+>", "").Trim())
+                .Where(v => !string.IsNullOrEmpty(v))
+                .ToList();
         }
 
         private static string ExtractMetaContent(string html, string name, string attribute = "name")
@@ -1151,6 +1201,38 @@ namespace Umbraco.Community.ContentAudit.Services
             pattern = $@"<link\s+href=""([^""]*)""[^>]*rel=""{Regex.Escape(rel)}""";
             match = Regex.Match(html, pattern, RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value : "";
+        }
+
+        private static string ExtractBodyText(string html)
+        {
+            // Remove script and style blocks first, then strip all tags
+            var text = Regex.Replace(html, @"<(script|style)[^>]*>.*?</\1>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            text = Regex.Replace(text, @"<[^>]+>", " ");
+            text = Regex.Replace(text, @"\s+", " ");
+            return text.Trim();
+        }
+
+        private static string ExtractMetaContentCharset(string html)
+        {
+            // Handles <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            var content = ExtractMetaContent(html, "Content-Type", "http-equiv");
+            if (string.IsNullOrEmpty(content)) return "";
+            var charsetMatch = Regex.Match(content, @"charset=([^\s;]+)", RegexOptions.IgnoreCase);
+            return charsetMatch.Success ? charsetMatch.Groups[1].Value : "";
+        }
+
+        private static List<string> ExtractSchemaTypes(string html)
+        {
+            var types = new List<string>();
+            var scriptMatches = Regex.Matches(html, @"<script\s+type=""application/ld\+json""[^>]*>(.*?)</script>",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            foreach (Match m in scriptMatches)
+            {
+                var typeMatch = Regex.Match(m.Groups[1].Value, @"""@type""\s*:\s*""([^""]+)""", RegexOptions.IgnoreCase);
+                if (typeMatch.Success)
+                    types.Add(typeMatch.Groups[1].Value);
+            }
+            return types;
         }
 
         private List<LinkDto> ExtractLinks(string html, string pageUrl)
@@ -1178,12 +1260,16 @@ namespace Umbraco.Community.ContentAudit.Services
         private List<ImageDto> ExtractImages(string html, string pageUrl, Guid nodeKey)
         {
             var images = new List<ImageDto>();
-            var matches = Regex.Matches(html, @"<img\s+[^>]*src=""([^""]*)""[^>]*(alt=""([^""]*)"")?", RegexOptions.IgnoreCase);
+            var imgTags = Regex.Matches(html, @"<img\s+[^>]+>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-            foreach (Match match in matches)
+            foreach (Match imgTag in imgTags)
             {
-                var src = match.Groups[1].Value;
-                var alt = match.Groups.Count > 3 ? match.Groups[3].Value : "";
+                var srcMatch = Regex.Match(imgTag.Value, @"src=""([^""]*)""", RegexOptions.IgnoreCase);
+                if (!srcMatch.Success) continue;
+
+                var src = srcMatch.Groups[1].Value;
+                var altMatch = Regex.Match(imgTag.Value, @"alt=""([^""]*)""", RegexOptions.IgnoreCase);
+                var alt = altMatch.Success ? altMatch.Groups[1].Value : "";
 
                 images.Add(new ImageDto(new ResourceDto
                 {
@@ -1198,6 +1284,58 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return images;
+        }
+
+        private List<ResourceDto> ExtractResources(string html, string pageUrl, Guid nodeKey)
+        {
+            var resources = new List<ResourceDto>();
+
+            var scriptMatches = Regex.Matches(html, @"<script\s+[^>]*src=""([^""]*)""", RegexOptions.IgnoreCase);
+            foreach (Match match in scriptMatches)
+            {
+                var src = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(src)) continue;
+
+                resources.Add(new ResourceDto
+                {
+                    Url = src,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(src)
+                });
+            }
+
+            var stylesheetMatches = Regex.Matches(html, @"<link\s+[^>]*rel=""stylesheet""[^>]*href=""([^""]*)""", RegexOptions.IgnoreCase);
+            foreach (Match match in stylesheetMatches)
+            {
+                var href = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(href)) continue;
+
+                resources.Add(new ResourceDto
+                {
+                    Url = href,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(href)
+                });
+            }
+
+            var stylesheetMatchesReversed = Regex.Matches(html, @"<link\s+[^>]*href=""([^""]*)""[^>]*rel=""stylesheet""", RegexOptions.IgnoreCase);
+            foreach (Match match in stylesheetMatchesReversed)
+            {
+                var href = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(href) || resources.Any(r => r.Url == href)) continue;
+
+                resources.Add(new ResourceDto
+                {
+                    Url = href,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(href)
+                });
+            }
+
+            return resources;
         }
 
         /// <inheritdoc/>

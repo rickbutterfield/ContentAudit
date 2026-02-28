@@ -24,7 +24,7 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         [ProducesResponseType(typeof(PageAnalysisDto), 200)]
         public async Task<IActionResult> GetByKey(CancellationToken cancellationToken, Guid id)
         {
-            PageAnalysisDto audit = await DataService.GetAuditPageAnalysisByKey(id);
+            PageAnalysisDto audit = await DataService.GetLatestPageAuditData(id);
             return Ok(audit);
         }
     }

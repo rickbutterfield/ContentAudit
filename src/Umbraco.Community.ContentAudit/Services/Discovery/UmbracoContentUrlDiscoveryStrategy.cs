@@ -65,8 +65,15 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
                     {
                         var url = _urlProvider.GetUrl(nodeId, UrlMode.Absolute);
 
-                        if (!string.IsNullOrEmpty(url))
+                        if (!string.IsNullOrEmpty(url) && url != "#")
                         {
+                            if (Uri.TryCreate(url, UriKind.Absolute, out var providerUri) &&
+                                Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri) &&
+                                string.Equals(providerUri.Host, baseUri.Host, StringComparison.OrdinalIgnoreCase))
+                            {
+                                url = new Uri(baseUri, providerUri.PathAndQuery).AbsoluteUri;
+                            }
+
                             discoveredUrls.Add(new DiscoveredUrl(url, key));
                         }
                     }

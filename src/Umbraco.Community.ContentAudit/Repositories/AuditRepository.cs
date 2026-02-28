@@ -281,6 +281,106 @@ namespace Umbraco.Community.ContentAudit.Repositories
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<SeoSchema>> GetAllSeoDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<SeoSchema>().Where<SeoSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<SeoSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ContentAnalysisSchema>> GetAllContentAnalysisDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<ContentAnalysisSchema>().Where<ContentAnalysisSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<ContentAnalysisSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<PerformanceSchema>> GetAllPerformanceDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<PerformanceSchema>().Where<PerformanceSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<PerformanceSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<AccessibilitySchema>> GetAllAccessibilityDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<AccessibilitySchema>().Where<AccessibilitySchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<AccessibilitySchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<TechnicalSeoSchema>> GetAllTechnicalSeoDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<TechnicalSeoSchema>().Where<TechnicalSeoSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<TechnicalSeoSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<SocialMediaSchema>> GetAllSocialMediaDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<SocialMediaSchema>().Where<SocialMediaSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<SocialMediaSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ContentQualitySchema>> GetAllContentQualityDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<ContentQualitySchema>().Where<ContentQualitySchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<ContentQualitySchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<LinkSchema>> GetAllLinkDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<LinkSchema>().Where<LinkSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<LinkSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ResourceSchema>> GetAllResourceDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<ResourceSchema>().Where<ResourceSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<ResourceSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ImageSchema>> GetAllImageDataByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<ImageSchema>().Where<ImageSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<ImageSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> DeleteAuditByKey(Guid auditKey)
         {
             using var scope = _scopeProvider.CreateScope();

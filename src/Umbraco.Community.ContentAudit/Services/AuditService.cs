@@ -50,6 +50,8 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IAuditRepository _auditRepository;
         private readonly IDomainRateLimiter _domainRateLimiter;
         private readonly ICrawlStateManager _crawlStateManager;
+        private readonly IEnrichmentService _enrichmentService;
+        private readonly IEnrichmentStateManager _enrichmentStateManager;
         private readonly ILogger<AuditService> _logger;
         private readonly WebRoutingSettings _webRoutingSettings;
         private readonly AuditIssueCollection _auditIssueCollection;
@@ -97,6 +99,8 @@ namespace Umbraco.Community.ContentAudit.Services
             IAuditRepository auditRepository,
             IDomainRateLimiter domainRateLimiter,
             ICrawlStateManager crawlStateManager,
+            IEnrichmentService enrichmentService,
+            IEnrichmentStateManager enrichmentStateManager,
             AuditIssueCollection auditIssueCollection,
             ILogger<AuditService> logger,
             IEnumerable<IUrlDiscoveryStrategy> urlDiscoveryStrategies)
@@ -107,6 +111,8 @@ namespace Umbraco.Community.ContentAudit.Services
             _auditRepository = auditRepository;
             _domainRateLimiter = domainRateLimiter;
             _crawlStateManager = crawlStateManager;
+            _enrichmentService = enrichmentService;
+            _enrichmentStateManager = enrichmentStateManager;
             _auditIssueCollection = auditIssueCollection;
             _logger = logger;
             _webRoutingSettings = webRoutingSettings.CurrentValue;
@@ -291,6 +297,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 await SaveCrawlResults();
 
                 _crawlStateManager.CompleteCrawl();
+                await RunAutoEnrichIfConfiguredAsync(cancellationToken);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
@@ -298,6 +305,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 _crawlStateManager.SetPhase("Saving results");
                 await SaveCrawlResults();
                 _crawlStateManager.CompleteCrawl();
+                await RunAutoEnrichIfConfiguredAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -421,7 +429,8 @@ namespace Umbraco.Community.ContentAudit.Services
             if (matchingUmbracoNode.Key == Guid.Empty && fallbackNodeKey != Guid.Empty)
                 matchingUmbracoNode = new KeyValuePair<Guid, string>(fallbackNodeKey, normalizedUrl);
 
-            if (_contentAuditSettings.UseIncrementalCrawl && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
+            if (_contentAuditSettings.UseIncrementalCrawl && _previousAuditKey.HasValue
+                && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
             {
                 var changeCheck = await _crawlService.CheckPageChangedAsync(url, previousFingerprint);
                 if (!changeCheck.HasChanged)
@@ -437,10 +446,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         UmbracoUpdateDate = previousFingerprint.UmbracoUpdateDate
                     });
 
-                    if (_previousAuditKey.HasValue)
-                    {
-                        await CopyPageDataFromPreviousAuditAsync(url, matchingUmbracoNode.Key, baseUri);
-                    }
+                    await CopyPageDataFromPreviousAuditAsync(url, matchingUmbracoNode.Key, baseUri);
 
                     return new CrawlDto
                     {
@@ -455,7 +461,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
             }
 
-            var pageAnalysis = await _crawlService.GetPageAnalysis(url, baseUri, matchingUmbracoNode.Key);
+            var pageAnalysis = await _crawlService.GetPageAnalysisLightweightAsync(url, baseUri, matchingUmbracoNode.Key);
             if (pageAnalysis == null)
             {
                 _logger.LogWarning("Failed to get page data for URL: {0}", url);
@@ -480,7 +486,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     EnqueueUrl(urlQueueItem);
 
-                    return new() { Url = url, Crawled = false };
+                    return new() { Url = url, Crawled = true, Unique = matchingUmbracoNode.Key };
                 }
             }
 
@@ -1099,6 +1105,28 @@ namespace Umbraco.Community.ContentAudit.Services
                     _logger.LogWarning("Circuit breaker tripped for path prefix: {Prefix} after {Count} consecutive failures",
                         prefix, count);
                 }
+            }
+        }
+
+        private async Task RunAutoEnrichIfConfiguredAsync(CancellationToken cancellationToken)
+        {
+            if (!_contentAuditSettings.AutoEnrichAfterCrawl)
+                return;
+
+            _enrichmentStateManager.StartEnrichment(_currentAuditKey);
+            try
+            {
+                await _enrichmentService.EnrichAuditAsync(_currentAuditKey, _baseUrl!, cancellationToken);
+                _enrichmentStateManager.CompleteEnrichment();
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation already handled upstream
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Auto-enrichment failed for audit {AuditKey}", _currentAuditKey);
+                _enrichmentStateManager.FailEnrichment(ex.Message);
             }
         }
     }

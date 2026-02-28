@@ -114,6 +114,17 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// <returns>Collection of image schema records</returns>
         Task<IEnumerable<ImageSchema>> GetImageData(Guid auditKey, string foundPage);
 
+        Task<IEnumerable<SeoSchema>> GetAllSeoDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<ContentAnalysisSchema>> GetAllContentAnalysisDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<PerformanceSchema>> GetAllPerformanceDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<AccessibilitySchema>> GetAllAccessibilityDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<TechnicalSeoSchema>> GetAllTechnicalSeoDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<SocialMediaSchema>> GetAllSocialMediaDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<ContentQualitySchema>> GetAllContentQualityDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<LinkSchema>> GetAllLinkDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<ResourceSchema>> GetAllResourceDataByAuditKey(Guid auditKey);
+        Task<IEnumerable<ImageSchema>> GetAllImageDataByAuditKey(Guid auditKey);
+
         /// <summary>
         /// Gets overview data for all historical audits
         /// </summary>

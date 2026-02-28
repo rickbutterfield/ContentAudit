@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Api.Common.ViewModels.Pagination;
 using Umbraco.Community.ContentAudit.Interfaces;
-using Umbraco.Community.ContentAudit.Models;
+using Umbraco.Community.ContentAudit.Models.Dtos;
 
 namespace Umbraco.Community.ContentAudit.Api.Audit
 {
@@ -17,7 +17,7 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         public GetLatestAuditDataController(IDataService dataService) : base(dataService) { }
 
         /// <summary>
-        /// Returns paged latest audit data filtered by status and text.
+        /// Returns paged lightweight audit data for list views.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <param name="skip">Items to skip.</param>
@@ -25,17 +25,17 @@ namespace Umbraco.Community.ContentAudit.Api.Audit
         /// <param name="filter">Optional filter string.</param>
         /// <param name="statusCode">Optional HTTP status filter.</param>
         [HttpGet("latest-data")]
-        [ProducesResponseType(typeof(PagedViewModel<PageAnalysisDto>), 200)]
-        public async Task<PagedViewModel<PageAnalysisDto>> GetLatestAuditData(
+        [ProducesResponseType(typeof(PagedViewModel<PageListItemDto>), 200)]
+        public async Task<PagedViewModel<PageListItemDto>> GetLatestAuditData(
             CancellationToken cancellationToken,
             int skip = 0,
             int take = 20,
             string filter = "",
             int statusCode = 0)
         {
-            var latestData = await DataService.GetLatestAuditData(filter, statusCode);
+            var latestData = await DataService.GetLatestAuditDataLightweight(filter, statusCode);
 
-            var viewModel = new PagedViewModel<PageAnalysisDto>
+            var viewModel = new PagedViewModel<PageListItemDto>
             {
                 Total = latestData.Count(),
                 Items = latestData.Skip(skip).Take(take)

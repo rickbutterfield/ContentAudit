@@ -73,6 +73,12 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public string? BaseUrl { get; set; }
 
         /// <summary>
+        /// Gets or sets whether Playwright performance enrichment has been run for this audit.
+        /// </summary>
+        [Constraint(Default = "0")]
+        public bool IsEnriched { get; set; }
+
+        /// <summary>
         /// Gets the creation date in UTC
         /// </summary>
         public DateTime CreatedDate => DateTime.UtcNow;

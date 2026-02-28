@@ -26,6 +26,9 @@ export class ContentAuditCarbonIntensityLabel extends UmbLitElement {
                 </uui-tag>
             `
         }
+        else return html`
+            <uui-tag color="default" look="placeholder">N/A</uui-tag>
+        `
     }
 }
 

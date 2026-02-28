@@ -6,6 +6,7 @@ Welcome to the documentation for the ContentAudit package. This documentation wi
 
 - [Usage](usage.md) - Learn how to use the package in your Umbraco projects
 - [Configuration](configuration.md) - Learn how to configure the package
+- [Crawl Data Flow](crawl-data-flow.md) - Understand what happens internally when a crawl runs
 - [Creating Custom Page Audit Issues](custom-page-issues.md) - Learn how to create your own page audit issues by implementing `IAuditPageIssue`
 - [Creating Custom Image Audit Issues](custom-image-issues.md) - Learn how to create your own image audit issues by implementing `IAuditImageIssue`
 

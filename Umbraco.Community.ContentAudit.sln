@@ -33,6 +33,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbraco.Community.ContentAudit.UnitTests", "tests\Umbraco.Community.ContentAudit.UnitTests\Umbraco.Community.ContentAudit.UnitTests.csproj", "{9C5F3F91-B007-41A9-9312-094F0EED097A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BA9F4376-B260-41D8-99B6-7B9AF5E2B90C}"
+	ProjectSection(SolutionItems) = preProject
+		docs\configuration.md = docs\configuration.md
+		docs\crawl-data-flow.md = docs\crawl-data-flow.md
+		docs\custom-image-issues.md = docs\custom-image-issues.md
+		docs\custom-page-issues.md = docs\custom-page-issues.md
+		docs\README.md = docs\README.md
+		docs\usage.md = docs\usage.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +119,7 @@ Global
 		{21FDC318-4DE9-49CD-B89D-08680DB9D536} = {7BFC1A8A-5CC2-4DBD-AEA1-E4C7B9CB889E}
 		{B1A3B2A0-DE51-A6B6-D002-D07760C46DC0} = {402708D1-23E6-4527-B7CF-E09A93343D7B}
 		{9C5F3F91-B007-41A9-9312-094F0EED097A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{BA9F4376-B260-41D8-99B6-7B9AF5E2B90C} = {D08264E8-728A-4B7D-891D-0E56D6C35277}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D529CEB3-53D3-4A59-9F71-9856492D239A}

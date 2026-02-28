@@ -9,9 +9,13 @@ namespace Umbraco.Community.ContentAudit.Hubs
     public class ContentAuditHub : Hub<IContentAuditHubClient>
     {
         private readonly ICrawlStateManager _crawlStateManager;
+        private readonly IEnrichmentStateManager _enrichmentStateManager;
 
-        public ContentAuditHub(ICrawlStateManager crawlStateManager)
-            => _crawlStateManager = crawlStateManager;
+        public ContentAuditHub(ICrawlStateManager crawlStateManager, IEnrichmentStateManager enrichmentStateManager)
+        {
+            _crawlStateManager = crawlStateManager;
+            _enrichmentStateManager = enrichmentStateManager;
+        }
 
         public override async Task OnConnectedAsync()
         {
@@ -28,6 +32,21 @@ namespace Umbraco.Community.ContentAudit.Hubs
                 {
                     await Clients.Caller.crawlProgress(result);
                 }
+            }
+
+            if (_enrichmentStateManager.IsRunning && _enrichmentStateManager.CurrentAuditKey.HasValue)
+            {
+                await Clients.Caller.enrichStarted(_enrichmentStateManager.CurrentAuditKey.Value);
+
+                foreach (var result in _enrichmentStateManager.CurrentResults)
+                {
+                    await Clients.Caller.enrichProgress(result);
+                }
+            }
+
+            if (_enrichmentStateManager.IsPageEnriching && _enrichmentStateManager.PageEnrichingUrl is not null)
+            {
+                await Clients.Caller.pageEnrichStarted(_enrichmentStateManager.PageEnrichingUrl);
             }
 
             await base.OnConnectedAsync();
