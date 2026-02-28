@@ -80,11 +80,25 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<List<PageDto>> GetDuplicateContentUrls(string filter = "");
 
         /// <summary>
-        /// Gets all pages with missing or incomplete metadata (title, description, etc.)
+        /// Gets lightweight metadata list items for all pages (page + SEO data only)
         /// </summary>
         /// <param name="filter">Optional text filter to apply to URLs</param>
-        /// <returns>List of pages with metadata issues matching the filter</returns>
-        Task<List<PageAnalysisDto>> GetPagesWithMissingMetadata(string filter = "");
+        /// <returns>List of metadata list items matching the filter</returns>
+        Task<List<MetadataListItemDto>> GetMetadataListItems(string filter = "");
+
+        /// <summary>
+        /// Gets lightweight carbon rating list items for all pages
+        /// </summary>
+        /// <param name="filter">Optional text filter to apply to URLs</param>
+        /// <returns>List of carbon rating list items matching the filter</returns>
+        Task<List<CarbonRatingListItemDto>> GetCarbonRatingListItems(string filter = "");
+
+        /// <summary>
+        /// Gets lightweight Core Web Vitals list items for all pages
+        /// </summary>
+        /// <param name="filter">Optional text filter to apply to URLs</param>
+        /// <returns>List of Core Web Vitals list items matching the filter</returns>
+        Task<List<CoreWebVitalsListItemDto>> GetCoreWebVitalsListItems(string filter = "");
 
         /// <summary>
         /// Gets all detected audit issues from the latest crawl

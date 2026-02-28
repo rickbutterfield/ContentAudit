@@ -2,10 +2,10 @@
 import type { UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditCoreWebVitalsCollectionDataSource } from "./core-web-vitals-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { PageAnalysisDto } from '../../../../api';
+import { CoreWebVitalsListItemDto } from '../../../../api';
 import { ContentAuditCoreWebVitalsCollectionFilterModel } from '../types';
 
-export class ContentAuditCoreWebVitalsCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageAnalysisDto, ContentAuditCoreWebVitalsCollectionFilterModel> {
+export class ContentAuditCoreWebVitalsCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<CoreWebVitalsListItemDto, ContentAuditCoreWebVitalsCollectionFilterModel> {
     #collectionSource: ContentAuditCoreWebVitalsCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

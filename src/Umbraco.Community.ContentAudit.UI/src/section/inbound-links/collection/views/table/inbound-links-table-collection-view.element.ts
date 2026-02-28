@@ -71,7 +71,7 @@ export class ContentAuditInboundLinksTableCollectionViewElement extends UmbLitEl
                     },
                     {
                         columnAlias: 'inlinks',
-                        value: linkGroup.links?.length
+                        value: linkGroup.linkCount
                     }
                 ]
             }

@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { PageAnalysisDto } from '../../../../../api';
+import { MetadataListItemDto } from '../../../../../api';
 import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
 @customElement('content-audit-metadata-table-collection-view')
@@ -40,7 +40,7 @@ export class ContentAuditMetdataTableCollectionViewElement extends UmbLitElement
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<PageAnalysisDto>;
+    #collectionContext?: UmbDefaultCollectionContext<MetadataListItemDto>;
 
     constructor() {
         super();
@@ -56,7 +56,7 @@ export class ContentAuditMetdataTableCollectionViewElement extends UmbLitElement
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(pages: PageAnalysisDto[]) {
+    #createTableItems(pages: MetadataListItemDto[]) {
         this._tableItems = pages.map((page) => {
             return {
                 id: page.unique,

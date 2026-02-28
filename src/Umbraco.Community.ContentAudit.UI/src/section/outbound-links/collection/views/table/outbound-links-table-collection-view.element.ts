@@ -71,7 +71,7 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
                     },
                     {
                         columnAlias: 'outlinks',
-                        value: linkGroup.links?.length
+                        value: linkGroup.linkCount
                     }
                 ]
             }

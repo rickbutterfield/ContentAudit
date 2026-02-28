@@ -2,10 +2,10 @@
 import type { UmbCollectionRepository } from '@umbraco-cms/backoffice/collection';
 import { ContentAuditCarbonRatingCollectionDataSource } from "./carbon-rating-collection.server.data-source";
 import { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
-import { PageAnalysisDto } from '../../../../api';
+import { CarbonRatingListItemDto } from '../../../../api';
 import { ContentAuditCarbonRatingCollectionFilterModel } from '../types';
 
-export class ContentAuditCarbonRatingCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<PageAnalysisDto, ContentAuditCarbonRatingCollectionFilterModel> {
+export class ContentAuditCarbonRatingCollectionRepository extends UmbRepositoryBase implements UmbCollectionRepository<CarbonRatingListItemDto, ContentAuditCarbonRatingCollectionFilterModel> {
     #collectionSource: ContentAuditCarbonRatingCollectionDataSource;
 
     constructor(host: UmbControllerHost) {

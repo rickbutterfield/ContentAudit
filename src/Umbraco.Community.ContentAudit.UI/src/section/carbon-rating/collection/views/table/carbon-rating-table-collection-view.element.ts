@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { PageAnalysisDto } from '../../../../../api';
+import { CarbonRatingListItemDto } from '../../../../../api';
 import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
 @customElement('content-audit-carbon-rating-table-collection-view')
@@ -41,7 +41,7 @@ export class ContentAuditCarbonRatingTableCollectionViewElement extends UmbLitEl
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<PageAnalysisDto>;
+    #collectionContext?: UmbDefaultCollectionContext<CarbonRatingListItemDto>;
 
     constructor() {
         super();
@@ -57,7 +57,7 @@ export class ContentAuditCarbonRatingTableCollectionViewElement extends UmbLitEl
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(pages: PageAnalysisDto[]) {
+    #createTableItems(pages: CarbonRatingListItemDto[]) {
         this._tableItems = pages.map((page) => {
             return {
                 id: page?.unique,
@@ -70,11 +70,11 @@ export class ContentAuditCarbonRatingTableCollectionViewElement extends UmbLitEl
                     },
                     {
                         columnAlias: 'contentType',
-                        value: page.technicalSeoData?.contentType,
+                        value: page.contentType,
                     },
                     {
                         columnAlias: 'pageSize',
-                        value: html`${Math.round(page.performanceData?.totalBytes! / 1024)}KB`
+                        value: html`${Math.round(page.totalBytes! / 1024)}KB`
                     },
                     {
                         columnAlias: 'carbonRating',

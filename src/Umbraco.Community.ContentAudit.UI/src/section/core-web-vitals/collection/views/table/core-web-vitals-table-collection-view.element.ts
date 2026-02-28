@@ -1,7 +1,7 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { PageAnalysisDto } from '../../../../../api';
+import { CoreWebVitalsListItemDto } from '../../../../../api';
 import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
 @customElement('content-audit-core-web-vitals-table-collection-view')
@@ -49,7 +49,7 @@ export class ContentAuditCoreWebVitalsTableCollectionViewElement extends UmbLitE
     @state()
     private _tableItems: Array<UmbTableItem> = [];
 
-    #collectionContext?: UmbDefaultCollectionContext<PageAnalysisDto>;
+    #collectionContext?: UmbDefaultCollectionContext<CoreWebVitalsListItemDto>;
 
     constructor() {
         super();
@@ -65,7 +65,7 @@ export class ContentAuditCoreWebVitalsTableCollectionViewElement extends UmbLitE
         this.observe(this.#collectionContext.items, (items) => this.#createTableItems(items), 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(pages: PageAnalysisDto[]) {
+    #createTableItems(pages: CoreWebVitalsListItemDto[]) {
         this._tableItems = pages.filter(x => x.pageData.statusCode === 200).map((page) => {
             return {
                 id: page?.unique,

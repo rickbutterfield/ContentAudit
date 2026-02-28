@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../wor
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
 import { UmbArrayState, UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
-import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, PageAnalysisDto, CrawlDto, CrawlService } from "../api";
+import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, MetadataListItemDto, CrawlDto, CrawlService } from "../api";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { UMB_SERVER_CONTEXT } from "@umbraco-cms/backoffice/server";
@@ -26,7 +26,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#auditOverviews = new UmbArrayState<OverviewDto>([], (x) => x.key);
 	public readonly auditOverviews = this.#auditOverviews.asObservable();
 
-	#pagesWithMissingMetadata = new UmbArrayState<PageAnalysisDto>([], (x) => x.unique);
+	#pagesWithMissingMetadata = new UmbArrayState<MetadataListItemDto>([], (x) => x.unique);
 	public readonly pagesWithMissingMetadata = this.#pagesWithMissingMetadata.asObservable();
 
 	#topIssues = new UmbArrayState<IssueDto>([], (x) => x.name);

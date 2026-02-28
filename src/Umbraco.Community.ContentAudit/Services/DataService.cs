@@ -325,9 +325,137 @@ namespace Umbraco.Community.ContentAudit.Services
         }
 
         /// <inheritdoc/>
-        public async Task<List<PageAnalysisDto>> GetPagesWithMissingMetadata(string filter = "")
+        public async Task<List<MetadataListItemDto>> GetMetadataListItems(string filter = "")
         {
-            return await GetLatestAuditData();
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
+
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return [];
+
+            var filteredData = FilterPages(pageData, filter, 0);
+
+            var seoData = await _auditRepository.GetAllSeoDataByAuditKey(auditKey.Value);
+            var seoLookup = seoData
+                .GroupBy(x => x.Url ?? "")
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            var results = new List<MetadataListItemDto>();
+            foreach (var page in filteredData)
+            {
+                var item = new MetadataListItemDto
+                {
+                    PageData = new PageDto(page),
+                    EntityType = "document",
+                    Unique = page.Unique
+                };
+
+                if (!string.IsNullOrEmpty(page.Url) && seoLookup.TryGetValue(page.Url, out var seo))
+                    item.SeoData = new SeoDto(seo);
+
+                results.Add(item);
+            }
+
+            return results;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<CarbonRatingListItemDto>> GetCarbonRatingListItems(string filter = "")
+        {
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
+
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return [];
+
+            var filteredData = FilterPages(pageData, filter, 0);
+
+            var performanceData = await _auditRepository.GetAllPerformanceDataByAuditKey(auditKey.Value);
+            var performanceLookup = performanceData
+                .GroupBy(x => x.Url ?? "")
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            var technicalSeoData = await _auditRepository.GetAllTechnicalSeoDataByAuditKey(auditKey.Value);
+            var technicalSeoLookup = technicalSeoData
+                .GroupBy(x => x.Url ?? "")
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            var results = new List<CarbonRatingListItemDto>();
+            foreach (var page in filteredData)
+            {
+                var item = new CarbonRatingListItemDto
+                {
+                    PageData = new PageDto(page),
+                    EntityType = "document",
+                    Unique = page.Unique
+                };
+
+                var url = page.Url ?? "";
+
+                if (!string.IsNullOrEmpty(url))
+                {
+                    if (technicalSeoLookup.TryGetValue(url, out var techSeo))
+                        item.ContentType = techSeo.ContentType;
+
+                    if (performanceLookup.TryGetValue(url, out var perf))
+                    {
+                        item.TotalBytes = perf.TotalBytes;
+
+                        if (perf.TotalBytes.HasValue)
+                        {
+                            var score = _emissionsService.PerVisit(perf.TotalBytes.Value, false, false, true);
+                            if (score.Total.HasValue)
+                                item.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                            item.EmissionsData.CarbonRating = score.Rating;
+                        }
+                    }
+                }
+
+                results.Add(item);
+            }
+
+            return results;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<CoreWebVitalsListItemDto>> GetCoreWebVitalsListItems(string filter = "")
+        {
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
+
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return [];
+
+            var filteredData = FilterPages(pageData, filter, 0);
+
+            var performanceData = await _auditRepository.GetAllPerformanceDataByAuditKey(auditKey.Value);
+            var performanceLookup = performanceData
+                .GroupBy(x => x.Url ?? "")
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            var results = new List<CoreWebVitalsListItemDto>();
+            foreach (var page in filteredData)
+            {
+                var item = new CoreWebVitalsListItemDto
+                {
+                    PageData = new PageDto(page),
+                    EntityType = "document",
+                    Unique = page.Unique
+                };
+
+                if (!string.IsNullOrEmpty(page.Url) && performanceLookup.TryGetValue(page.Url, out var perf))
+                    item.PerformanceData = new PerformanceDto(perf);
+
+                results.Add(item);
+            }
+
+            return results;
         }
 
         /// <inheritdoc/>
@@ -469,11 +597,11 @@ namespace Umbraco.Community.ContentAudit.Services
                     Url = group.Key,
                     ContentType = group.FirstOrDefault()?.ContentType,
                     StatusCode = group.FirstOrDefault()?.StatusCode,
-                    Links = group.ToList()
+                    LinkCount = group.Count()
                 });
             }
 
-            return results.OrderByDescending(x => x.Links?.Count).ToList();
+            return results.OrderByDescending(x => x.LinkCount).ToList();
         }
 
         /// <inheritdoc/>

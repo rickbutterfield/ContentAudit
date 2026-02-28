@@ -1,9 +1,9 @@
-﻿import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
+import { UmbCollectionDataSource, UmbCollectionFilterModel } from "@umbraco-cms/backoffice/collection";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { AuditService, PageAnalysisDto } from "../../../../api";
+import { AuditService, MetadataListItemDto } from "../../../../api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
-export class ContentAuditMetadataCollectionDataSource implements UmbCollectionDataSource<PageAnalysisDto> {
+export class ContentAuditMetadataCollectionDataSource implements UmbCollectionDataSource<MetadataListItemDto> {
     #host: UmbControllerHost;
 
     constructor(host: UmbControllerHost) {

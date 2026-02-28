@@ -27,6 +27,12 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public string? ContentType { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of individual links that point to the URL in this group.
+        /// </summary>
+        [JsonPropertyName("linkCount")]
+        public int LinkCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the collection of individual links that point to the URL in this group.
         /// </summary>
         [JsonPropertyName("links")]
