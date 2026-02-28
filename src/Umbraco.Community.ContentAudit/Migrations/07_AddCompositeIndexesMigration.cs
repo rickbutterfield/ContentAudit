@@ -51,10 +51,13 @@ namespace Umbraco.Community.ContentAudit.Migrations
             }
             else
             {
+                // Url and FoundPage columns are nvarchar(max) which SQL Server cannot use as
+                // index key columns. Use AuditKey as the key with the second column as INCLUDE
+                // to enable covering queries without bookmark lookups.
                 string sql = $@"
                     IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '{indexName}' AND object_id = OBJECT_ID('[{tableName}]'))
                     BEGIN
-                        CREATE INDEX [{indexName}] ON [{tableName}]([{column1}], [{column2}])
+                        CREATE INDEX [{indexName}] ON [{tableName}]([{column1}]) INCLUDE ([{column2}])
                     END";
                 await Database.ExecuteAsync(sql);
             }

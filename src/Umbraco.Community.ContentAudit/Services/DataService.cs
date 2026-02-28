@@ -408,7 +408,7 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         NumberOfUrls = pagesWithIssue,
                         PercentOfTotal = percent,
-                        Pages = issueCheck
+                        Pages = issueCheck?.Select(StripHeavyPageData)
                     };
 
                     auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
@@ -564,5 +564,20 @@ namespace Umbraco.Community.ContentAudit.Services
             }
             return result;
         }
+
+        private static PageAnalysisDto StripHeavyPageData(PageAnalysisDto page) => new()
+        {
+            Unique = page.Unique,
+            EntityType = page.EntityType,
+            PageData = page.PageData,
+            SeoData = page.SeoData,
+            ContentAnalysis = page.ContentAnalysis,
+            PerformanceData = page.PerformanceData,
+            AccessibilityData = page.AccessibilityData,
+            TechnicalSeoData = page.TechnicalSeoData,
+            SocialMediaData = page.SocialMediaData,
+            ContentQualityData = page.ContentQualityData,
+            EmissionsData = page.EmissionsData
+        };
     }
 }
