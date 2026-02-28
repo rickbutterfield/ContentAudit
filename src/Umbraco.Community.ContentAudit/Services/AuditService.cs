@@ -429,7 +429,8 @@ namespace Umbraco.Community.ContentAudit.Services
             if (matchingUmbracoNode.Key == Guid.Empty && fallbackNodeKey != Guid.Empty)
                 matchingUmbracoNode = new KeyValuePair<Guid, string>(fallbackNodeKey, normalizedUrl);
 
-            if (_contentAuditSettings.UseIncrementalCrawl && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
+            if (_contentAuditSettings.UseIncrementalCrawl && _previousAuditKey.HasValue
+                && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
             {
                 var changeCheck = await _crawlService.CheckPageChangedAsync(url, previousFingerprint);
                 if (!changeCheck.HasChanged)
@@ -445,10 +446,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         UmbracoUpdateDate = previousFingerprint.UmbracoUpdateDate
                     });
 
-                    if (_previousAuditKey.HasValue)
-                    {
-                        await CopyPageDataFromPreviousAuditAsync(url, matchingUmbracoNode.Key, baseUri);
-                    }
+                    await CopyPageDataFromPreviousAuditAsync(url, matchingUmbracoNode.Key, baseUri);
 
                     return new CrawlDto
                     {
@@ -488,7 +486,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                     EnqueueUrl(urlQueueItem);
 
-                    return new() { Url = url, Crawled = false };
+                    return new() { Url = url, Crawled = true, Unique = matchingUmbracoNode.Key };
                 }
             }
 

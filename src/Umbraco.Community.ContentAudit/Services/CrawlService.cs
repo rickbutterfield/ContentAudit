@@ -347,8 +347,8 @@ namespace Umbraco.Community.ContentAudit.Services
                             InternalLinks = await page.Locator("a[href]").CountAsync() > 0 ? await page.Locator("a[href]").EvaluateAllAsync<int>("elements => elements.filter(link => link.href?.startsWith('" + _baseUri.AbsoluteUri + "')).length") : 0,
                             ReadabilityScore = CalculateReadabilityScore(bodyText),
                             KeywordDensity = CalculateKeywordDensity(bodyText),
-                            //MissingAltTextImages = await page.Locator("img:not([alt])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([alt])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : "",
-                            //MissingTitleImages = await page.Locator("img:not([title])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([title])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : ""
+                            MissingAltTextImages = await page.Locator("img:not([alt])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([alt])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : "",
+                            MissingTitleImages = await page.Locator("img:not([title])").CountAsync() > 0 ? string.Join(',', (await page.Locator("img:not([title])").AllAsync()).Select(async img => await img.GetAttributeAsync("src") ?? "").Select(t => t.Result)) : ""
                         };
                     }
                     catch (Exception ex)
@@ -1106,6 +1106,9 @@ namespace Umbraco.Community.ContentAudit.Services
                 // Extract images
                 pageAnalysis.Images = ExtractImages(html, url, nodeKey);
 
+                // Extract resources (scripts and stylesheets)
+                pageAnalysis.Resources = ExtractResources(html, url, nodeKey);
+
                 // Technical SEO data
                 var eTag = response.Headers.ETag?.Tag?.Trim('"');
                 var lastModified = response.Content.Headers.LastModified?.DateTime;
@@ -1281,6 +1284,58 @@ namespace Umbraco.Community.ContentAudit.Services
             }
 
             return images;
+        }
+
+        private List<ResourceDto> ExtractResources(string html, string pageUrl, Guid nodeKey)
+        {
+            var resources = new List<ResourceDto>();
+
+            var scriptMatches = Regex.Matches(html, @"<script\s+[^>]*src=""([^""]*)""", RegexOptions.IgnoreCase);
+            foreach (Match match in scriptMatches)
+            {
+                var src = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(src)) continue;
+
+                resources.Add(new ResourceDto
+                {
+                    Url = src,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(src)
+                });
+            }
+
+            var stylesheetMatches = Regex.Matches(html, @"<link\s+[^>]*rel=""stylesheet""[^>]*href=""([^""]*)""", RegexOptions.IgnoreCase);
+            foreach (Match match in stylesheetMatches)
+            {
+                var href = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(href)) continue;
+
+                resources.Add(new ResourceDto
+                {
+                    Url = href,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(href)
+                });
+            }
+
+            var stylesheetMatchesReversed = Regex.Matches(html, @"<link\s+[^>]*href=""([^""]*)""[^>]*rel=""stylesheet""", RegexOptions.IgnoreCase);
+            foreach (Match match in stylesheetMatchesReversed)
+            {
+                var href = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(href) || resources.Any(r => r.Url == href)) continue;
+
+                resources.Add(new ResourceDto
+                {
+                    Url = href,
+                    FoundPage = pageUrl,
+                    Unique = nodeKey,
+                    IsExternal = IsExternalUrl(href)
+                });
+            }
+
+            return resources;
         }
 
         /// <inheritdoc/>

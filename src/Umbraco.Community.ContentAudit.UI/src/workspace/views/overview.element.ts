@@ -37,6 +37,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
     _healthScore?: HealthScoreDto;
 
     #previousIsRunning = false;
+    #cancelledByUser = false;
 
     constructor() {
         super();
@@ -100,9 +101,13 @@ export class ContentAuditScanViewElement extends UmbLitElement {
     }
 
     async #onCrawlFinished() {
-        this.#notificationContext?.peek("default", {
-            data: { headline: 'Crawl completed', message: 'You can now view the results.' }
-        });
+        if (this.#cancelledByUser) {
+            this.#cancelledByUser = false;
+        } else {
+            this.#notificationContext?.peek("default", {
+                data: { headline: 'Crawl completed', message: 'You can now view the results.' }
+            });
+        }
 
         this.#init();
 
@@ -147,6 +152,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
     async #cancelCrawl() {
         try {
+            this.#cancelledByUser = true;
             await this.#context!.cancelCrawl();
             this.#notificationContext?.peek("warning", {
                 data: { headline: 'Crawl cancelled', message: 'The crawl has been cancelled.' }
@@ -468,7 +474,6 @@ export class ContentAuditScanViewElement extends UmbLitElement {
             }
 
             .overlay-content {
-                margin-top: -10vh;
                 text-align: center;
                 max-width: 600px;
                 width: 100%;
