@@ -82,7 +82,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
                         data: [
                             {
                                 columnAlias: 'url',
-                                value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.pageData?.url}</a>`
+                                value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.url}</a>`
                             }
                         ]
                     };
@@ -90,17 +90,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
                     if (this._data?.exposedProperties != null) {
                         if (this._data?.exposedProperties?.length !== 0) {
                             this._data.exposedProperties.forEach(x => {
-                                const aliasParts = x.alias!.split('.');
-                                let value = page as any;
-                                for (const part of aliasParts) {
-                                    if (value && typeof value === 'object') {
-                                        value = value[part];
-                                    } else {
-                                        break;
-                                    }
-                                }
-
-                                tableItem.data.push({ columnAlias: x.alias!, value: value });
+                                tableItem.data.push({ columnAlias: x.alias!, value: page.exposedValues?.[x.alias!] });
                             });
                         }
                     }

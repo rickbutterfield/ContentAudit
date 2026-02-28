@@ -1,3 +1,4 @@
+using System.Reflection;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -585,7 +586,12 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         NumberOfUrls = pagesWithIssue,
                         PercentOfTotal = percent,
-                        Pages = issueCheck?.Select(StripHeavyPageData)
+                        Pages = issueCheck?.Select(page => new IssueReferenceDto
+                        {
+                            Unique = page.Unique,
+                            Url = page.PageData?.Url,
+                            ExposedValues = ExtractExposedValues(page, pageIssue.ExposedProperties)
+                        })
                     };
 
                     auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
@@ -812,19 +818,29 @@ namespace Umbraco.Community.ContentAudit.Services
             return result;
         }
 
-        private static PageAnalysisDto StripHeavyPageData(PageAnalysisDto page) => new()
+        private static Dictionary<string, object?>? ExtractExposedValues(
+            PageAnalysisDto page, IEnumerable<AuditIssueProperty>? properties)
         {
-            Unique = page.Unique,
-            EntityType = page.EntityType,
-            PageData = page.PageData,
-            SeoData = page.SeoData,
-            ContentAnalysis = page.ContentAnalysis,
-            PerformanceData = page.PerformanceData,
-            AccessibilityData = page.AccessibilityData,
-            TechnicalSeoData = page.TechnicalSeoData,
-            SocialMediaData = page.SocialMediaData,
-            ContentQualityData = page.ContentQualityData,
-            EmissionsData = page.EmissionsData
-        };
+            if (properties == null || !properties.Any()) return null;
+
+            var values = new Dictionary<string, object?>();
+            foreach (var prop in properties)
+            {
+                if (string.IsNullOrEmpty(prop.Alias)) continue;
+
+                object? current = page;
+                foreach (var part in prop.Alias.Split('.'))
+                {
+                    if (current == null) break;
+                    var pi = current.GetType().GetProperty(part,
+                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                    current = pi?.GetValue(current);
+                }
+
+                values[prop.Alias] = current;
+            }
+
+            return values;
+        }
     }
 }

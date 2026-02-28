@@ -163,7 +163,7 @@ export type IssueDto = {
     priority: IssuePriority;
     numberOfUrls?: number | null;
     percentOfTotal?: number | null;
-    pages?: Array<PageAnalysisDto> | null;
+    pages?: Array<IssueReferenceDto> | null;
     images?: Array<ImageDto> | null;
     exposedProperties?: Array<AuditIssueProperty> | null;
     priorityScore?: number | null;
@@ -174,6 +174,15 @@ export enum IssuePriority {
     MEDIUM = 'Medium',
     HIGH = 'High'
 }
+
+export type IssueReferenceDto = {
+    unique: string;
+    url?: string | null;
+    foundPage?: string | null;
+    exposedValues?: {
+        [key: string]: unknown;
+    } | null;
+};
 
 export enum IssueType {
     OPPORTUNITY = 'Opportunity',

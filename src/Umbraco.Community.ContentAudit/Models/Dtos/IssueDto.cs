@@ -67,7 +67,7 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         /// <summary>
         /// Gets or sets the collection of pages affected by this issue.
         /// </summary>
-        public IEnumerable<PageAnalysisDto>? Pages { get; set; }
+        public IEnumerable<IssueReferenceDto>? Pages { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of images affected by this issue (for image-specific issues).
