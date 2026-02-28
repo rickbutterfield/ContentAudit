@@ -239,31 +239,17 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<PageAnalysisDto> GetLatestPageAuditData(Guid unique)
         {
-            var result = new PageAnalysisDto();
-            var auditKey = await _auditRepository.GetLatestAuditKey();
-            if (!auditKey.HasValue)
-                return result;
+            var context = await ResolvePageContext(unique);
+            if (context == null)
+                return new PageAnalysisDto();
 
-            var pageData = await GetCachedPages(auditKey.Value);
-            if (pageData == null || !pageData.Any())
-                return result;
-
-            var pageSchema = pageData.FirstOrDefault(x => x.Unique == unique);
-            if (pageSchema == null)
-                return result;
-
-            var singlePageList = new List<PageSchema>(1) { pageSchema };
-            var populated = await PopulateAllPagesAnalysisData(singlePageList, auditKey.Value);
-            var page = populated.FirstOrDefault();
-            if (page == null)
-                return result;
+            var (auditKey, url, pageSchema) = context.Value;
+            var result = await PopulateSinglePageDetailData(auditKey, url, pageSchema);
 
             int totalIssues = _pageIssues.Count;
-
-            result = page;
             result.Issues = new();
 
-            var singleAnalysisList = new List<PageAnalysisDto>(1) { page };
+            var singleAnalysisList = new List<PageAnalysisDto>(1) { result };
             foreach (var issue in _pageIssues)
             {
                 var issueCheck = issue.CheckPages(singleAnalysisList);
@@ -282,6 +268,69 @@ namespace Umbraco.Community.ContentAudit.Services
             };
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<LinkDto>> GetPageLinks(Guid unique)
+        {
+            var context = await ResolvePageContext(unique);
+            if (context == null)
+                return [];
+
+            var (auditKey, url, _) = context.Value;
+            var linkData = await _auditRepository.GetLinkData(auditKey, url);
+            return linkData.Select(x => new LinkDto(x)).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<ImageDto>> GetPageImages(Guid unique)
+        {
+            var context = await ResolvePageContext(unique);
+            if (context == null)
+                return [];
+
+            var (auditKey, url, _) = context.Value;
+            var imageData = await _auditRepository.GetImageData(auditKey, url);
+            return imageData.Select(x => new ImageDto(x)).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<ResourceDto>> GetPageResources(Guid unique)
+        {
+            var context = await ResolvePageContext(unique);
+            if (context == null)
+                return [];
+
+            var (auditKey, url, _) = context.Value;
+            var resourceData = await _auditRepository.GetResourceData(auditKey, url);
+            return resourceData.Select(x => new ResourceDto(x)).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<IssueDto>> GetPageIssues(Guid unique)
+        {
+            var context = await ResolvePageContext(unique);
+            if (context == null)
+                return [];
+
+            var (auditKey, url, pageSchema) = context.Value;
+            var page = await PopulateSinglePageDetailData(auditKey, url, pageSchema);
+
+            var results = new List<IssueDto>();
+            var singleAnalysisList = new List<PageAnalysisDto>(1) { page };
+            foreach (var issue in _pageIssues)
+            {
+                var issueCheck = issue.CheckPages(singleAnalysisList);
+
+                if (issueCheck != null && issueCheck.Any())
+                {
+                    var auditIssue = new IssueDto(issue);
+                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                    results.Add(auditIssue);
+                }
+            }
+
+            return results;
         }
 
         /// <inheritdoc/>
@@ -630,6 +679,76 @@ namespace Umbraco.Community.ContentAudit.Services
                 result.PagesWithErrors = pagesWithErrors.Count;
                 result.HealthScore = ((double)(result.TotalPages - result.PagesWithErrors) / result.TotalPages) * 100.0;
             }
+
+            return result;
+        }
+
+        private async Task<(Guid AuditKey, string Url, PageSchema Page)?> ResolvePageContext(Guid unique)
+        {
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return null;
+
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return null;
+
+            var pageSchema = pageData.FirstOrDefault(x => x.Unique == unique);
+            if (pageSchema == null || string.IsNullOrEmpty(pageSchema.Url))
+                return null;
+
+            return (auditKey.Value, pageSchema.Url, pageSchema);
+        }
+
+        private async Task<PageAnalysisDto> PopulateSinglePageDetailData(Guid auditKey, string url, PageSchema pageSchema)
+        {
+            var result = new PageAnalysisDto
+            {
+                PageData = new PageDto(pageSchema),
+                EntityType = "document"
+            };
+            result.Unique = result.PageData.Unique;
+
+            var seoData = (await _auditRepository.GetSeoData(auditKey, url)).FirstOrDefault();
+            if (seoData != null)
+                result.SeoData = new SeoDto(seoData);
+
+            var contentAnalysis = (await _auditRepository.GetContentAnalysisData(auditKey, url)).FirstOrDefault();
+            if (contentAnalysis != null)
+                result.ContentAnalysis = new ContentAnalysisDto(contentAnalysis);
+
+            var perfData = (await _auditRepository.GetPerformanceData(auditKey, url)).FirstOrDefault();
+            if (perfData != null)
+            {
+                result.PerformanceData = new PerformanceDto(perfData);
+
+                if (result.PerformanceData.TotalBytes.HasValue)
+                {
+                    result.EmissionsData = new();
+                    var score = _emissionsService.PerVisit(result.PerformanceData.TotalBytes.Value, false, false, true);
+                    if (score.Total.HasValue)
+                    {
+                        result.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                    }
+                    result.EmissionsData.CarbonRating = score.Rating;
+                }
+            }
+
+            var accessibilityData = (await _auditRepository.GetAccessibilityData(auditKey, url)).FirstOrDefault();
+            if (accessibilityData != null)
+                result.AccessibilityData = new AccessibilityDto(accessibilityData);
+
+            var technicalSeoData = (await _auditRepository.GetTechnicalSeoData(auditKey, url)).FirstOrDefault();
+            if (technicalSeoData != null)
+                result.TechnicalSeoData = new TechnicalSeoDto(technicalSeoData);
+
+            var socialMediaData = (await _auditRepository.GetSocialMediaData(auditKey, url)).FirstOrDefault();
+            if (socialMediaData != null)
+                result.SocialMediaData = new SocialMediaDto(socialMediaData);
+
+            var contentQualityData = (await _auditRepository.GetContentQualityData(auditKey, url)).FirstOrDefault();
+            if (contentQualityData != null)
+                result.ContentQualityData = new ContentQualityDto(contentQualityData);
 
             return result;
         }

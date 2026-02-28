@@ -33,6 +33,15 @@ export type AuditTreeItemResponseModel = {
     isFolder: boolean;
 };
 
+export type CarbonRatingListItemDto = {
+    unique: string;
+    entityType: string;
+    pageData: PageDto;
+    contentType?: string | null;
+    totalBytes?: number | null;
+    emissionsData: EmissionsDto;
+};
+
 export type ContentAnalysisDto = {
     id: number;
     auditKey: string;
@@ -81,6 +90,13 @@ export type ContentQualityDto = {
     contentGaps?: Array<string> | null;
     contentStrengths?: Array<string> | null;
     createdDate: string;
+};
+
+export type CoreWebVitalsListItemDto = {
+    unique: string;
+    entityType: string;
+    pageData: PageDto;
+    performanceData: PerformanceDto;
 };
 
 export type CrawlDto = {
@@ -184,7 +200,15 @@ export type LinkGroupDto = {
     url?: string | null;
     statusCode?: number | null;
     contentType?: string | null;
+    linkCount: number;
     links?: Array<LinkDto> | null;
+};
+
+export type MetadataListItemDto = {
+    unique: string;
+    entityType: string;
+    pageData: PageDto;
+    seoData: SeoDto;
 };
 
 export type MetricDto = {
@@ -267,6 +291,16 @@ export type PagedAuditTreeItemResponseModel = {
     items: Array<AuditTreeItemResponseModel>;
 };
 
+export type PagedCarbonRatingListItemDtoModel = {
+    total: number;
+    items: Array<CarbonRatingListItemDto>;
+};
+
+export type PagedCoreWebVitalsListItemDtoModel = {
+    total: number;
+    items: Array<CoreWebVitalsListItemDto>;
+};
+
 export type PagedImageDtoModel = {
     total: number;
     items: Array<ImageDto>;
@@ -282,14 +316,14 @@ export type PagedLinkGroupDtoModel = {
     items: Array<LinkGroupDto>;
 };
 
+export type PagedMetadataListItemDtoModel = {
+    total: number;
+    items: Array<MetadataListItemDto>;
+};
+
 export type PagedOverviewDtoModel = {
     total: number;
     items: Array<OverviewDto>;
-};
-
-export type PagedPageAnalysisDtoModel = {
-    total: number;
-    items: Array<PageAnalysisDto>;
 };
 
 export type PagedPageDtoModel = {
@@ -538,6 +572,87 @@ export type ExportByKeyResponses = {
 
 export type ExportByKeyResponse = ExportByKeyResponses[keyof ExportByKeyResponses];
 
+export type GetPageImagesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/audit/{id}/images';
+};
+
+export type GetPageImagesErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetPageImagesError = GetPageImagesErrors[keyof GetPageImagesErrors];
+
+export type GetPageImagesResponses = {
+    /**
+     * OK
+     */
+    200: Array<ImageDto>;
+};
+
+export type GetPageImagesResponse = GetPageImagesResponses[keyof GetPageImagesResponses];
+
+export type GetPageIssuesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/audit/{id}/issues';
+};
+
+export type GetPageIssuesErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetPageIssuesError = GetPageIssuesErrors[keyof GetPageIssuesErrors];
+
+export type GetPageIssuesResponses = {
+    /**
+     * OK
+     */
+    200: Array<IssueDto>;
+};
+
+export type GetPageIssuesResponse = GetPageIssuesResponses[keyof GetPageIssuesResponses];
+
+export type GetPageLinksData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/audit/{id}/links';
+};
+
+export type GetPageLinksErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetPageLinksError = GetPageLinksErrors[keyof GetPageLinksErrors];
+
+export type GetPageLinksResponses = {
+    /**
+     * OK
+     */
+    200: Array<LinkDto>;
+};
+
+export type GetPageLinksResponse = GetPageLinksResponses[keyof GetPageLinksResponses];
+
 export type OverviewByKeyData = {
     body?: never;
     path: {
@@ -564,6 +679,33 @@ export type OverviewByKeyResponses = {
 };
 
 export type OverviewByKeyResponse = OverviewByKeyResponses[keyof OverviewByKeyResponses];
+
+export type GetPageResourcesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/audit/{id}/resources';
+};
+
+export type GetPageResourcesErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetPageResourcesError = GetPageResourcesErrors[keyof GetPageResourcesErrors];
+
+export type GetPageResourcesResponses = {
+    /**
+     * OK
+     */
+    200: Array<ResourceDto>;
+};
+
+export type GetPageResourcesResponse = GetPageResourcesResponses[keyof GetPageResourcesResponses];
 
 export type GetAllImagesData = {
     body?: never;
@@ -593,6 +735,64 @@ export type GetAllImagesResponses = {
 };
 
 export type GetAllImagesResponse = GetAllImagesResponses[keyof GetAllImagesResponses];
+
+export type GetCarbonRatingsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/management/api/v1/audit/carbon-ratings';
+};
+
+export type GetCarbonRatingsErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetCarbonRatingsError = GetCarbonRatingsErrors[keyof GetCarbonRatingsErrors];
+
+export type GetCarbonRatingsResponses = {
+    /**
+     * OK
+     */
+    200: PagedCarbonRatingListItemDtoModel;
+};
+
+export type GetCarbonRatingsResponse = GetCarbonRatingsResponses[keyof GetCarbonRatingsResponses];
+
+export type GetCoreWebVitalsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/management/api/v1/audit/core-web-vitals';
+};
+
+export type GetCoreWebVitalsErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetCoreWebVitalsError = GetCoreWebVitalsErrors[keyof GetCoreWebVitalsErrors];
+
+export type GetCoreWebVitalsResponses = {
+    /**
+     * OK
+     */
+    200: PagedCoreWebVitalsListItemDtoModel;
+};
+
+export type GetCoreWebVitalsResponse = GetCoreWebVitalsResponses[keyof GetCoreWebVitalsResponses];
 
 export type GetDuplicateContentUrlsData = {
     body?: never;
@@ -785,7 +985,7 @@ export type GetPagesWithMissingMetadataResponses = {
     /**
      * OK
      */
-    200: PagedPageAnalysisDtoModel;
+    200: PagedMetadataListItemDtoModel;
 };
 
 export type GetPagesWithMissingMetadataResponse = GetPagesWithMissingMetadataResponses[keyof GetPagesWithMissingMetadataResponses];

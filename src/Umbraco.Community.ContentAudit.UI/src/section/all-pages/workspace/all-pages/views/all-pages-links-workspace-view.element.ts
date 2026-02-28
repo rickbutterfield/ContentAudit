@@ -1,16 +1,20 @@
-﻿import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspace.context";
-import { LinkDto, PageAnalysisDto } from "../../../../../api";
+import { AuditService, LinkDto } from "../../../../../api";
 import { css, html } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
 
 @customElement('content-audit-all-pages-links-workspace-view')
 export class ContentAuditAllPagesLinksWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
 	@state()
-	_data?: PageAnalysisDto;
+	private _links: LinkDto[] = [];
+
+	@state()
+	private _loading = true;
 
 	#workspaceContext?: typeof CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT.TYPE;
 
@@ -46,12 +50,21 @@ export class ContentAuditAllPagesLinksWorkspaceViewElement extends UmbLitElement
 
 	#observeCollectionItems() {
 		if (!this.#workspaceContext) return;
-		this.observe(this.#workspaceContext.data, (data) => {
-			if (data) {
-				this._data = data;
-				this.#createTableItems(this._data.links);
+		this.observe(this.#workspaceContext.unique, (unique) => {
+			if (unique) {
+				this.#loadLinks(unique);
 			}
 		}, 'umbCollectionItemsObserver');
+	}
+
+	async #loadLinks(unique: string) {
+		this._loading = true;
+		const { data } = await tryExecute(this, AuditService.getPageLinks({ path: { id: unique } }));
+		if (data) {
+			this._links = data;
+			this.#createTableItems(data);
+		}
+		this._loading = false;
 	}
 
 	#createTableItems(links: LinkDto[]) {
@@ -73,9 +86,8 @@ export class ContentAuditAllPagesLinksWorkspaceViewElement extends UmbLitElement
 	}
 
 	override render() {
-		if (!this._data) return html`<uui-box>No data available</uui-box>`;
-		if (!this._data.links) return html`<uui-box>No link data available</uui-box>`;
-		if (this._data.links.length == 0) return html`<uui-box>No links to report for this page</uui-box>`;
+		if (this._loading) return html`<uui-loader-bar></uui-loader-bar>`;
+		if (this._links.length == 0) return html`<uui-box>No links to report for this page</uui-box>`;
 
 		return html`
 			<umb-table

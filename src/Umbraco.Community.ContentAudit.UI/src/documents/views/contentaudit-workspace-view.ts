@@ -2,13 +2,13 @@
 import { customElement, html, state } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { UmbRoute, UmbRouterSlotChangeEvent, UmbRouterSlotInitEvent } from "@umbraco-cms/backoffice/router";
-import { ContentAuditAllPagesDetailsWorkspaceViewElement } from "../../section/all-pages/workspace/all-pages/views/all-pages-details-workspace-view.element";
+//import { ContentAuditAllPagesDetailsWorkspaceViewElement } from "../../section/all-pages/workspace/all-pages/views/all-pages-details-workspace-view.element";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT, ContentAuditAllPagesWorkspaceContext } from "../../section/all-pages/workspace/all-pages/all-pages-workspace.context";
 import { PageAnalysisDto } from "../../api";
-import ContentAuditAllPagesLinksWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-links-workspace-view.element";
-import ContentAuditAllPagesResourcesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-resources-workspace-view.element";
-import ContentAuditAllPagesImagesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-images-workspace-view.element";
-import ContentAuditAllPagesIssuesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-issues-workspace-view.element";
+//import ContentAuditAllPagesLinksWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-links-workspace-view.element";
+//import ContentAuditAllPagesResourcesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-resources-workspace-view.element";
+//import ContentAuditAllPagesImagesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-images-workspace-view.element";
+//import ContentAuditAllPagesIssuesWorkspaceViewElement from "../../section/all-pages/workspace/all-pages/views/all-pages-issues-workspace-view.element";
 
 @customElement('contentaudit-workspace-view')
 export class ContentAuditWorkspaceElement extends UmbLitElement {
@@ -68,41 +68,41 @@ export class ContentAuditWorkspaceElement extends UmbLitElement {
         routes.push({
             path: `details`,
             component: () => import('../../section/all-pages/workspace/all-pages/views/all-pages-details-workspace-view.element'),
-            setup: (component) => {
-                (component as ContentAuditAllPagesDetailsWorkspaceViewElement)._data = this._data;
-            }
+            //setup: (component) => {
+            //    (component as ContentAuditAllPagesDetailsWorkspaceViewElement)._data = this._data;
+            //}
         });
 
         routes.push({
             path: `links`,
             component: () => import('../../section/all-pages/workspace/all-pages/views/all-pages-links-workspace-view.element'),
-            setup: (component) => {
-                (component as ContentAuditAllPagesLinksWorkspaceViewElement)._data = this._data;
-            }
+            //setup: (component) => {
+            //    //(component as ContentAuditAllPagesLinksWorkspaceViewElement)._data = this._data;
+            //}
         });
 
         routes.push({
             path: `images`,
             component: () => import('../../section/all-pages/workspace/all-pages/views/all-pages-images-workspace-view.element'),
-            setup: (component) => {
-                (component as ContentAuditAllPagesImagesWorkspaceViewElement)._data = this._data;
-            }
+            //setup: (component) => {
+            //    //(component as ContentAuditAllPagesImagesWorkspaceViewElement)._data = this._data;
+            //}
         });
 
         routes.push({
             path: `resources`,
             component: () => import('../../section/all-pages/workspace/all-pages/views/all-pages-resources-workspace-view.element'),
-            setup: (component) => {
-                (component as ContentAuditAllPagesResourcesWorkspaceViewElement)._data = this._data;
-            }
+            //setup: (component) => {
+            //    //(component as ContentAuditAllPagesResourcesWorkspaceViewElement)._data = this._data;
+            //}
         });
 
         routes.push({
             path: `issues`,
             component: () => import('../../section/all-pages/workspace/all-pages/views/all-pages-issues-workspace-view.element'),
-            setup: (component) => {
-                (component as ContentAuditAllPagesIssuesWorkspaceViewElement)._data = this._data;
-            }
+            //setup: (component) => {
+            //    //(component as ContentAuditAllPagesIssuesWorkspaceViewElement)._data = this._data;
+            //}
         });
 
         if (routes.length !== 0) {

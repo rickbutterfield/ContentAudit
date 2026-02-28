@@ -45,6 +45,34 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<PageAnalysisDto> GetLatestPageAuditData(Guid unique);
 
         /// <summary>
+        /// Gets links found on a specific page
+        /// </summary>
+        /// <param name="unique">The unique identifier of the page</param>
+        /// <returns>List of links found on the page</returns>
+        Task<List<LinkDto>> GetPageLinks(Guid unique);
+
+        /// <summary>
+        /// Gets images found on a specific page
+        /// </summary>
+        /// <param name="unique">The unique identifier of the page</param>
+        /// <returns>List of images found on the page</returns>
+        Task<List<ImageDto>> GetPageImages(Guid unique);
+
+        /// <summary>
+        /// Gets resources loaded by a specific page
+        /// </summary>
+        /// <param name="unique">The unique identifier of the page</param>
+        /// <returns>List of resources loaded by the page</returns>
+        Task<List<ResourceDto>> GetPageResources(Guid unique);
+
+        /// <summary>
+        /// Gets audit issues detected on a specific page
+        /// </summary>
+        /// <param name="unique">The unique identifier of the page</param>
+        /// <returns>List of issues found on the page</returns>
+        Task<List<IssueDto>> GetPageIssues(Guid unique);
+
+        /// <summary>
         /// Gets all pages that have no incoming links (orphaned pages)
         /// </summary>
         /// <param name="filter">Optional text filter to apply to URLs</param>
