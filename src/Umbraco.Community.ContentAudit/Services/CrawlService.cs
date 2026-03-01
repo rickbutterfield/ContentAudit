@@ -1026,7 +1026,10 @@ namespace Umbraco.Community.ContentAudit.Services
 
         /// <inheritdoc/>
         public Task<PageAnalysisDto?> GetPageAnalysisLightweightAsync(string url, Uri baseUri, Guid nodeKey)
-            => GetPageAnalysisFallbackAsync(url, nodeKey);
+        {
+            _baseUri = baseUri;
+            return GetPageAnalysisFallbackAsync(url, nodeKey);
+        }
 
         private async Task<PageAnalysisDto?> GetPageAnalysisFallbackAsync(string url, Guid nodeKey)
         {
@@ -1243,7 +1246,7 @@ namespace Umbraco.Community.ContentAudit.Services
             foreach (Match match in matches)
             {
                 var href = match.Groups[1].Value;
-                if (string.IsNullOrEmpty(href) || href.StartsWith("mailto:") || href.StartsWith("javascript:"))
+                if (string.IsNullOrEmpty(href) || href.StartsWith("mailto:") || href.StartsWith("tel:") || href.StartsWith("javascript:"))
                     continue;
 
                 links.Add(new LinkDto

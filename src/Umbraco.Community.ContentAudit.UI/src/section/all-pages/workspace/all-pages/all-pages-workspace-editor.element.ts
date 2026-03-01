@@ -94,21 +94,13 @@ export class ContentAuditAllPagesWorkspaceEditorElement extends UmbLitElement {
 
 		const busy = this.#isEnrichBusy;
 
-		if (busy) {
-			return html`
-				<div slot="action-menu" class="enrich-status">
-					<uui-loader-circle></uui-loader-circle>
-					<span>${this._enriching ? 'Enriching page...' : 'Enrichment in progress...'}</span>
-				</div>
-			`;
-		}
-
 		return html`
 			<uui-button
 				slot="action-menu"
 				look="secondary"
 				label="Enrich Page"
-				@click=${this.#onEnrichPage}>
+				@click=${this.#onEnrichPage}
+				.state=${busy ? "waiting" : nothing}>
 				Enrich Page
 			</uui-button>
 		`;

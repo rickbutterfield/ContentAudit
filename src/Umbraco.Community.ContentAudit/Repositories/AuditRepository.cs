@@ -381,6 +381,38 @@ namespace Umbraco.Community.ContentAudit.Repositories
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<IssueResultSchema>> GetAllIssueResultsByAuditKey(Guid auditKey)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<IssueResultSchema>().Where<IssueResultSchema>(x => x.AuditKey == auditKey);
+            var data = await scope.Database.FetchAsync<IssueResultSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<IssueResultSchema>> GetIssueResultsByIssueId(Guid auditKey, Guid issueId)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<IssueResultSchema>()
+                .Where<IssueResultSchema>(x => x.AuditKey == auditKey && x.IssueId == issueId);
+            var data = await scope.Database.FetchAsync<IssueResultSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<IssueResultSchema>> GetIssueResultsByPageUnique(Guid auditKey, Guid pageUnique)
+        {
+            using var scope = _scopeProvider.CreateScope();
+            var sql = scope.SqlContext.Sql().Select("*").From<IssueResultSchema>()
+                .Where<IssueResultSchema>(x => x.AuditKey == auditKey && x.ReferenceUnique == pageUnique && x.ReferenceType == "page");
+            var data = await scope.Database.FetchAsync<IssueResultSchema>(sql);
+            scope.Complete();
+            return data;
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> DeleteAuditByKey(Guid auditKey)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -388,6 +420,7 @@ namespace Umbraco.Community.ContentAudit.Repositories
 
             try
             {
+                await db.ExecuteAsync($"DELETE FROM [{IssueResultSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
                 await db.ExecuteAsync($"DELETE FROM [{LinkSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
                 await db.ExecuteAsync($"DELETE FROM [{ResourceSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });
                 await db.ExecuteAsync($"DELETE FROM [{ImageSchema.TableName}] WHERE AuditKey = @0", new object[] { auditKey });

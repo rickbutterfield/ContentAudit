@@ -63,9 +63,11 @@ Pages skipped by incremental crawl are reported to the SignalR hub with `Skipped
 
 ### 4. Parallel page processing
 
-URLs are processed by a TPL Dataflow `ActionBlock<UrlQueueItem>` with degree of parallelism set to `MaxConcurrentCrawls` (default: 4, range 1–20). A `SemaphoreSlim` enforces the limit.
+**Internal pages** are processed by a TPL Dataflow `ActionBlock<UrlQueueItem>` with degree of parallelism set to `MaxConcurrentCrawls` (default: 4, range 1–20).
 
-For each URL, `ProcessUrlAsync` runs:
+External links and asset URLs (CSS, JS, fonts, etc.) never enter the queue or ActionBlock. When discovered during a page crawl they are registered directly into `_crawlResults` and pushed to SignalR via `RegisterExternalOrAssetResult`, keeping ActionBlock slots free for pages that need HTTP requests.
+
+For each internal page, `ProcessUrlAsync` runs:
 
 ```
 ProcessUrlAsync(url)
@@ -79,7 +81,8 @@ ProcessUrlAsync(url)
   │           ├─ Image extraction (src, alt)
   │           ├─ Technical SEO headers (gzip, caching, HTTPS, Content-Type)
   │           └─ ETag / Last-Modified / content hash (for next incremental crawl)
-  ├─ Enqueue newly discovered links (internal, not already seen)
+  ├─ Enqueue newly discovered internal links (not already seen)
+  ├─ Register external links and assets via RegisterExternalOrAssetResult
   ├─ HEAD requests for external links (rate-limited per domain)
   └─ CrawlStateManager.AddResult(crawlDto)
         └─ SignalR → crawlProgress(crawlDto) to all clients

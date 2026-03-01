@@ -38,7 +38,7 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#settings = new UmbObjectState<ContentAuditSettings | undefined>(undefined);
 	public readonly settings = this.#settings.asObservable();
 
-	#crawlData = new UmbArrayState<CrawlDto>([], (x) => x.unique);
+	#crawlData = new UmbArrayState<CrawlDto>([], (x) => x.url);
 	public readonly crawlData = this.#crawlData.asObservable();
 
 	#isRunning = new UmbBooleanState(false);

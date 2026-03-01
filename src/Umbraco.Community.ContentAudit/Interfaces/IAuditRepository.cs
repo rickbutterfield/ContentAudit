@@ -131,6 +131,10 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// <returns>Collection of overview schema records for all audits</returns>
         Task<IEnumerable<OverviewSchema>> GetAuditOverviews();
 
+        Task<IEnumerable<IssueResultSchema>> GetAllIssueResultsByAuditKey(Guid auditKey);
+        Task<IEnumerable<IssueResultSchema>> GetIssueResultsByIssueId(Guid auditKey, Guid issueId);
+        Task<IEnumerable<IssueResultSchema>> GetIssueResultsByPageUnique(Guid auditKey, Guid pageUnique);
+
         /// <summary>
         /// Deletes an audit and all associated data
         /// </summary>

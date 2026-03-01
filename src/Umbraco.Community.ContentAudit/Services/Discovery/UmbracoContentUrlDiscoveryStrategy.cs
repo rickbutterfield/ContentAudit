@@ -1,9 +1,7 @@
 using Examine;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.Routing;
-using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -17,8 +15,8 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
     public class UmbracoContentUrlDiscoveryStrategy : IUrlDiscoveryStrategy
     {
         private readonly IExamineManager _examineManager;
-        private readonly IPublishedUrlProvider _urlProvider;
-        private readonly IUmbracoContextFactory _umbracoContextFactory;
+        private readonly IDocumentUrlService _documentUrlService;
+        private readonly ILanguageService _languageService;
         private readonly IOptionsMonitor<ContentAuditSettings> _settings;
         private readonly ILogger<UmbracoContentUrlDiscoveryStrategy> _logger;
 
@@ -28,61 +26,57 @@ namespace Umbraco.Community.ContentAudit.Services.Discovery
 
         public UmbracoContentUrlDiscoveryStrategy(
             IExamineManager examineManager,
-            IPublishedUrlProvider urlProvider,
-            IUmbracoContextFactory umbracoContextFactory,
+            IDocumentUrlService documentUrlService,
+            ILanguageService languageService,
             IOptionsMonitor<ContentAuditSettings> settings,
             ILogger<UmbracoContentUrlDiscoveryStrategy> logger)
         {
             _examineManager = examineManager;
-            _urlProvider = urlProvider;
-            _umbracoContextFactory = umbracoContextFactory;
+            _documentUrlService = documentUrlService;
+            _languageService = languageService;
             _settings = settings;
             _logger = logger;
         }
 
-        public Task<IEnumerable<DiscoveredUrl>> DiscoverUrlsAsync(string baseUrl, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DiscoveredUrl>> DiscoverUrlsAsync(string baseUrl, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Resolving content nodes from Umbraco content index");
 
             var discoveredUrls = new List<DiscoveredUrl>();
 
-            // EnsureUmbracoContext creates a context when running outside an HTTP request
-            // (e.g. background Task.Run), which IPublishedUrlProvider.GetUrl requires.
-            using var contextReference = _umbracoContextFactory.EnsureUmbracoContext();
-
-            if (_examineManager.TryGetIndex(UmbracoIndexes.InternalIndexName, out var contentIndex))
+            if (_examineManager.TryGetIndex(UmbracoIndexes.ExternalIndexName, out var contentIndex))
             {
                 var searcher = contentIndex.Searcher;
-                var query = searcher.CreateQuery("content").NativeQuery("+__IndexType:content");
+                var query = searcher.CreateQuery("content").NativeQuery("+__IndexType:content -templateID:0");
                 var results = query.Execute(new Examine.Search.QueryOptions(0, int.MaxValue));
+
+                var trimmedBaseUrl = baseUrl.TrimEnd('/');
+                var defaultCulture = await _languageService.GetDefaultIsoCodeAsync();
 
                 foreach (var result in results)
                 {
                     if (result.Values.TryGetValue(UmbracoExamineFieldNames.NodeKeyFieldName, out var keyString) &&
-                        Guid.TryParse(keyString, out var key) &&
-                        result.Values.TryGetValue(UmbracoExamineFieldNames.ItemIdFieldName, out var idString) &&
-                        int.TryParse(idString, out var nodeId))
+                        Guid.TryParse(keyString, out var key))
                     {
-                        var url = _urlProvider.GetUrl(nodeId, UrlMode.Absolute);
+                        var route = _documentUrlService.GetLegacyRouteFormat(key, defaultCulture, isDraft: false);
 
-                        if (!string.IsNullOrEmpty(url) && url != "#")
-                        {
-                            if (Uri.TryCreate(url, UriKind.Absolute, out var providerUri) &&
-                                Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri) &&
-                                string.Equals(providerUri.Host, baseUri.Host, StringComparison.OrdinalIgnoreCase))
-                            {
-                                url = new Uri(baseUri, providerUri.PathAndQuery).AbsoluteUri;
-                            }
+                        if (string.IsNullOrWhiteSpace(route) || route == "#")
+                            continue;
 
-                            discoveredUrls.Add(new DiscoveredUrl(url, key));
-                        }
+                        // Route is either "/{path}" (no domain) or "{domainContentId}/{path}" (with domain).
+                        // Extract the path portion and combine with baseUrl directly.
+                        var slashIndex = route.IndexOf('/');
+                        var path = slashIndex == 0 ? route : route[slashIndex..];
+                        var url = trimmedBaseUrl + path;
+
+                        discoveredUrls.Add(new DiscoveredUrl(url, key));
                     }
                 }
             }
 
             _logger.LogInformation("Discovered {Count} URLs from Umbraco content index", discoveredUrls.Count);
 
-            return Task.FromResult<IEnumerable<DiscoveredUrl>>(discoveredUrls);
+            return discoveredUrls;
         }
     }
 }

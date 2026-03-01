@@ -535,5 +535,16 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
 
             _runtimeCache.Clear(Constants.Cache.Key);
         }
+
+        /// <inheritdoc/>
+        public async Task SaveIssueResultsAsync(Guid auditKey, IEnumerable<IssueResultSchema> results, CancellationToken cancellationToken = default)
+        {
+            var schemas = results.ToList();
+            if (schemas.Count == 0) return;
+
+            using var scope = _scopeProvider.CreateScope();
+            await scope.Database.InsertBulkAsync(schemas);
+            scope.Complete();
+        }
     }
 }

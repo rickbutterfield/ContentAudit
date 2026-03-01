@@ -1,4 +1,4 @@
-using System.Reflection;
+using System.Text.Json;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Community.ContentAudit.Composing;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -17,7 +17,6 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IAppPolicyCache _runtimeCache;
         private readonly IEmissionsService _emissionsService;
         private readonly IReadOnlyList<IAuditPageIssue> _pageIssues;
-        private readonly IReadOnlyList<IAuditImageIssue> _imageIssues;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataService"/> class
@@ -37,7 +36,6 @@ namespace Umbraco.Community.ContentAudit.Services
             _runtimeCache = appCaches.RuntimeCache;
             _emissionsService = emissionsService;
             _pageIssues = _auditIssueCollection.OfType<IAuditPageIssue>().ToList();
-            _imageIssues = _auditIssueCollection.OfType<IAuditImageIssue>().ToList();
         }
 
         /// <inheritdoc/>
@@ -250,22 +248,22 @@ namespace Umbraco.Community.ContentAudit.Services
             int totalIssues = _pageIssues.Count;
             result.Issues = new();
 
-            var singleAnalysisList = new List<PageAnalysisDto>(1) { result };
-            foreach (var issue in _pageIssues)
+            var issueResults = await _auditRepository.GetIssueResultsByPageUnique(auditKey, unique);
+            foreach (var group in issueResults.GroupBy(x => x.IssueId))
             {
-                var issueCheck = issue.CheckPages(singleAnalysisList);
+                var issue = _pageIssues.FirstOrDefault(x => x.Id == group.Key);
+                if (issue == null) continue;
 
-                if (issueCheck != null && issueCheck.Any())
-                {
-                    var auditIssue = new IssueDto(issue);
-                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                    result.Issues.Add(auditIssue);
-                }
+                var auditIssue = new IssueDto(issue);
+                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                result.Issues.Add(auditIssue);
             }
 
             result.HealthScore = new()
             {
-                HealthScore = ((double)(totalIssues - result.Issues.Count) / totalIssues) * 100.0,
+                HealthScore = totalIssues > 0
+                    ? ((double)(totalIssues - result.Issues.Count) / totalIssues) * 100.0
+                    : 100.0,
             };
 
             return result;
@@ -310,25 +308,23 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<List<IssueDto>> GetPageIssues(Guid unique)
         {
-            var context = await ResolvePageContext(unique);
-            if (context == null)
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
                 return [];
 
-            var (auditKey, url, pageSchema) = context.Value;
-            var page = await PopulateSinglePageDetailData(auditKey, url, pageSchema);
+            var issueResults = await _auditRepository.GetIssueResultsByPageUnique(auditKey.Value, unique);
+            if (!issueResults.Any())
+                return [];
 
             var results = new List<IssueDto>();
-            var singleAnalysisList = new List<PageAnalysisDto>(1) { page };
-            foreach (var issue in _pageIssues)
+            foreach (var group in issueResults.GroupBy(x => x.IssueId))
             {
-                var issueCheck = issue.CheckPages(singleAnalysisList);
+                var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == group.Key);
+                if (issue == null) continue;
 
-                if (issueCheck != null && issueCheck.Any())
-                {
-                    var auditIssue = new IssueDto(issue);
-                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                    results.Add(auditIssue);
-                }
+                var auditIssue = new IssueDto(issue);
+                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                results.Add(auditIssue);
             }
 
             return results;
@@ -511,55 +507,52 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<List<IssueDto>> GetAllIssues()
         {
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return [];
+
+            var issueResults = await _auditRepository.GetAllIssueResultsByAuditKey(auditKey.Value);
+            if (!issueResults.Any())
+                return [];
+
+            var pageData = await GetCachedPages(auditKey.Value);
+            int pageCount = pageData?.Count() ?? 0;
+            if (pageCount == 0)
+                return [];
+
             var result = new List<IssueDto>();
-            var pageData = await GetLatestAuditData();
-            var imageData = pageData.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>());
+            var grouped = issueResults.GroupBy(x => x.IssueId);
 
-            if (pageData != null && pageData.Any())
+            foreach (var group in grouped)
             {
-                var pageCount = pageData.Count;
+                var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == group.Key);
+                if (issue == null) continue;
 
-                foreach (var issue in _pageIssues)
+                int affectedCount;
+                double denominator;
+
+                if (issue is IAuditImageIssue)
                 {
-                    var issueCheck = issue.CheckPages(pageData);
-                    var pagesWithIssues = issueCheck?.Count();
-
-                    if (pagesWithIssues != null)
-                    {
-                        double percent = ((double)pagesWithIssues / (double)pageCount) * 100.0;
-
-                        var auditIssue = new IssueDto(issue)
-                        {
-                            NumberOfUrls = pagesWithIssues,
-                            PercentOfTotal = percent,
-                        };
-
-                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                        result.Add(auditIssue);
-                    }
+                    affectedCount = group.Where(x => x.ReferenceType == "image").Select(x => x.FoundPage).Distinct().Count();
+                    var imageData = await _auditRepository.GetAllImageDataByAuditKey(auditKey.Value);
+                    denominator = imageData.Count(x => !x.IsBackground);
+                }
+                else
+                {
+                    affectedCount = group.Where(x => x.ReferenceType == "page").Select(x => x.ReferenceUnique).Distinct().Count();
+                    denominator = pageCount;
                 }
 
-                if (imageData != null && imageData.Any())
+                double percent = denominator > 0 ? ((double)affectedCount / denominator) * 100.0 : 0;
+
+                var auditIssue = new IssueDto(issue)
                 {
-                    var imageCount = imageData.Count();
+                    NumberOfUrls = affectedCount,
+                    PercentOfTotal = percent,
+                };
 
-                    foreach (var issue in _imageIssues)
-                    {
-                        var issueCheck = issue.CheckImages(imageData, pageData);
-                        var imagesWithIssues = issueCheck?.DistinctBy(x => x.FoundPage).Count() ?? 0;
-
-                        double percent = ((double)imagesWithIssues / (double)imageCount) * 100.0;
-
-                        var auditIssue = new IssueDto(issue)
-                        {
-                            NumberOfUrls = imagesWithIssues,
-                            PercentOfTotal = percent,
-                        };
-
-                        auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                        result.Add(auditIssue);
-                    }
-                }
+                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                result.Add(auditIssue);
             }
 
             return result;
@@ -568,52 +561,66 @@ namespace Umbraco.Community.ContentAudit.Services
         /// <inheritdoc/>
         public async Task<IssueDto?> GetIssue(Guid issueGuid)
         {
-            var pageData = await GetLatestAuditData();
-            var imageData = pageData.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>());
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return null;
 
-            if (pageData != null && pageData.Any())
+            var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == issueGuid);
+            if (issue == null)
+                return null;
+
+            var issueResults = await _auditRepository.GetIssueResultsByIssueId(auditKey.Value, issueGuid);
+            if (!issueResults.Any())
+                return null;
+
+            var pageData = await GetCachedPages(auditKey.Value);
+            int pageCount = pageData?.Count() ?? 0;
+
+            if (issue is IAuditPageIssue pageIssue)
             {
-                var pageCount = pageData.Count;
-                var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == issueGuid);
+                var pageResults = issueResults.Where(x => x.ReferenceType == "page").ToList();
+                int pagesWithIssue = pageResults.Select(x => x.ReferenceUnique).Distinct().Count();
+                double percent = pageCount > 0 ? ((double)pagesWithIssue / pageCount) * 100.0 : 0;
 
-                if (issue is IAuditPageIssue pageIssue)
+                var auditIssue = new IssueDto(pageIssue)
                 {
-                    var issueCheck = pageIssue.CheckPages(pageData);
-                    var pagesWithIssue = issueCheck?.Count() ?? 0;
-                    double percent = ((double)pagesWithIssue / (double)pageCount) * 100.0;
-
-                    var auditIssue = new IssueDto(pageIssue)
+                    NumberOfUrls = pagesWithIssue,
+                    PercentOfTotal = percent,
+                    Pages = pageResults.Select(r => new IssueReferenceDto
                     {
-                        NumberOfUrls = pagesWithIssue,
-                        PercentOfTotal = percent,
-                        Pages = issueCheck?.Select(page => new IssueReferenceDto
-                        {
-                            Unique = page.Unique,
-                            Url = page.PageData?.Url,
-                            ExposedValues = ExtractExposedValues(page, pageIssue.ExposedProperties)
-                        })
-                    };
+                        Unique = r.ReferenceUnique,
+                        Url = r.ReferenceUrl,
+                        ExposedValues = !string.IsNullOrEmpty(r.ExposedValuesJson)
+                            ? JsonSerializer.Deserialize<Dictionary<string, object?>>(r.ExposedValuesJson)
+                            : null
+                    })
+                };
 
-                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                    return auditIssue;
-                }
-                else if (issue is IAuditImageIssue imageIssue && imageData != null && imageData.Any())
+                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                return auditIssue;
+            }
+            else if (issue is IAuditImageIssue)
+            {
+                var imageResults = issueResults.Where(x => x.ReferenceType == "image").ToList();
+                int imagesWithIssues = imageResults.Count;
+
+                var imageSchemas = await _auditRepository.GetAllImageDataByAuditKey(auditKey.Value);
+                double imageCount = imageSchemas.Count(x => !x.IsBackground);
+                double percent = imageCount > 0 ? ((double)imagesWithIssues / imageCount) * 100.0 : 0;
+
+                var affectedImageUniques = imageResults.Select(r => r.ReferenceUnique).ToHashSet();
+
+                var auditIssue = new IssueDto(issue)
                 {
-                    var imageCount = imageData.Count();
-                    var issueCheck = imageIssue.CheckImages(imageData, pageData);
-                    var imagesWithIssues = issueCheck?.Count() ?? 0;
-                    double percent = ((double)imagesWithIssues / (double)imageCount) * 100.0;
+                    NumberOfUrls = imagesWithIssues,
+                    PercentOfTotal = percent,
+                    Images = imageSchemas
+                        .Where(img => affectedImageUniques.Contains(img.Unique))
+                        .Select(img => new ImageDto(img))
+                };
 
-                    var auditIssue = new IssueDto(issue)
-                    {
-                        NumberOfUrls = imagesWithIssues,
-                        PercentOfTotal = percent,
-                        Images = issueCheck
-                    };
-
-                    auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                    return auditIssue;
-                }
+                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+                return auditIssue;
             }
 
             return null;
@@ -663,28 +670,24 @@ namespace Umbraco.Community.ContentAudit.Services
         public async Task<HealthScoreDto> GetHealthScore()
         {
             var result = new HealthScoreDto();
-            var data = await GetLatestAuditData();
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return result;
 
-            if (data != null && data.Any())
-            {
-                result.TotalPages = data.Count;
+            var pageData = await GetCachedPages(auditKey.Value);
+            if (pageData == null || !pageData.Any())
+                return result;
 
-                var pagesWithErrors = new HashSet<Guid>();
-                foreach (var issue in _pageIssues)
-                {
-                    var pagesWithIssue = issue.CheckPages(data);
-                    if (pagesWithIssue != null)
-                    {
-                        foreach (var page in pagesWithIssue)
-                        {
-                            pagesWithErrors.Add(page.PageData.Unique);
-                        }
-                    }
-                }
+            result.TotalPages = pageData.Count();
 
-                result.PagesWithErrors = pagesWithErrors.Count;
-                result.HealthScore = ((double)(result.TotalPages - result.PagesWithErrors) / result.TotalPages) * 100.0;
-            }
+            var issueResults = await _auditRepository.GetAllIssueResultsByAuditKey(auditKey.Value);
+            result.PagesWithErrors = issueResults
+                .Where(x => x.ReferenceType == "page")
+                .Select(x => x.ReferenceUnique)
+                .Distinct()
+                .Count();
+
+            result.HealthScore = ((double)(result.TotalPages - result.PagesWithErrors) / result.TotalPages) * 100.0;
 
             return result;
         }
@@ -816,31 +819,6 @@ namespace Umbraco.Community.ContentAudit.Services
                 _runtimeCache.Clear(Constants.Cache.Key);
             }
             return result;
-        }
-
-        private static Dictionary<string, object?>? ExtractExposedValues(
-            PageAnalysisDto page, IEnumerable<AuditIssueProperty>? properties)
-        {
-            if (properties == null || !properties.Any()) return null;
-
-            var values = new Dictionary<string, object?>();
-            foreach (var prop in properties)
-            {
-                if (string.IsNullOrEmpty(prop.Alias)) continue;
-
-                object? current = page;
-                foreach (var part in prop.Alias.Split('.'))
-                {
-                    if (current == null) break;
-                    var pi = current.GetType().GetProperty(part,
-                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                    current = pi?.GetValue(current);
-                }
-
-                values[prop.Alias] = current;
-            }
-
-            return values;
         }
     }
 }

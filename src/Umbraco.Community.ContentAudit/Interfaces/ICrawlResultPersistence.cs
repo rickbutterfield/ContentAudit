@@ -1,5 +1,6 @@
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
+using Umbraco.Community.ContentAudit.Schemas;
 
 namespace Umbraco.Community.ContentAudit.Interfaces
 {
@@ -137,6 +138,11 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// Marks an audit as enriched (Playwright performance data collected)
         /// </summary>
         Task SetIsEnrichedAsync(Guid auditKey, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Saves pre-computed issue results for an audit
+        /// </summary>
+        Task SaveIssueResultsAsync(Guid auditKey, IEnumerable<IssueResultSchema> results, CancellationToken cancellationToken = default);
     }
 
     /// <summary>

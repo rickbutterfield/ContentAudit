@@ -4,9 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.Routing;
-using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Community.ContentAudit.Configuration;
 using Umbraco.Community.ContentAudit.Services.Discovery;
@@ -18,8 +16,8 @@ namespace Umbraco.Community.ContentAudit.UnitTests.Umbraco.Community.ContentAudi
 public class UmbracoContentUrlDiscoveryStrategyTests
 {
     private readonly Mock<IExamineManager> _examineManager = new();
-    private readonly Mock<IPublishedUrlProvider> _urlProvider = new();
-    private readonly Mock<IUmbracoContextFactory> _umbracoContextFactory = new();
+    private readonly Mock<IDocumentUrlService> _documentUrlService = new();
+    private readonly Mock<ILanguageService> _languageService = new();
     private readonly Mock<IOptionsMonitor<ContentAuditSettings>> _settings = new();
     private readonly Mock<ILogger<UmbracoContentUrlDiscoveryStrategy>> _logger = new();
 
@@ -30,30 +28,33 @@ public class UmbracoContentUrlDiscoveryStrategyTests
             UseUmbracoContentIndex = useUmbracoContentIndex
         });
 
+        _languageService.Setup(l => l.GetDefaultIsoCodeAsync())
+            .ReturnsAsync("en-US");
+
         return new UmbracoContentUrlDiscoveryStrategy(
             _examineManager.Object,
-            _urlProvider.Object,
-            _umbracoContextFactory.Object,
+            _documentUrlService.Object,
+            _languageService.Object,
             _settings.Object,
             _logger.Object);
     }
 
-    private void SetupExamineIndex(params (Guid key, int nodeId, string url)[] items)
+    private Mock<IQuery> SetupExamineIndex(params (Guid key, string route)[] items)
     {
         var searchResults = new List<ISearchResult>();
 
-        foreach (var (key, nodeId, url) in items)
+        foreach (var (key, route) in items)
         {
             var result = new Mock<ISearchResult>();
             result.Setup(r => r.Values).Returns(new Dictionary<string, string>
             {
                 { UmbracoExamineFieldNames.NodeKeyFieldName, key.ToString() },
-                { UmbracoExamineFieldNames.ItemIdFieldName, nodeId.ToString() }
+                { UmbracoExamineFieldNames.ItemIdFieldName, "1001" }
             });
             searchResults.Add(result.Object);
 
-            _urlProvider.Setup(p => p.GetUrl(nodeId, UrlMode.Absolute))
-                .Returns(url);
+            _documentUrlService.Setup(d => d.GetLegacyRouteFormat(key, "en-US", false))
+                .Returns(route);
         }
 
         var results = new Mock<ISearchResults>();
@@ -73,9 +74,11 @@ public class UmbracoContentUrlDiscoveryStrategyTests
         index.Setup(i => i.Searcher).Returns(searcher.Object);
 
         _examineManager
-            .Setup(m => m.TryGetIndex(UmbracoIndexes.InternalIndexName, out It.Ref<IIndex>.IsAny))
+            .Setup(m => m.TryGetIndex(UmbracoIndexes.ExternalIndexName, out It.Ref<IIndex>.IsAny))
             .Callback(new TryGetIndexCallback((string name, out IIndex idx) => idx = index.Object))
             .Returns(true);
+
+        return query;
     }
 
     private delegate void TryGetIndexCallback(string name, out IIndex index);
@@ -100,7 +103,7 @@ public class UmbracoContentUrlDiscoveryStrategyTests
     public async Task DiscoverUrlsAsync_WhenUseUmbracoContentIndexFalse_StillReturnsUrls()
     {
         var key = Guid.NewGuid();
-        SetupExamineIndex((key, 1001, "https://example.com/about/"));
+        SetupExamineIndex((key, "/about"));
         var sut = CreateSut(useUmbracoContentIndex: false);
 
         var result = await sut.DiscoverUrlsAsync("https://example.com/");
@@ -115,22 +118,61 @@ public class UmbracoContentUrlDiscoveryStrategyTests
         var key1 = Guid.NewGuid();
         var key2 = Guid.NewGuid();
         SetupExamineIndex(
-            (key1, 1001, "https://example.com/about/"),
-            (key2, 1002, "https://example.com/contact/"));
+            (key1, "/about"),
+            (key2, "/contact"));
 
         var sut = CreateSut();
 
-        var result = (await sut.DiscoverUrlsAsync("https://example.com/")).ToList();
+        var result = (await sut.DiscoverUrlsAsync("https://example.com")).ToList();
 
         result.Should().HaveCount(2);
         result.Should().AllSatisfy(url => url.ContentId.Should().NotBeNull());
     }
 
     [Fact]
+    public async Task DiscoverUrlsAsync_CombinesBaseUrlWithPath()
+    {
+        var key = Guid.NewGuid();
+        SetupExamineIndex((key, "/about"));
+        var sut = CreateSut();
+
+        var result = (await sut.DiscoverUrlsAsync("https://example.com")).ToList();
+
+        result.Should().HaveCount(1);
+        result.First().Url.Should().Be("https://example.com/about");
+    }
+
+    [Fact]
+    public async Task DiscoverUrlsAsync_HandlesRouteWithDomainContentId()
+    {
+        var key = Guid.NewGuid();
+        SetupExamineIndex((key, "1234/child/grandchild"));
+        var sut = CreateSut();
+
+        var result = (await sut.DiscoverUrlsAsync("https://example.com")).ToList();
+
+        result.Should().HaveCount(1);
+        result.First().Url.Should().Be("https://example.com/child/grandchild");
+    }
+
+    [Fact]
+    public async Task DiscoverUrlsAsync_TrimsTrailingSlashFromBaseUrl()
+    {
+        var key = Guid.NewGuid();
+        SetupExamineIndex((key, "/about"));
+        var sut = CreateSut();
+
+        var result = (await sut.DiscoverUrlsAsync("https://example.com/")).ToList();
+
+        result.Should().HaveCount(1);
+        result.First().Url.Should().Be("https://example.com/about");
+    }
+
+    [Fact]
     public async Task DiscoverUrlsAsync_WhenNoIndex_ReturnsEmpty()
     {
         _examineManager
-            .Setup(m => m.TryGetIndex(UmbracoIndexes.InternalIndexName, out It.Ref<IIndex>.IsAny))
+            .Setup(m => m.TryGetIndex(UmbracoIndexes.ExternalIndexName, out It.Ref<IIndex>.IsAny))
             .Returns(false);
 
         var sut = CreateSut();
@@ -141,15 +183,40 @@ public class UmbracoContentUrlDiscoveryStrategyTests
     }
 
     [Fact]
-    public async Task DiscoverUrlsAsync_SkipsResultsWithEmptyUrl()
+    public async Task DiscoverUrlsAsync_SkipsResultsWithHashRoute()
     {
         var key = Guid.NewGuid();
-        SetupExamineIndex((key, 1001, ""));
+        SetupExamineIndex((key, "#"));
 
         var sut = CreateSut();
 
         var result = await sut.DiscoverUrlsAsync("https://example.com/");
 
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DiscoverUrlsAsync_HandlesRootRoute()
+    {
+        var key = Guid.NewGuid();
+        SetupExamineIndex((key, "/"));
+        var sut = CreateSut();
+
+        var result = (await sut.DiscoverUrlsAsync("https://example.com")).ToList();
+
+        result.Should().HaveCount(1);
+        result.First().Url.Should().Be("https://example.com/");
+    }
+
+    [Fact]
+    public async Task DiscoverUrlsAsync_ExcludesContentWithNoTemplate()
+    {
+        var key = Guid.NewGuid();
+        var query = SetupExamineIndex((key, "/about"));
+        var sut = CreateSut();
+
+        await sut.DiscoverUrlsAsync("https://example.com");
+
+        query.Verify(q => q.NativeQuery(It.Is<string>(s => s.Contains("-templateID:0"))), Times.Once);
     }
 }

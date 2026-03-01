@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Community.ContentAudit.Composing;
@@ -9,6 +11,7 @@ using Umbraco.Community.ContentAudit.Interfaces;
 using Umbraco.Community.ContentAudit.Extensions;
 using Umbraco.Community.ContentAudit.Models;
 using Umbraco.Community.ContentAudit.Models.Dtos;
+using Umbraco.Community.ContentAudit.Schemas;
 using Umbraco.Extensions;
 
 namespace Umbraco.Community.ContentAudit.Services
@@ -57,7 +60,6 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly AuditIssueCollection _auditIssueCollection;
         private readonly IEnumerable<IUrlDiscoveryStrategy> _urlDiscoveryStrategies;
 
-        private readonly SemaphoreSlim _crawlSemaphore;
         private int _isDiscoveryComplete;
 
         private Guid _currentAuditKey;
@@ -120,8 +122,6 @@ namespace Umbraco.Community.ContentAudit.Services
 
             _contentAuditSettings = contentAuditSettings.CurrentValue;
             _requestHandlerSettings = requestHandlerSettings.CurrentValue;
-
-            _crawlSemaphore = new SemaphoreSlim(_contentAuditSettings.MaxConcurrentCrawls);
         }
 
         /// <inheritdoc />
@@ -167,7 +167,10 @@ namespace Umbraco.Community.ContentAudit.Services
                         _visitedUrls.TryAdd(url, 0);
 
                     foreach (var item in state.PendingUrls)
+                    {
                         _urlQueue.Enqueue(item);
+                        _enqueuedUrls.TryAdd($"{item.Url}|{item.IsExternal}|{item.IsAsset}", 0);
+                    }
 
                     foreach (var path in state.DisallowedPaths)
                         _robotsDisallowedPaths.TryAdd(path, 0);
@@ -175,6 +178,16 @@ namespace Umbraco.Community.ContentAudit.Services
                     _logger.LogDebug("Restored state: {VisitedCount} visited, {PendingCount} pending",
                         state.VisitedUrls.Count(), state.PendingUrls.Count());
                 }
+
+                // Re-discover URLs from sitemap/content index and re-parse robots.txt
+                // Safe: _visitedUrls prevents re-crawling of already-processed pages
+                await DiscoverInitialUrlsAsync(linkedToken);
+                _crawlStateManager.SetPhase("Parsing robots.txt");
+                await GetRobots();
+
+                // Re-enqueue link targets from already-persisted data to recover
+                // URLs discovered between the last checkpoint and interruption
+                await ReEnqueuePersistedLinksAsync();
             }
             else
             {
@@ -325,15 +338,9 @@ namespace Umbraco.Community.ContentAudit.Services
         private async Task ProcessUrlAsync(UrlQueueItem queueItem, Uri baseUri, CancellationToken cancellationToken)
         {
             string url = queueItem.Url;
-            bool isExternal = queueItem.IsExternal;
-            bool isAsset = queueItem.IsAsset;
-            bool semaphoreAcquired = false;
 
             try
             {
-                await _crawlSemaphore.WaitAsync(cancellationToken);
-                semaphoreAcquired = true;
-
                 // Apply crawl delay if configured
                 if (_effectiveCrawlDelayMs > 0)
                 {
@@ -342,13 +349,13 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 _logger.LogDebug("Started processing URL: {0}", url);
 
-                var crawlResultKey = $"{url}|{isExternal}|{isAsset}";
+                var crawlResultKey = $"{url}|False|False";
 
                 CrawlDto crawlResult = new()
                 {
                     Url = url,
-                    External = isExternal,
-                    Asset = isAsset,
+                    External = false,
+                    Asset = false,
                     Crawled = false,
                     Blocked = false,
                     Unique = queueItem.Unique
@@ -364,12 +371,11 @@ namespace Umbraco.Community.ContentAudit.Services
                     }
                     else if (!IsDisallowed(url))
                     {
-                        if (!isAsset && !isExternal && _visitedUrls.TryAdd(url, 0))
+                        if (_visitedUrls.TryAdd(url, 0))
                         {
                             crawlResult = await CrawlInternalUrl(url, baseUri, queueItem.Depth, queueItem.Unique);
                             _crawlResults[crawlResultKey] = crawlResult;
 
-                            // Update circuit breaker based on result
                             if (crawlResult.Crawled && crawlResult.Unique != Guid.Empty)
                             {
                                 RecordSuccess(url);
@@ -390,13 +396,10 @@ namespace Umbraco.Community.ContentAudit.Services
                     _logger.LogDebug("Writing crawl result for URL: {0}", url);
                     _crawlStateManager.AddResult(crawlResult);
 
-                    if (!isAsset && !isExternal)
+                    Interlocked.Increment(ref _pagesSinceLastFlush);
+                    if (_pagesSinceLastFlush >= FlushThreshold)
                     {
-                        Interlocked.Increment(ref _pagesSinceLastFlush);
-                        if (_pagesSinceLastFlush >= FlushThreshold)
-                        {
-                            await SaveCrawlStateAsync();
-                        }
+                        await SaveCrawlStateAsync();
                     }
                 }
                 else
@@ -411,10 +414,6 @@ namespace Umbraco.Community.ContentAudit.Services
             }
             finally
             {
-                if (semaphoreAcquired)
-                {
-                    _crawlSemaphore.Release();
-                }
                 _logger.LogDebug("Finished processing URL: {0}", url);
             }
         }
@@ -563,9 +562,9 @@ namespace Umbraco.Community.ContentAudit.Services
                     if (Uri.TryCreate(_baseUri, link.Url, out var absoluteUri))
                     {
                         var absoluteUrl = absoluteUri.AbsoluteUri;
-                        bool isExternal = absoluteUri.Host != baseUri.Host;
 
                         link.Url = absoluteUrl;
+                        //link.IsExternal = link.IsExternal;
                         _linkDtos.Add(link);
 
                         if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
@@ -573,7 +572,7 @@ namespace Umbraco.Community.ContentAudit.Services
                             link.StatusCode = cachedResponse.StatusCode;
                             link.ContentType = cachedResponse.ContentType;
                         }
-                        else if (isExternal)
+                        else if (link.IsExternal)
                         {
                             var capturedLink = link;
                             var capturedUrl = absoluteUrl;
@@ -590,15 +589,22 @@ namespace Umbraco.Community.ContentAudit.Services
                             }));
                         }
 
-                        EnqueueUrl(new UrlQueueItem
+                        if (link.IsExternal)
                         {
-                            Url = absoluteUrl,
-                            IsExternal = isExternal,
-                            IsAsset = false,
-                            SourceUrl = url,
-                            Unique = matchingUmbracoNode.Key,
-                            Depth = currentDepth + 1
-                        });
+                            RegisterExternalOrAssetResult(absoluteUrl, isExternal: true, isAsset: false);
+                        }
+                        else
+                        {
+                            EnqueueUrl(new UrlQueueItem
+                            {
+                                Url = absoluteUrl,
+                                IsExternal = false,
+                                IsAsset = false,
+                                SourceUrl = url,
+                                Unique = matchingUmbracoNode.Key,
+                                Depth = currentDepth + 1
+                            });
+                        }
                     }
                 }
             }
@@ -611,8 +617,8 @@ namespace Umbraco.Community.ContentAudit.Services
                 if (Uri.TryCreate(_baseUri, resource.Url, out var absoluteUri))
                 {
                     var absoluteUrl = absoluteUri.AbsoluteUri;
-                    bool isExternal = absoluteUri.Host != baseUri.Host;
 
+                    resource.Url = absoluteUrl;
                     _resourceDtos.Add(resource);
 
                     if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
@@ -621,7 +627,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         resource.ContentType = cachedResponse.ContentType;
                         resource.Size = cachedResponse.ContentLength;
                     }
-                    else if (isExternal)
+                    else if (resource.IsExternal)
                     {
                         var capturedResource = resource;
                         var capturedUrl = absoluteUrl;
@@ -639,15 +645,7 @@ namespace Umbraco.Community.ContentAudit.Services
                         }));
                     }
 
-                    EnqueueUrl(new UrlQueueItem
-                    {
-                        Url = absoluteUrl,
-                        IsExternal = isExternal,
-                        IsAsset = true,
-                        SourceUrl = url,
-                        Unique = matchingUmbracoNode.Key,
-                        Depth = currentDepth + 1
-                    });
+                    RegisterExternalOrAssetResult(absoluteUrl, isExternal: resource.IsExternal, isAsset: true);
                 }
             }
 
@@ -726,6 +724,71 @@ namespace Umbraco.Community.ContentAudit.Services
                 item.Url, item.IsExternal, item.IsAsset, item.SourceUrl ?? "Initial");
         }
 
+        private void RegisterExternalOrAssetResult(string url, bool isExternal, bool isAsset)
+        {
+            if (isAsset)
+            {
+                url = url.NormalizeUrlWithoutQuery(_requestHandlerSettings.AddTrailingSlash);
+            }
+            else
+            {
+                url = url.NormalizeUrl(_requestHandlerSettings.AddTrailingSlash);
+            }
+
+            var crawlResultKey = $"{url}|{isExternal}|{isAsset}";
+            if (!_enqueuedUrls.TryAdd(crawlResultKey, 0))
+                return;
+
+            if (IsCircuitBroken(url))
+                return;
+
+            var crawlResult = new CrawlDto
+            {
+                Url = url,
+                External = isExternal,
+                Asset = isAsset,
+                Crawled = true,
+                Blocked = false,
+                Unique = Guid.Empty
+            };
+
+            if (_crawlResults.TryAdd(crawlResultKey, crawlResult))
+            {
+                _crawlStateManager.AddResult(crawlResult);
+            }
+        }
+
+        private async Task ReEnqueuePersistedLinksAsync()
+        {
+            var persistedLinks = await _auditRepository.GetAllLinkDataByAuditKey(_currentAuditKey);
+            var reEnqueuedCount = 0;
+
+            foreach (var link in persistedLinks)
+            {
+                if (string.IsNullOrEmpty(link.Url) || _visitedUrls.ContainsKey(link.Url))
+                    continue;
+
+                if (link.IsExternal)
+                {
+                    RegisterExternalOrAssetResult(link.Url, isExternal: true, isAsset: false);
+                }
+                else
+                {
+                    EnqueueUrl(new UrlQueueItem
+                    {
+                        Url = link.Url,
+                        IsExternal = false,
+                        IsAsset = false,
+                        SourceUrl = link.FoundPage,
+                        Depth = 0
+                    });
+                }
+                reEnqueuedCount++;
+            }
+
+            _logger.LogInformation("Re-enqueued {Count} URLs from persisted link data", reEnqueuedCount);
+        }
+
         private async Task SaveCrawlResults()
         {
             await FlushDataToDatabase();
@@ -755,8 +818,8 @@ namespace Umbraco.Community.ContentAudit.Services
 
             await _persistence.UpdateAuditTotalsAsync(_currentAuditKey, metadata);
 
-            _crawlStateManager.SetPhase("Calculating health score");
-            double healthScore = await CalculateHealthScore();
+            _crawlStateManager.SetPhase("Evaluating issues");
+            double healthScore = await EvaluateAndPersistIssues();
             await _persistence.CompleteAuditAsync(_currentAuditKey, healthScore);
             await _persistence.DeleteCrawlStateAsync(_currentAuditKey);
         }
@@ -876,16 +939,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                         if (linkDto.IsExternal)
                         {
-                            var urlQueueItem = new UrlQueueItem()
-                            {
-                                Url = linkDto.Url ?? string.Empty,
-                                IsExternal = true,
-                                IsAsset = false,
-                                SourceUrl = url,
-                                Unique = unique,
-                                Depth = 1
-                            };
-                            EnqueueUrl(urlQueueItem);
+                            RegisterExternalOrAssetResult(linkDto.Url ?? string.Empty, isExternal: true, isAsset: false);
                         }
                     }
                 }
@@ -910,14 +964,14 @@ namespace Umbraco.Community.ContentAudit.Services
             }
         }
 
-        private async Task<double> CalculateHealthScore()
+        private async Task<double> EvaluateAndPersistIssues()
         {
             if (!_pageDtos.Any())
                 return 0;
 
-            // Build PageAnalysisDto objects from our collected data
+            var emissionsService = new EmissionsService();
             var pageAnalysisList = new List<PageAnalysisDto>();
-            
+
             foreach (var page in _pageDtos)
             {
                 var pageAnalysis = new PageAnalysisDto
@@ -934,35 +988,103 @@ namespace Umbraco.Community.ContentAudit.Services
                     Resources = _resourceDtos.Where(r => r.FoundPage == page.Url).ToList(),
                     Images = _imageDtos.Where(i => i.FoundPage == page.Url).ToList()
                 };
-                
+
+                if (pageAnalysis.PerformanceData?.TotalBytes.HasValue == true)
+                {
+                    pageAnalysis.EmissionsData = new();
+                    var score = emissionsService.PerVisit(pageAnalysis.PerformanceData.TotalBytes.Value, false, false, true);
+                    if (score.Total.HasValue)
+                        pageAnalysis.EmissionsData.EmissionsPerPageView = Math.Round(score.Total.Value, 2);
+                    pageAnalysis.EmissionsData.CarbonRating = score.Rating;
+                }
+
                 pageAnalysisList.Add(pageAnalysis);
             }
 
-            int pagesWithErrors = 0;
-            int totalPages = pageAnalysisList.Count;
+            var issueResults = new List<IssueResultSchema>();
+            var pagesWithErrors = new HashSet<Guid>();
 
-            foreach (var page in pageAnalysisList)
+            var pageIssues = _auditIssueCollection.OfType<IAuditPageIssue>().ToList();
+            foreach (var issue in pageIssues)
             {
-                bool pageHasError = false;
+                var affectedPages = issue.CheckPages(pageAnalysisList);
+                if (affectedPages == null) continue;
 
-                foreach (IAuditPageIssue issue in _auditIssueCollection.Where(x => x is IAuditPageIssue))
+                foreach (var page in affectedPages)
                 {
-                    var issueCheck = issue.CheckPages(new List<PageAnalysisDto>() { page });
-                    if (issueCheck?.Count() == 1)
+                    pagesWithErrors.Add(page.PageData.Unique);
+
+                    var schema = new IssueResultSchema
                     {
-                        pageHasError = true;
-                        break;
-                    }
-                }
+                        AuditKey = _currentAuditKey,
+                        IssueId = issue.Id,
+                        ReferenceType = "page",
+                        ReferenceUnique = page.PageData.Unique,
+                        ReferenceUrl = page.PageData.Url,
+                    };
 
-                if (pageHasError)
-                {
-                    pagesWithErrors++;
+                    if (issue.ExposedProperties != null && issue.ExposedProperties.Any())
+                    {
+                        schema.ExposedValuesJson = JsonSerializer.Serialize(
+                            ExtractExposedValues(page, issue.ExposedProperties));
+                    }
+
+                    issueResults.Add(schema);
                 }
             }
 
-            double healthScore = ((double)(totalPages - pagesWithErrors) / totalPages) * 100.0;
+            var imageIssues = _auditIssueCollection.OfType<IAuditImageIssue>().ToList();
+            var allImages = pageAnalysisList.SelectMany(x => x.Images ?? Enumerable.Empty<ImageDto>());
+
+            foreach (var issue in imageIssues)
+            {
+                var affectedImages = issue.CheckImages(allImages, pageAnalysisList);
+                if (affectedImages == null) continue;
+
+                foreach (var image in affectedImages)
+                {
+                    issueResults.Add(new IssueResultSchema
+                    {
+                        AuditKey = _currentAuditKey,
+                        IssueId = issue.Id,
+                        ReferenceType = "image",
+                        ReferenceUnique = image.Unique,
+                        ReferenceUrl = image.Url,
+                        FoundPage = image.FoundPage,
+                    });
+                }
+            }
+
+            await _persistence.SaveIssueResultsAsync(_currentAuditKey, issueResults);
+
+            int totalPages = pageAnalysisList.Count;
+            double healthScore = ((double)(totalPages - pagesWithErrors.Count) / totalPages) * 100.0;
             return healthScore;
+        }
+
+        private static Dictionary<string, object?>? ExtractExposedValues(
+            PageAnalysisDto page, IEnumerable<AuditIssueProperty>? properties)
+        {
+            if (properties == null || !properties.Any()) return null;
+
+            var values = new Dictionary<string, object?>();
+            foreach (var prop in properties)
+            {
+                if (string.IsNullOrEmpty(prop.Alias)) continue;
+
+                object? current = page;
+                foreach (var part in prop.Alias.Split('.'))
+                {
+                    if (current == null) break;
+                    var pi = current.GetType().GetProperty(part,
+                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                    current = pi?.GetValue(current);
+                }
+
+                values[prop.Alias] = current;
+            }
+
+            return values;
         }
 
         private async Task DiscoverInitialUrlsAsync(CancellationToken cancellationToken)
