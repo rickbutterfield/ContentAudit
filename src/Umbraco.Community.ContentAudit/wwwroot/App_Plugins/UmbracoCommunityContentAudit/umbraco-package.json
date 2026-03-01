@@ -1,15 +1,15 @@
 {
-  "$schema": "../umbraco-package-schema.json",
-  "name": "Umbraco.Community.ContentAudit",
-  "id": "Umbraco.Community.ContentAudit",
-  "version": "2.0.0--rc7.preview.55.gc4d8470",
-  "allowTelemetry": true,
-  "extensions": [
-    {
-      "name": "Umbraco.Community.ContentAudit.EntryPoint",
-      "alias": "Umbraco.Community.ContentAudit.EntryPoint",
-      "type": "backofficeEntryPoint",
-      "js": "/App_Plugins/UmbracoCommunityContentAudit/content-audit.js"
-    }
-  ]
+	"$schema": "../umbraco-package-schema.json",
+	"name": "Umbraco.Community.ContentAudit",
+	"id": "Umbraco.Community.ContentAudit",
+	"version": "",
+	"allowTelemetry": true,
+	"extensions": [
+		{
+			"name": "Umbraco.Community.ContentAudit.EntryPoint",
+			"alias": "Umbraco.Community.ContentAudit.EntryPoint",
+			"type": "backofficeEntryPoint",
+			"js": "/App_Plugins/UmbracoCommunityContentAudit/content-audit.js"
+		}
+	]
 }
