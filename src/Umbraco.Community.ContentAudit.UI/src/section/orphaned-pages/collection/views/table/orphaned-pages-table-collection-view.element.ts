@@ -1,6 +1,8 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
+import { UmbModalRouteRegistrationController } from '@umbraco-cms/backoffice/router';
+import { UMB_WORKSPACE_MODAL } from '@umbraco-cms/backoffice/workspace';
 import { PageDto } from '../../../../../api';
 import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
@@ -25,9 +27,20 @@ export class ContentAuditOrphanedPagesTableCollectionViewElement extends UmbLitE
     private _tableItems: Array<UmbTableItem> = [];
 
     #collectionContext?: UmbDefaultCollectionContext<PageDto>;
+    #editPath = '';
 
     constructor() {
         super();
+
+        new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
+            .addAdditionalPath('all-pages')
+            .onSetup(() => {
+                return { data: { entityType: 'all-pages', preset: {} } };
+            })
+            .observeRouteBuilder((routeBuilder) => {
+                this.#editPath = routeBuilder({});
+                this.#observeCollectionItems();
+            });
 
         this.consumeContext(UMB_COLLECTION_CONTEXT, (instance) => {
             this.#collectionContext = instance;
@@ -49,7 +62,7 @@ export class ContentAuditOrphanedPagesTableCollectionViewElement extends UmbLitE
                 data: [
                     {
                         columnAlias: 'url',
-                        value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.url}</a>`
+                        value: html`<a href=${this.#editPath + 'edit/' + page.unique}>${page.url}</a>`
                     }
                 ]
             }

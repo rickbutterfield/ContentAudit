@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CancelCrawlData, CancelCrawlErrors, CancelCrawlResponses, CancelEnrichData, CancelEnrichErrors, CancelEnrichResponses, ChildrenData, ChildrenErrors, ChildrenResponses, DeleteData, DeleteErrors, DeleteResponses, EnrichPageData, EnrichPageErrors, EnrichPageResponses, ExportByKeyData, ExportByKeyErrors, ExportByKeyResponses, ExportData, ExportErrors, ExportResponses, GetAllImagesData, GetAllImagesErrors, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesErrors, GetAllIssuesResponses, GetByKeyData, GetByKeyErrors, GetByKeyResponses, GetCarbonRatingsData, GetCarbonRatingsErrors, GetCarbonRatingsResponses, GetCollectionData, GetCollectionErrors, GetCollectionResponses, GetCoreWebVitalsData, GetCoreWebVitalsErrors, GetCoreWebVitalsResponses, GetCrawlStatusData, GetCrawlStatusErrors, GetCrawlStatusResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsErrors, GetDuplicateContentUrlsResponses, GetEnrichStatusData, GetEnrichStatusErrors, GetEnrichStatusResponses, GetExternalLinksData, GetExternalLinksErrors, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreErrors, GetHealthScoreResponses, GetInternalLinksData, GetInternalLinksErrors, GetInternalLinksResponses, GetIssueData, GetIssueErrors, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataErrors, GetLatestAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesErrors, GetOrphanedPagesResponses, GetPageImagesData, GetPageImagesErrors, GetPageImagesResponses, GetPageIssuesData, GetPageIssuesErrors, GetPageIssuesResponses, GetPageLinksData, GetPageLinksErrors, GetPageLinksResponses, GetPageResourcesData, GetPageResourcesErrors, GetPageResourcesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataErrors, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, OverviewByKeyData, OverviewByKeyErrors, OverviewByKeyResponses, OverviewData, OverviewErrors, OverviewResponses, RootData, RootErrors, RootResponses, StartCrawlData, StartCrawlErrors, StartCrawlResponses, StartEnrichData, StartEnrichErrors, StartEnrichResponses } from './types.gen';
+import type { CancelCrawlData, CancelCrawlErrors, CancelCrawlResponses, CancelEnrichData, CancelEnrichErrors, CancelEnrichResponses, ChildrenData, ChildrenErrors, ChildrenResponses, DeleteData, DeleteErrors, DeleteResponses, DiscardIncompleteCrawlData, DiscardIncompleteCrawlErrors, DiscardIncompleteCrawlResponses, EnrichPageData, EnrichPageErrors, EnrichPageResponses, ExportByKeyData, ExportByKeyErrors, ExportByKeyResponses, ExportData, ExportErrors, ExportResponses, GetAllImagesData, GetAllImagesErrors, GetAllImagesResponses, GetAllIssuesData, GetAllIssuesErrors, GetAllIssuesResponses, GetByKeyData, GetByKeyErrors, GetByKeyResponses, GetCarbonRatingsData, GetCarbonRatingsErrors, GetCarbonRatingsResponses, GetCollectionData, GetCollectionErrors, GetCollectionResponses, GetCoreWebVitalsData, GetCoreWebVitalsErrors, GetCoreWebVitalsResponses, GetCrawlStatusData, GetCrawlStatusErrors, GetCrawlStatusResponses, GetDuplicateContentUrlsData, GetDuplicateContentUrlsErrors, GetDuplicateContentUrlsResponses, GetEnrichStatusData, GetEnrichStatusErrors, GetEnrichStatusResponses, GetExternalLinksData, GetExternalLinksErrors, GetExternalLinksResponses, GetHealthScoreData, GetHealthScoreErrors, GetHealthScoreResponses, GetIncompleteCrawlData, GetIncompleteCrawlErrors, GetIncompleteCrawlResponses, GetInternalLinksData, GetInternalLinksErrors, GetInternalLinksResponses, GetIssueData, GetIssueErrors, GetIssueReferencesData, GetIssueReferencesErrors, GetIssueReferencesResponses, GetIssueResponses, GetLatestAuditDataData, GetLatestAuditDataErrors, GetLatestAuditDataResponses, GetOrphanedPagesData, GetOrphanedPagesErrors, GetOrphanedPagesResponses, GetPageImagesData, GetPageImagesErrors, GetPageImagesResponses, GetPageIssuesData, GetPageIssuesErrors, GetPageIssuesResponses, GetPageLinksData, GetPageLinksErrors, GetPageLinksResponses, GetPageResourcesData, GetPageResourcesErrors, GetPageResourcesResponses, GetPagesWithMissingMetadataData, GetPagesWithMissingMetadataErrors, GetPagesWithMissingMetadataResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, OverviewByKeyData, OverviewByKeyErrors, OverviewByKeyResponses, OverviewData, OverviewErrors, OverviewResponses, RootData, RootErrors, RootResponses, StartCrawlData, StartCrawlErrors, StartCrawlResponses, StartEnrichData, StartEnrichErrors, StartEnrichResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -189,6 +189,20 @@ export class CrawlService {
         });
     }
     
+    public static getIncompleteCrawl<ThrowOnError extends boolean = true>(options?: Options<GetIncompleteCrawlData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetIncompleteCrawlResponses, GetIncompleteCrawlErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/crawl/incomplete',
+            ...options
+        });
+    }
+    
+    public static discardIncompleteCrawl<ThrowOnError extends boolean = true>(options: Options<DiscardIncompleteCrawlData, ThrowOnError>) {
+        return (options.client ?? client).delete<DiscardIncompleteCrawlResponses, DiscardIncompleteCrawlErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/crawl/incomplete/{id}',
+            ...options
+        });
+    }
+    
     public static startCrawl<ThrowOnError extends boolean = true>(options?: Options<StartCrawlData, ThrowOnError>) {
         return (options?.client ?? client).post<StartCrawlResponses, StartCrawlErrors, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/crawl/start',
@@ -245,6 +259,13 @@ export class IssueService {
     public static getIssue<ThrowOnError extends boolean = true>(options: Options<GetIssueData, ThrowOnError>) {
         return (options.client ?? client).get<GetIssueResponses, GetIssueErrors, ThrowOnError>({
             url: '/umbraco/content-audit/management/api/v1/issue/{id}',
+            ...options
+        });
+    }
+    
+    public static getIssueReferences<ThrowOnError extends boolean = true>(options: Options<GetIssueReferencesData, ThrowOnError>) {
+        return (options.client ?? client).get<GetIssueReferencesResponses, GetIssueReferencesErrors, ThrowOnError>({
+            url: '/umbraco/content-audit/management/api/v1/issue/{id}/references',
             ...options
         });
     }

@@ -47,9 +47,14 @@ namespace Umbraco.Community.ContentAudit.Schemas
         public int TotalExternal { get; set; }
 
         /// <summary>
-        /// Gets or sets the total number of assets (images, scripts, stylesheets)
+        /// Gets or sets the total number of network resources (scripts, stylesheets, fonts)
         /// </summary>
-        public int TotalAssets { get; set; }
+        public int TotalResources { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of images
+        /// </summary>
+        public int TotalImages { get; set; }
 
         /// <summary>
         /// Gets or sets the total number of blocked URLs

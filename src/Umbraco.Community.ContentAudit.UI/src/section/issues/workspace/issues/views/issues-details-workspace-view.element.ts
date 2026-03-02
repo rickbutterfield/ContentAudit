@@ -1,16 +1,29 @@
-﻿import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
+import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
+import { UmbModalRouteRegistrationController } from '@umbraco-cms/backoffice/router';
+import { UMB_WORKSPACE_MODAL, UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT } from "../issues-workspace.context";
-import { IssueDto } from "../../../../../api";
-import { css, html } from "@umbraco-cms/backoffice/external/lit";
+import { IssueDto, IssueReferenceDto, IssueService } from "../../../../../api";
+import { css, html, nothing } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from "@umbraco-cms/backoffice/components";
+import type { UUIPaginationEvent } from "@umbraco-cms/backoffice/external/uui";
+
+const PAGE_SIZE = 50;
 
 @customElement('content-audit-issues-details-workspace-view')
 export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement implements UmbWorkspaceViewElement {
     @state()
     _data?: IssueDto;
+
+    @state()
+    private _references: IssueReferenceDto[] = [];
+
+    @state()
+    private _total = 0;
+
+    @state()
+    private _currentPage = 1;
 
     @state()
     private _tableConfig: UmbTableConfig = {
@@ -19,122 +32,152 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
     };
 
     @state()
-    private get _tableColumns(): Array<UmbTableColumn> {
-        let columns: UmbTableColumn[] = [];
-
-        if (this._data != null) {
-            columns.push({
-                name: this._data?.images != null ? 'URL' : 'Page',
-                alias: 'url'
-            });
-
-            if (this._data?.exposedProperties != null) {
-                if (this._data?.exposedProperties?.length !== 0) {
-                    this._data.exposedProperties.forEach(x => {
-                        columns.push({ name: x.name!, alias: x.alias!, elementName: x.elementName!, labelTemplate: x.labelTemplate! });
-                    })
-                }
-            }
-
-            if (this._data?.images != null) {
-                if (this._data?.images?.length !== 0) {
-                    columns.push({
-                        name: 'Found Page',
-                        alias: 'foundPage'
-                    });
-                }
-            }
-        }
-
-        return columns;
-    };
-
-    @state()
     private _tableItems: Array<UmbTableItem> = [];
+
+    #isImageIssue = false;
+    #editPath = '';
 
     #workspaceContext?: typeof CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT.TYPE;
 
     constructor() {
         super();
 
+        new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
+            .addAdditionalPath('all-pages')
+            .onSetup(() => {
+                return { data: { entityType: 'all-pages', preset: {} } };
+            })
+            .observeRouteBuilder((routeBuilder) => {
+                this.#editPath = routeBuilder({});
+                this.#createTableItems();
+            });
+
         this.consumeContext(CONTENT_AUDIT_ISSUES_WORKSPACE_CONTEXT, (instance) => {
             this.#workspaceContext = instance;
-            this.#observeCollectionItems();
+            this.#observeData();
         });
     }
 
-    #observeCollectionItems() {
+    #observeData() {
         if (!this.#workspaceContext) return;
         this.observe(this.#workspaceContext.data, (data) => {
             this._data = data;
-            this.#createTableItems(data);
+            if (data?.unique) {
+                this._currentPage = 1;
+                this.#loadReferences(0);
+            }
         }, 'umbCollectionItemsObserver');
     }
 
-    #createTableItems(data: IssueDto | undefined) {
-        let tableItems: UmbTableItem[] | undefined = [];
+    async #loadReferences(skip: number) {
+        const unique = this._data?.unique;
+        if (!unique) return;
 
-        if (data != null) {
-            if (data.pages?.length !== 0) {
-                tableItems = data?.pages?.map((page) => {
-                    let tableItem: UmbTableItem = {
-                        id: page.unique,
-                        data: [
-                            {
-                                columnAlias: 'url',
-                                value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.url}</a>`
-                            }
-                        ]
-                    };
+        const { data } = await IssueService.getIssueReferences({
+            path: { id: unique },
+            query: { skip, take: PAGE_SIZE }
+        });
 
-                    if (this._data?.exposedProperties != null) {
-                        if (this._data?.exposedProperties?.length !== 0) {
-                            this._data.exposedProperties.forEach(x => {
-                                tableItem.data.push({ columnAlias: x.alias!, value: page.exposedValues?.[x.alias!] });
-                            });
-                        }
-                    }
-
-                    return tableItem;
-                });
-            }
-
-            if (data?.images != null) {
-                if (data?.images.length !== 0) {
-                    tableItems = data?.images?.map((page) => {
-                        let tableItem: UmbTableItem = {
-                            id: page.unique,
-                            data: [
-                                {
-                                    columnAlias: 'url',
-                                    value: page.url
-                                },
-                                {
-                                    columnAlias: 'foundPage',
-                                    value: page.foundPage
-                                }
-                            ]
-                        }
-
-                        return tableItem;
-                    });
-                }
-            }
+        if (data) {
+            this._total = data.total;
+            this._references = data.items;
+            this.#isImageIssue = this._references.length > 0 && !!this._references[0].foundPage;
+            this.#createTableItems();
         }
-
-        this._tableItems = tableItems || [];
     }
 
-    #renderPages() {
+    #onPageChange(event: UUIPaginationEvent) {
+        if (this._currentPage === event.target.current) return;
+        this._currentPage = event.target.current;
+        const skip = (this._currentPage - 1) * PAGE_SIZE;
+        this.#loadReferences(skip);
+    }
+
+    get #tableColumns(): Array<UmbTableColumn> {
+        const columns: UmbTableColumn[] = [];
+
+        if (this._data == null) return columns;
+
+        columns.push({
+            name: this.#isImageIssue ? 'URL' : 'Page',
+            alias: 'url'
+        });
+
+        if (!this.#isImageIssue && this._data.exposedProperties?.length) {
+            this._data.exposedProperties.forEach(x => {
+                columns.push({ name: x.name!, alias: x.alias!, elementName: x.elementName!, labelTemplate: x.labelTemplate! });
+            });
+        }
+
+        if (this.#isImageIssue) {
+            columns.push({
+                name: 'Found Page',
+                alias: 'foundPage'
+            });
+        }
+
+        return columns;
+    }
+
+    #createTableItems() {
+        if (this.#isImageIssue) {
+            this._tableItems = this._references.map((ref) => ({
+                id: ref.unique,
+                data: [
+                    { columnAlias: 'url', value: ref.url },
+                    { columnAlias: 'foundPage', value: ref.foundPage }
+                ]
+            }));
+        } else {
+            this._tableItems = this._references.map((ref) => {
+                const tableItem: UmbTableItem = {
+                    id: ref.unique,
+                    data: [
+                        {
+                            columnAlias: 'url',
+                            value: html`<a href=${this.#editPath + 'edit/' + ref.unique}>${ref.url}</a>`
+                        }
+                    ]
+                };
+
+                if (this._data?.exposedProperties?.length) {
+                    this._data.exposedProperties.forEach(x => {
+                        tableItem.data.push({ columnAlias: x.alias!, value: ref.exposedValues?.[x.alias!] });
+                    });
+                }
+
+                return tableItem;
+            });
+        }
+    }
+
+    #renderTable() {
         return html`
 			<div>
 				<umb-table
 					.config=${this._tableConfig}
-					.columns=${this._tableColumns}
+					.columns=${this.#tableColumns}
 					.items=${this._tableItems}>
 				</umb-table>
+				${this.#renderPagination()}
 			</div>
 		`
+    }
+
+    #renderPagination() {
+        if (!this._total) return nothing;
+
+        const totalPages = Math.ceil(this._total / PAGE_SIZE);
+        if (totalPages <= 1) return nothing;
+
+        return html`
+			<div class="pagination">
+				<uui-pagination
+					.total=${totalPages}
+					.current=${this._currentPage}
+					@change=${this.#onPageChange}></uui-pagination>
+			</div>
+		`;
     }
 
     #renderProperties() {
@@ -166,7 +209,7 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
 
     override render() {
         return html`
-			${this.#renderPages()}
+			${this.#renderTable()}
 			${this.#renderProperties()}
 		`
     }
@@ -192,6 +235,12 @@ export class ContentAuditIssuesDetailsWorkspaceViewElement extends UmbLitElement
                     padding-bottom: 0;
                 }
             }
+
+			.pagination {
+				display: flex;
+				justify-content: center;
+				margin-top: var(--uui-size-layout-1);
+			}
 		`
     ]
 }

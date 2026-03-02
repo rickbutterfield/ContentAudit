@@ -35,7 +35,8 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
                 Total = 0,
                 TotalInternal = 0,
                 TotalExternal = 0,
-                TotalAssets = 0,
+                TotalResources = 0,
+                TotalImages = 0,
                 TotalBlocked = 0,
                 HealthScore = 0,
                 Status = (int)AuditStatus.InProgress,
@@ -72,8 +73,8 @@ namespace Umbraco.Community.ContentAudit.Services.Persistence
             using var scope = _scopeProvider.CreateScope();
 
             await scope.Database.ExecuteAsync(
-                $"UPDATE [{OverviewSchema.TableName}] SET [Total] = @0, [TotalInternal] = @1, [TotalExternal] = @2, [TotalAssets] = @3, [TotalBlocked] = @4 WHERE [Key] = @5",
-                new object[] { metadata.TotalUrls, metadata.TotalInternal, metadata.TotalExternal, metadata.TotalAssets, metadata.TotalBlocked, auditKey });
+                $"UPDATE [{OverviewSchema.TableName}] SET [Total] = @0, [TotalInternal] = @1, [TotalExternal] = @2, [TotalResources] = @3, [TotalImages] = @4, [TotalBlocked] = @5 WHERE [Key] = @6",
+                new object[] { metadata.TotalUrls, metadata.TotalInternal, metadata.TotalExternal, metadata.TotalResources, metadata.TotalImages, metadata.TotalBlocked, auditKey });
 
             scope.Complete();
         }

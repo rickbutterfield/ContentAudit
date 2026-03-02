@@ -2,6 +2,8 @@
 import type { UmbTableConfig, UmbTableColumn, UmbTableItem } from '@umbraco-cms/backoffice/components';
 import { css, customElement, html, property, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
+import { UmbModalRouteRegistrationController } from '@umbraco-cms/backoffice/router';
+import { UMB_WORKSPACE_MODAL } from '@umbraco-cms/backoffice/workspace';
 import { IssueDto } from '../../../../../api/index';
 
 import './column-layouts/issues-table-name-column-layout.element';
@@ -62,9 +64,20 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
     private _tableItems: Array<UmbTableItem> = [];
 
     #collectionContext?: UmbDefaultCollectionContext<IssueDto>;
+    #editPath = '';
 
     constructor() {
         super();
+
+        new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
+            .addAdditionalPath('issues')
+            .onSetup(() => {
+                return { data: { entityType: 'issues', preset: {} } };
+            })
+            .observeRouteBuilder((routeBuilder) => {
+                this.#editPath = routeBuilder({});
+                this.#observeCollectionItems();
+            });
 
         this.consumeContext(UMB_COLLECTION_CONTEXT, (instance) => {
             this.#collectionContext = instance;
@@ -93,7 +106,8 @@ export class ContentAuditIssuesTableCollectionViewElement extends UmbLitElement 
                             unique: issue.unique,
                             name: issue.name,
                             category: issue.category,
-                            description: issue.description
+                            description: issue.description,
+                            editPath: this.#editPath
                         }
                     },
                     {

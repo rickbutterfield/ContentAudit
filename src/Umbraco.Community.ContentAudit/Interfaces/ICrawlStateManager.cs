@@ -6,7 +6,7 @@ namespace Umbraco.Community.ContentAudit.Interfaces
     {
         bool IsRunning { get; }
         string? CurrentPhase { get; }
-        IReadOnlyList<CrawlDto> CurrentResults { get; }
+        CrawlStatusDto CurrentSummary { get; }
         CancellationToken GetCancellationToken();
         void StartCrawl();
         void CancelCrawl();

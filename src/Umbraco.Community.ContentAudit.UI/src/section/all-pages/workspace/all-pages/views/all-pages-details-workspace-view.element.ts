@@ -3,7 +3,7 @@ import { UmbWorkspaceViewElement } from "@umbraco-cms/backoffice/workspace";
 import { customElement, state } from "lit/decorators.js";
 import { CONTENT_AUDIT_ALL_PAGES_WORKSPACE_CONTEXT } from "../all-pages-workspace.context";
 import { PageAnalysisDto } from "../../../../../api";
-import { css, html } from "@umbraco-cms/backoffice/external/lit";
+import { css, html, when } from "@umbraco-cms/backoffice/external/lit";
 import { UmbTextStyles } from "@umbraco-cms/backoffice/style";
 import '../../../../../elements/health-score.element';
 
@@ -52,12 +52,12 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					</umb-property-layout>
 					<umb-property-layout label="H2s">
 						<div slot="editor">
-							<ul>${this._data?.seoData.h2s?.map((h2: string) => html`<li>${h2}</li>`)}</ul>
+							${this._data?.seoData.h2s?.filter(h => h.trim()).length ? html`<ul>${this._data.seoData.h2s.filter(h => h.trim()).map((h2: string) => html`<li>${h2}</li>`)}</ul>` : 'None'}
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="H3s">
 						<div slot="editor">
-							<ul>${this._data?.seoData.h3s?.map((h3: string) => html`<li>${h3}</li>`)}</ul>
+							${this._data?.seoData.h3s?.filter(h => h.trim()).length ? html`<ul>${this._data.seoData.h3s.filter(h => h.trim()).map((h3: string) => html`<li>${h3}</li>`)}</ul>` : 'None'}
 						</div>
 					</umb-property-layout>
 					<umb-property-layout label="No Index">
@@ -125,29 +125,6 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 				</uui-box>
 			` : ''}
 
-			${this._data?.performanceData ? html`
-				<uui-box headline="Performance">
-					<umb-property-layout label="Page Load Time">
-						<div slot="editor">${this._data?.performanceData.pageLoadTime}ms</div>
-					</umb-property-layout>
-					<umb-property-layout label="First Contentful Paint">
-						<div slot="editor">${this._data?.performanceData.firstContentfulPaint?.value}ms</div>
-					</umb-property-layout>
-					<umb-property-layout label="Largest Contentful Paint">
-						<div slot="editor">${this._data?.performanceData.largestContentfulPaint?.value}ms</div>
-					</umb-property-layout>
-					<umb-property-layout label="Time to Interactive">
-						<div slot="editor">${this._data?.performanceData.timeToInteractive?.value}ms</div>
-					</umb-property-layout>
-					<umb-property-layout label="Total Requests">
-						<div slot="editor">${this._data?.performanceData.totalRequests}</div>
-					</umb-property-layout>
-					<umb-property-layout label="Total Bytes">
-						<div slot="editor">${this._data?.performanceData.totalBytes}b</div>
-					</umb-property-layout>
-				</uui-box>
-			` : ''}
-
 			${this._data?.accessibilityData ? html`
 				<uui-box headline="Accessibility">
 					<umb-property-layout label="ARIA Labels">
@@ -185,9 +162,14 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 					<umb-property-layout label="Has Schema Markup">
 						<div slot="editor">${this._data?.technicalSeoData.hasSchemaMarkup ? 'Yes' : 'No'}</div>
 					</umb-property-layout>
-					<umb-property-layout label="Schema Type">
-						<div slot="editor">${this._data?.technicalSeoData.schemaType}</div>
-					</umb-property-layout>
+					${when(
+						this._data?.technicalSeoData.hasSchemaMarkup,
+						() => html`
+							<umb-property-layout label="Schema Type">
+								<div slot="editor">${this._data?.technicalSeoData.schemaType}</div>
+							</umb-property-layout>
+						`
+					)}
 				</uui-box>
 			` : ''}
 
@@ -202,19 +184,44 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 				</uui-box>
 			` : ''}
 
-			${this._data?.emissionsData ? html`
-				<uui-box headline="Emissions">
-					<umb-property-layout label="Emissions per Page View">
-						<div slot="editor">${this._data?.emissionsData.emissionsPerPageView}g CO<sub>2</sub></div>
-					</umb-property-layout>
-					<umb-property-layout label="Carbon Rating">
-						<div slot="editor">
-							<content-audit-carbon-intensity-label .value=${this._data?.emissionsData.carbonRating}>
-							</content-audit-carbon-intensity-label>
-						</div>
-					</umb-property-layout>
-				</uui-box>
+			${!this._data?.performanceData && !this._data?.emissionsData ? html`
+				<small class="enrich-note">Performance and emissions data is populated after a page has been enriched.</small>
 			` : ''}
+
+			<uui-box headline="Performance">
+				<umb-property-layout label="Page Load Time">
+					<div slot="editor">${this._data?.performanceData?.pageLoadTime != null ? `${this._data.performanceData.pageLoadTime}ms` : 'N/A'}</div>
+				</umb-property-layout>
+				<umb-property-layout label="First Contentful Paint">
+					<div slot="editor">${this._data?.performanceData?.firstContentfulPaint ? `${this._data.performanceData.firstContentfulPaint.value}ms` : 'N/A'}</div>
+				</umb-property-layout>
+				<umb-property-layout label="Largest Contentful Paint">
+					<div slot="editor">${this._data?.performanceData?.largestContentfulPaint ? `${this._data.performanceData.largestContentfulPaint.value}ms` : 'N/A'}</div>
+				</umb-property-layout>
+				<umb-property-layout label="Time to Interactive">
+					<div slot="editor">${this._data?.performanceData?.timeToInteractive ? `${this._data.performanceData.timeToInteractive.value}ms` : 'N/A'}</div>
+				</umb-property-layout>
+				<umb-property-layout label="Total Requests">
+					<div slot="editor">${this._data?.performanceData?.totalRequests ?? 'N/A'}</div>
+				</umb-property-layout>
+				<umb-property-layout label="Total Bytes">
+					<div slot="editor">${this._data?.performanceData?.totalBytes != null ? `${this._data.performanceData.totalBytes}b` : 'N/A'}</div>
+				</umb-property-layout>
+			</uui-box>
+
+			<uui-box headline="Emissions">
+				<umb-property-layout label="Emissions per Page View">
+					<div slot="editor">${this._data?.emissionsData ? html`${this._data.emissionsData.emissionsPerPageView}g CO<sub>2</sub>` : 'N/A'}</div>
+				</umb-property-layout>
+				<umb-property-layout label="Carbon Rating">
+					<div slot="editor">
+						${this._data?.emissionsData ? html`
+							<content-audit-carbon-intensity-label .value=${this._data.emissionsData.carbonRating}>
+							</content-audit-carbon-intensity-label>
+						` : 'N/A'}
+					</div>
+				</umb-property-layout>
+			</uui-box>
 			</div>
 		`;
     }
@@ -270,6 +277,12 @@ export class ContentAuditAllPagesDetailsWorkspaceViewElement extends UmbLitEleme
 			content-audit-health-score {
 				display: block;
 				margin-bottom: var(--uui-size-layout-1);
+			}
+
+			.enrich-note {
+				display: block;
+				color: var(--uui-color-text-alt);
+				font-style: italic;
 			}
 
 			umb-property-layout {

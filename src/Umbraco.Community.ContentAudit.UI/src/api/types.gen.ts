@@ -102,7 +102,8 @@ export type CoreWebVitalsListItemDto = {
 export type CrawlDto = {
     url?: string | null;
     external: boolean;
-    asset: boolean;
+    resource: boolean;
+    image: boolean;
     crawled: boolean;
     blocked: boolean;
     unique: string;
@@ -111,8 +112,15 @@ export type CrawlDto = {
 
 export type CrawlStatusDto = {
     isRunning: boolean;
-    results: Array<CrawlDto>;
     phase?: string | null;
+    total: number;
+    internal: number;
+    external: number;
+    resources: number;
+    images: number;
+    blocked: number;
+    skipped: number;
+    recentUrls: Array<CrawlDto>;
 };
 
 export type EmissionsDto = {
@@ -151,6 +159,13 @@ export type ImageDto = {
     foundPage?: string | null;
     createdDate: string;
     isBackground: boolean;
+};
+
+export type IncompleteCrawlDto = {
+    key: string;
+    runDate: string;
+    total: number;
+    totalInternal: number;
 };
 
 export type IssueDto = {
@@ -250,7 +265,8 @@ export type OverviewDto = {
     total?: number | null;
     totalInternal?: number | null;
     totalExternal?: number | null;
-    totalAssets?: number | null;
+    totalResources?: number | null;
+    totalImages?: number | null;
     totalBlocked?: number | null;
     healthScore: number;
 };
@@ -318,6 +334,11 @@ export type PagedImageDtoModel = {
 export type PagedIssueDtoModel = {
     total: number;
     items: Array<IssueDto>;
+};
+
+export type PagedIssueReferenceDtoModel = {
+    total: number;
+    items: Array<IssueReferenceDto>;
 };
 
 export type PagedLinkGroupDtoModel = {
@@ -465,7 +486,8 @@ export type OverviewDtoWritable = {
     total?: number | null;
     totalInternal?: number | null;
     totalExternal?: number | null;
-    totalAssets?: number | null;
+    totalResources?: number | null;
+    totalImages?: number | null;
     totalBlocked?: number | null;
     healthScore: number;
 };
@@ -1132,6 +1154,64 @@ export type CancelCrawlResponses = {
     200: unknown;
 };
 
+export type GetIncompleteCrawlData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/crawl/incomplete';
+};
+
+export type GetIncompleteCrawlErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetIncompleteCrawlError = GetIncompleteCrawlErrors[keyof GetIncompleteCrawlErrors];
+
+export type GetIncompleteCrawlResponses = {
+    /**
+     * OK
+     */
+    200: IncompleteCrawlDto;
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type GetIncompleteCrawlResponse = GetIncompleteCrawlResponses[keyof GetIncompleteCrawlResponses];
+
+export type DiscardIncompleteCrawlData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/umbraco/content-audit/management/api/v1/crawl/incomplete/{id}';
+};
+
+export type DiscardIncompleteCrawlErrors = {
+    /**
+     * Not Found
+     */
+    404: ProblemDetails;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type DiscardIncompleteCrawlError = DiscardIncompleteCrawlErrors[keyof DiscardIncompleteCrawlErrors];
+
+export type DiscardIncompleteCrawlResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type StartCrawlData = {
     body?: never;
     path?: never;
@@ -1364,6 +1444,41 @@ export type GetIssueResponses = {
 };
 
 export type GetIssueResponse = GetIssueResponses[keyof GetIssueResponses];
+
+export type GetIssueReferencesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        skip?: number;
+        take?: number;
+        filter?: string;
+    };
+    url: '/umbraco/content-audit/management/api/v1/issue/{id}/references';
+};
+
+export type GetIssueReferencesErrors = {
+    /**
+     * Not Found
+     */
+    404: ProblemDetails;
+    /**
+     * Internal Server Error
+     */
+    500: ProblemDetails;
+};
+
+export type GetIssueReferencesError = GetIssueReferencesErrors[keyof GetIssueReferencesErrors];
+
+export type GetIssueReferencesResponses = {
+    /**
+     * OK
+     */
+    200: PagedIssueReferenceDtoModel;
+};
+
+export type GetIssueReferencesResponse = GetIssueReferencesResponses[keyof GetIssueReferencesResponses];
 
 export type GetSettingsData = {
     body?: never;

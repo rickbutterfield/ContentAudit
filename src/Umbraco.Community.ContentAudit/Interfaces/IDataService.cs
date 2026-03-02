@@ -142,6 +142,16 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<IssueDto?> GetIssue(Guid issueGuid);
 
         /// <summary>
+        /// Gets paginated references (pages or images) affected by a specific issue
+        /// </summary>
+        /// <param name="issueGuid">The unique identifier of the issue type</param>
+        /// <param name="skip">Number of items to skip</param>
+        /// <param name="take">Number of items to take</param>
+        /// <param name="filter">Optional text filter to apply to URLs</param>
+        /// <returns>Paginated list of issue references and total count, or null if issue not found</returns>
+        Task<(List<IssueReferenceDto> Items, int Total)?> GetIssueReferences(Guid issueGuid, int skip, int take, string filter = "");
+
+        /// <summary>
         /// Calculates and returns the overall health score for the latest audit
         /// </summary>
         /// <returns>Health score with weighted metrics</returns>

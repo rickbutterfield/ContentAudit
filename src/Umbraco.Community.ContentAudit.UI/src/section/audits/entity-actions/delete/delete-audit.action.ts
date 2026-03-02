@@ -5,6 +5,7 @@ import { UMB_NOTIFICATION_CONTEXT } from '@umbraco-cms/backoffice/notification';
 import { UmbRequestReloadChildrenOfEntityEvent } from '@umbraco-cms/backoffice/entity-action';
 import { UMB_CONFIRM_MODAL } from '@umbraco-cms/backoffice/modal';
 import { AuditService } from '../../../../api';
+import { CONTENT_AUDIT_CONTEXT_TOKEN } from '../../../../context/audit.context';
 
 export class DeleteAuditEntityAction extends UmbEntityActionBase<never> {
 	async execute() {
@@ -18,6 +19,7 @@ export class DeleteAuditEntityAction extends UmbEntityActionBase<never> {
 				headline: 'Delete Audit',
 				content: 'Are you sure you want to delete this audit? This action cannot be undone.',
 				confirmLabel: 'Delete',
+				color: 'danger',
 			},
 		});
 
@@ -39,6 +41,12 @@ export class DeleteAuditEntityAction extends UmbEntityActionBase<never> {
 				unique: null,
 			});
 			eventContext.dispatchEvent(event);
+
+			const auditContext = await this.getContext(CONTENT_AUDIT_CONTEXT_TOKEN);
+			auditContext?.getLatestAuditOverview();
+			auditContext?.getAuditOverviews();
+			auditContext?.getTopIssues();
+			auditContext?.getHealthScore();
 
 			notificationContext.peek('positive', {
 				data: { headline: 'Audit deleted', message: 'The audit has been deleted successfully.' },

@@ -111,6 +111,23 @@ namespace Umbraco.Community.ContentAudit.Repositories
         }
 
         /// <inheritdoc/>
+        public async Task<PageSchema?> GetPageByAuditKeyAndUrl(Guid auditKey, string url)
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<PageSchema>()
+                .Where<PageSchema>(x => x.AuditKey == auditKey && x.Url == url);
+
+            var pageData = await scope.Database.FirstOrDefaultAsync<PageSchema>(sql);
+
+            scope.Complete();
+
+            return pageData;
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<SeoSchema>> GetSeoData(Guid auditKey, string url)
         {
             using var scope = _scopeProvider.CreateScope();
@@ -410,6 +427,24 @@ namespace Umbraco.Community.ContentAudit.Repositories
             var data = await scope.Database.FetchAsync<IssueResultSchema>(sql);
             scope.Complete();
             return data;
+        }
+
+        /// <inheritdoc/>
+        public async Task<OverviewSchema?> GetIncompleteAudit()
+        {
+            using var scope = _scopeProvider.CreateScope();
+
+            var sql = scope.SqlContext.Sql()
+                .Select("*")
+                .From<OverviewSchema>()
+                .Where<OverviewSchema>(x => x.Status == (int)AuditStatus.InProgress)
+                .OrderByDescending<OverviewSchema>(x => x.RunDate);
+
+            var result = await scope.Database.FirstOrDefaultAsync<OverviewSchema>(sql);
+
+            scope.Complete();
+
+            return result;
         }
 
         /// <inheritdoc/>

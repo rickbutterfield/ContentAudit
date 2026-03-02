@@ -92,7 +92,8 @@ namespace Umbraco.Community.ContentAudit.Services
                     Unique = page.Unique,
                     Crawled = analysis is not null,
                     External = false,
-                    Asset = false
+                    Resource = false,
+                    Image = false
                 };
 
                 _stateManager.AddResult(crawlDto);

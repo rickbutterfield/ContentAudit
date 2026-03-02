@@ -26,7 +26,8 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
             Total = schema.Total;
             TotalInternal = schema.TotalInternal;
             TotalExternal = schema.TotalExternal;
-            TotalAssets = schema.TotalAssets;
+            TotalResources = schema.TotalResources;
+            TotalImages = schema.TotalImages;
             TotalBlocked = schema.TotalBlocked;
             HealthScore = schema.HealthScore;
         }
@@ -80,10 +81,16 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public int? TotalExternal { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of assets (images, scripts, stylesheets, etc.) discovered during the audit run.
+        /// Gets or sets the number of network resources (scripts, stylesheets, fonts, etc.) discovered during the audit run.
         /// </summary>
-        [JsonPropertyName("totalAssets")]
-        public int? TotalAssets { get; set; }
+        [JsonPropertyName("totalResources")]
+        public int? TotalResources { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of images discovered during the audit run.
+        /// </summary>
+        [JsonPropertyName("totalImages")]
+        public int? TotalImages { get; set; }
 
         /// <summary>
         /// Gets or sets the number of pages blocked by robots.txt rules during the audit run.

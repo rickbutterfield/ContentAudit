@@ -33,7 +33,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly ConcurrentDictionary<string, HeadResponseDto> _headResponseCache = new();
         private readonly ConcurrentDictionary<string, byte> _enqueuedUrls = new();
 
-        private readonly HashSet<KeyValuePair<Guid, string>> _umbracoContent = new();
+        private readonly Dictionary<string, Guid> _umbracoContent = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly ConcurrentBag<PageDto> _pageDtos = new();
         private readonly ConcurrentBag<ImageDto> _imageDtos = new();
@@ -61,6 +61,7 @@ namespace Umbraco.Community.ContentAudit.Services
         private readonly IEnumerable<IUrlDiscoveryStrategy> _urlDiscoveryStrategies;
 
         private int _isDiscoveryComplete;
+        private int _activeWorkerCount;
 
         private Guid _currentAuditKey;
         private volatile int _pagesSinceLastFlush;
@@ -261,7 +262,8 @@ namespace Umbraco.Community.ContentAudit.Services
                                 emptyChecks = 0;
                             }
 
-                            if (_urlQueue.IsEmpty && processUrlBlock.InputCount == 0)
+                            if (_urlQueue.IsEmpty && processUrlBlock.InputCount == 0
+                                && Volatile.Read(ref _activeWorkerCount) == 0)
                             {
                                 emptyChecks++;
                                 _logger.LogDebug("Empty state check {0}/{1}", emptyChecks, maxEmptyChecks);
@@ -305,6 +307,9 @@ namespace Umbraco.Community.ContentAudit.Services
                 await urlProcessingTask;
                 await processUrlBlock.Completion;
 
+                _crawlStateManager.SetPhase("Checking external links");
+                await ProcessDeferredHeadRequestsAsync(linkedToken);
+
                 _logger.LogInformation("All processing complete, saving crawl results");
                 _crawlStateManager.SetPhase("Saving results");
                 await SaveCrawlResults();
@@ -337,6 +342,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
         private async Task ProcessUrlAsync(UrlQueueItem queueItem, Uri baseUri, CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref _activeWorkerCount);
             string url = queueItem.Url;
 
             try
@@ -355,7 +361,8 @@ namespace Umbraco.Community.ContentAudit.Services
                 {
                     Url = url,
                     External = false,
-                    Asset = false,
+                    Resource = false,
+                    Image = false,
                     Crawled = false,
                     Blocked = false,
                     Unique = queueItem.Unique
@@ -414,6 +421,7 @@ namespace Umbraco.Community.ContentAudit.Services
             }
             finally
             {
+                Interlocked.Decrement(ref _activeWorkerCount);
                 _logger.LogDebug("Finished processing URL: {0}", url);
             }
         }
@@ -423,10 +431,12 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger.LogDebug("Starting internal crawl: {0} (depth: {1})", url, currentDepth);
 
             var normalizedUrl = _requestHandlerSettings.AddTrailingSlash ? url.EnsureEndsWith('/') : url;
-            var matchingUmbracoNode = _umbracoContent.FirstOrDefault(x => string.Equals(x.Value, normalizedUrl, StringComparison.OrdinalIgnoreCase));
+            _umbracoContent.TryGetValue(normalizedUrl, out var nodeKey);
 
-            if (matchingUmbracoNode.Key == Guid.Empty && fallbackNodeKey != Guid.Empty)
-                matchingUmbracoNode = new KeyValuePair<Guid, string>(fallbackNodeKey, normalizedUrl);
+            if (nodeKey == Guid.Empty && fallbackNodeKey != Guid.Empty)
+                nodeKey = fallbackNodeKey;
+
+            var matchingUmbracoNode = new KeyValuePair<Guid, string>(nodeKey, normalizedUrl);
 
             if (_contentAuditSettings.UseIncrementalCrawl && _previousAuditKey.HasValue
                 && _previousFingerprints.TryGetValue(url, out var previousFingerprint))
@@ -451,7 +461,8 @@ namespace Umbraco.Community.ContentAudit.Services
                     {
                         Url = url,
                         Crawled = true,
-                        Asset = false,
+                        Resource = false,
+                        Image = false,
                         External = false,
                         Blocked = false,
                         Unique = matchingUmbracoNode.Key,
@@ -553,8 +564,6 @@ namespace Umbraco.Community.ContentAudit.Services
             _logger.LogDebug("Found {0} links and {1} resources on page {2}",
                 pageAnalysis.Links.Count(), pageAnalysis.Resources.Count(), url);
 
-            var externalHeadTasks = new List<Task>();
-
             if (pageAnalysis.SeoData?.HasNoFollow == false)
             {
                 foreach (var link in pageAnalysis.Links)
@@ -564,34 +573,11 @@ namespace Umbraco.Community.ContentAudit.Services
                         var absoluteUrl = absoluteUri.AbsoluteUri;
 
                         link.Url = absoluteUrl;
-                        //link.IsExternal = link.IsExternal;
                         _linkDtos.Add(link);
-
-                        if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
-                        {
-                            link.StatusCode = cachedResponse.StatusCode;
-                            link.ContentType = cachedResponse.ContentType;
-                        }
-                        else if (link.IsExternal)
-                        {
-                            var capturedLink = link;
-                            var capturedUrl = absoluteUrl;
-                            externalHeadTasks.Add(Task.Run(async () =>
-                            {
-                                await _domainRateLimiter.WaitAsync(capturedUrl);
-                                var headResponse = await _crawlService.GetHeadResponse(capturedUrl);
-                                if (headResponse != null)
-                                {
-                                    capturedLink.StatusCode = headResponse.StatusCode;
-                                    capturedLink.ContentType = headResponse.ContentType;
-                                    _headResponseCache.TryAdd(capturedUrl, headResponse);
-                                }
-                            }));
-                        }
 
                         if (link.IsExternal)
                         {
-                            RegisterExternalOrAssetResult(absoluteUrl, isExternal: true, isAsset: false);
+                            RegisterCrawlResult(absoluteUrl, isExternal: true, isResource: false, isImage: false);
                         }
                         else
                         {
@@ -609,6 +595,13 @@ namespace Umbraco.Community.ContentAudit.Services
                 }
             }
 
+            var imageUrlSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var img in pageAnalysis.Images)
+            {
+                if (Uri.TryCreate(_baseUri, img.Url, out var imgUri))
+                    imageUrlSet.Add(imgUri.AbsoluteUri);
+            }
+
             foreach (var resource in pageAnalysis.Resources)
             {
                 if (string.Equals(resource.Url, Constants.Crawl.WebVitalsScriptUrl, StringComparison.OrdinalIgnoreCase))
@@ -621,41 +614,21 @@ namespace Umbraco.Community.ContentAudit.Services
                     resource.Url = absoluteUrl;
                     _resourceDtos.Add(resource);
 
-                    if (_headResponseCache.TryGetValue(absoluteUrl, out var cachedResponse))
-                    {
-                        resource.StatusCode = cachedResponse.StatusCode;
-                        resource.ContentType = cachedResponse.ContentType;
-                        resource.Size = cachedResponse.ContentLength;
-                    }
-                    else if (resource.IsExternal)
-                    {
-                        var capturedResource = resource;
-                        var capturedUrl = absoluteUrl;
-                        externalHeadTasks.Add(Task.Run(async () =>
-                        {
-                            await _domainRateLimiter.WaitAsync(capturedUrl);
-                            var headResponse = await _crawlService.GetHeadResponse(capturedUrl);
-                            if (headResponse != null)
-                            {
-                                capturedResource.StatusCode = headResponse.StatusCode;
-                                capturedResource.ContentType = headResponse.ContentType;
-                                capturedResource.Size = headResponse.ContentLength;
-                                _headResponseCache.TryAdd(capturedUrl, headResponse);
-                            }
-                        }));
-                    }
-
-                    RegisterExternalOrAssetResult(absoluteUrl, isExternal: resource.IsExternal, isAsset: true);
+                    var isImage = imageUrlSet.Contains(absoluteUrl);
+                    RegisterCrawlResult(absoluteUrl, isExternal: resource.IsExternal, isResource: !isImage, isImage: isImage);
                 }
-            }
-
-            if (externalHeadTasks.Count > 0)
-            {
-                await Task.WhenAll(externalHeadTasks);
             }
 
             foreach (var image in pageAnalysis.Images)
             {
+                if (Uri.TryCreate(_baseUri, image.Url, out var absoluteUri))
+                {
+                    var absoluteUrl = absoluteUri.AbsoluteUri;
+                    image.Url = absoluteUrl;
+
+                    RegisterCrawlResult(absoluteUrl, isExternal: image.IsExternal, isResource: false, isImage: true);
+                }
+
                 _imageDtos.Add(image);
             }
 
@@ -675,7 +648,8 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 Url = url,
                 Crawled = true,
-                Asset = false,
+                Resource = false,
+                Image = false,
                 External = false,
                 Blocked = false,
                 Unique = matchingUmbracoNode.Key
@@ -724,9 +698,9 @@ namespace Umbraco.Community.ContentAudit.Services
                 item.Url, item.IsExternal, item.IsAsset, item.SourceUrl ?? "Initial");
         }
 
-        private void RegisterExternalOrAssetResult(string url, bool isExternal, bool isAsset)
+        private void RegisterCrawlResult(string url, bool isExternal, bool isResource, bool isImage)
         {
-            if (isAsset)
+            if (isResource || isImage)
             {
                 url = url.NormalizeUrlWithoutQuery(_requestHandlerSettings.AddTrailingSlash);
             }
@@ -735,7 +709,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 url = url.NormalizeUrl(_requestHandlerSettings.AddTrailingSlash);
             }
 
-            var crawlResultKey = $"{url}|{isExternal}|{isAsset}";
+            var crawlResultKey = $"{url}|{isExternal}|{isResource || isImage}";
             if (!_enqueuedUrls.TryAdd(crawlResultKey, 0))
                 return;
 
@@ -746,7 +720,8 @@ namespace Umbraco.Community.ContentAudit.Services
             {
                 Url = url,
                 External = isExternal,
-                Asset = isAsset,
+                Resource = isResource,
+                Image = isImage,
                 Crawled = true,
                 Blocked = false,
                 Unique = Guid.Empty
@@ -770,7 +745,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                 if (link.IsExternal)
                 {
-                    RegisterExternalOrAssetResult(link.Url, isExternal: true, isAsset: false);
+                    RegisterCrawlResult(link.Url, isExternal: true, isResource: false, isImage: false);
                 }
                 else
                 {
@@ -802,18 +777,20 @@ namespace Umbraco.Community.ContentAudit.Services
             // Calculate totals from _crawlResults which includes ALL processed URLs (including skipped)
             var allCrawlResults = _crawlResults.Values.ToList();
 
-            var internalCount = allCrawlResults.Count(x => !x.External && !x.Asset && !x.Blocked);
-            var externalCount = allCrawlResults.Count(x => x.External && !x.Asset);
-            var assetCount = allCrawlResults.Count(x => x.Asset);
+            var internalCount = allCrawlResults.Count(x => !x.External && !x.Resource && !x.Image && !x.Blocked);
+            var externalCount = allCrawlResults.Count(x => x.External && !x.Resource && !x.Image);
+            var resourceCount = allCrawlResults.Count(x => x.Resource);
+            var imageCount = allCrawlResults.Count(x => x.Image);
             var blockedCount = allCrawlResults.Count(x => x.Blocked);
 
-            var totalUrls = internalCount + externalCount + assetCount + blockedCount;
+            var totalUrls = internalCount + externalCount + resourceCount + imageCount + blockedCount;
 
             var metadata = new AuditMetadata(
                 TotalUrls: totalUrls,
                 TotalInternal: internalCount,
                 TotalExternal: externalCount,
-                TotalAssets: assetCount,
+                TotalResources: resourceCount,
+                TotalImages: imageCount,
                 TotalBlocked: blockedCount);
 
             await _persistence.UpdateAuditTotalsAsync(_currentAuditKey, metadata);
@@ -822,6 +799,99 @@ namespace Umbraco.Community.ContentAudit.Services
             double healthScore = await EvaluateAndPersistIssues();
             await _persistence.CompleteAuditAsync(_currentAuditKey, healthScore);
             await _persistence.DeleteCrawlStateAsync(_currentAuditKey);
+        }
+
+        private async Task ProcessDeferredHeadRequestsAsync(CancellationToken cancellationToken)
+        {
+            var urlsToCheck = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var link in _linkDtos)
+            {
+                if (link.IsExternal && !string.IsNullOrEmpty(link.Url))
+                    urlsToCheck.Add(link.Url);
+            }
+
+            foreach (var resource in _resourceDtos)
+            {
+                if (!string.IsNullOrEmpty(resource.Url))
+                    urlsToCheck.Add(resource.Url);
+            }
+
+            foreach (var image in _imageDtos)
+            {
+                if (!string.IsNullOrEmpty(image.Url))
+                    urlsToCheck.Add(image.Url);
+            }
+
+            if (urlsToCheck.Count == 0)
+                return;
+
+            _logger.LogInformation("Checking {Count} unique external/resource/image URLs", urlsToCheck.Count);
+
+            var headBlock = new ActionBlock<string>(
+                async url =>
+                {
+                    try
+                    {
+                        if (_headResponseCache.ContainsKey(url))
+                            return;
+
+                        bool isExternal = Uri.TryCreate(url, UriKind.Absolute, out var uri)
+                            && uri.Host != _baseUri!.Host;
+
+                        if (isExternal)
+                            await _domainRateLimiter.WaitAsync(url);
+
+                        var headResponse = await _crawlService.GetHeadResponse(url);
+                        if (headResponse != null)
+                            _headResponseCache.TryAdd(url, headResponse);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "HEAD request failed for {Url}", url);
+                    }
+                },
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = Math.Min(_contentAuditSettings.MaxConcurrentCrawls * 4, 20),
+                    CancellationToken = cancellationToken
+                });
+
+            foreach (var url in urlsToCheck)
+                await headBlock.SendAsync(url, cancellationToken);
+
+            headBlock.Complete();
+            await headBlock.Completion;
+
+            _logger.LogInformation("HEAD requests complete, {CachedCount} responses cached", _headResponseCache.Count);
+
+            foreach (var link in _linkDtos)
+            {
+                if (link.Url != null && _headResponseCache.TryGetValue(link.Url, out var cached))
+                {
+                    link.StatusCode = cached.StatusCode;
+                    link.ContentType = cached.ContentType;
+                }
+            }
+
+            foreach (var resource in _resourceDtos)
+            {
+                if (resource.Url != null && _headResponseCache.TryGetValue(resource.Url, out var cached))
+                {
+                    resource.StatusCode = cached.StatusCode;
+                    resource.ContentType = cached.ContentType;
+                    resource.Size = cached.ContentLength;
+                }
+            }
+
+            foreach (var image in _imageDtos)
+            {
+                if (image.Url != null && _headResponseCache.TryGetValue(image.Url, out var cached))
+                {
+                    image.ContentType = cached.ContentType;
+                    image.Size = cached.ContentLength;
+                }
+            }
         }
 
         private async Task FlushDataToDatabase()
@@ -872,94 +942,80 @@ namespace Umbraco.Community.ContentAudit.Services
 
             _logger.LogDebug("Copying data from previous audit for unchanged page: {Url}", url);
 
-            var pages = await _auditRepository.GetPagesByAuditKey(_previousAuditKey.Value);
-            var previousPage = pages.FirstOrDefault(p => p.Url == url);
+            var previousAuditKey = _previousAuditKey.Value;
+            var previousPage = await _auditRepository.GetPageByAuditKeyAndUrl(previousAuditKey, url);
             if (previousPage != null)
             {
                 var pageDto = new PageDto(previousPage);
                 pageDto.Unique = unique;
                 _pageDtos.Add(pageDto);
 
-                var seoData = await _auditRepository.GetSeoData(_previousAuditKey.Value, url);
-                var previousSeo = seoData?.FirstOrDefault();
+                var seoTask = _auditRepository.GetSeoData(previousAuditKey, url);
+                var contentAnalysisTask = _auditRepository.GetContentAnalysisData(previousAuditKey, url);
+                var performanceTask = _auditRepository.GetPerformanceData(previousAuditKey, url);
+                var accessibilityTask = _auditRepository.GetAccessibilityData(previousAuditKey, url);
+                var technicalSeoTask = _auditRepository.GetTechnicalSeoData(previousAuditKey, url);
+                var socialMediaTask = _auditRepository.GetSocialMediaData(previousAuditKey, url);
+                var contentQualityTask = _auditRepository.GetContentQualityData(previousAuditKey, url);
+                var linksTask = _auditRepository.GetLinkData(previousAuditKey, url);
+                var resourcesTask = _auditRepository.GetResourceData(previousAuditKey, url);
+                var imagesTask = _auditRepository.GetImageData(previousAuditKey, url);
+
+                await Task.WhenAll(seoTask, contentAnalysisTask, performanceTask, accessibilityTask,
+                    technicalSeoTask, socialMediaTask, contentQualityTask, linksTask, resourcesTask, imagesTask);
+
+                var previousSeo = seoTask.Result?.FirstOrDefault();
                 if (previousSeo != null)
-                {
                     _seoDtos.Add(new SeoDto(previousSeo));
-                }
 
-                var contentAnalysis = await _auditRepository.GetContentAnalysisData(_previousAuditKey.Value, url);
-                var previousContentAnalysis = contentAnalysis?.FirstOrDefault();
+                var previousContentAnalysis = contentAnalysisTask.Result?.FirstOrDefault();
                 if (previousContentAnalysis != null)
-                {
                     _contentAnalysisDtos.Add(new ContentAnalysisDto(previousContentAnalysis));
-                }
 
-                var performance = await _auditRepository.GetPerformanceData(_previousAuditKey.Value, url);
-                var previousPerformance = performance?.FirstOrDefault();
+                var previousPerformance = performanceTask.Result?.FirstOrDefault();
                 if (previousPerformance != null)
-                {
                     _performanceDtos.Add(new PerformanceDto(previousPerformance));
-                }
 
-                var accessibility = await _auditRepository.GetAccessibilityData(_previousAuditKey.Value, url);
-                var previousAccessibility = accessibility?.FirstOrDefault();
+                var previousAccessibility = accessibilityTask.Result?.FirstOrDefault();
                 if (previousAccessibility != null)
-                {
                     _accessibilityDtos.Add(new AccessibilityDto(previousAccessibility));
-                }
 
-                var technicalSeo = await _auditRepository.GetTechnicalSeoData(_previousAuditKey.Value, url);
-                var previousTechnicalSeo = technicalSeo?.FirstOrDefault();
+                var previousTechnicalSeo = technicalSeoTask.Result?.FirstOrDefault();
                 if (previousTechnicalSeo != null)
-                {
                     _technicalSeoDtos.Add(new TechnicalSeoDto(previousTechnicalSeo));
-                }
 
-                var socialMedia = await _auditRepository.GetSocialMediaData(_previousAuditKey.Value, url);
-                var previousSocialMedia = socialMedia?.FirstOrDefault();
+                var previousSocialMedia = socialMediaTask.Result?.FirstOrDefault();
                 if (previousSocialMedia != null)
-                {
                     _socialMediaDtos.Add(new SocialMediaDto(previousSocialMedia));
-                }
 
-                var contentQuality = await _auditRepository.GetContentQualityData(_previousAuditKey.Value, url);
-                var previousContentQuality = contentQuality?.FirstOrDefault();
+                var previousContentQuality = contentQualityTask.Result?.FirstOrDefault();
                 if (previousContentQuality != null)
-                {
                     _contentQualityDtos.Add(new ContentQualityDto(previousContentQuality));
-                }
 
-                var links = await _auditRepository.GetLinkData(_previousAuditKey.Value, url);
-                if (links != null)
+                if (linksTask.Result != null)
                 {
-                    foreach (var link in links)
+                    foreach (var link in linksTask.Result)
                     {
                         var linkDto = new LinkDto(link);
                         _linkDtos.Add(linkDto);
 
                         if (linkDto.IsExternal)
                         {
-                            RegisterExternalOrAssetResult(linkDto.Url ?? string.Empty, isExternal: true, isAsset: false);
+                            RegisterCrawlResult(linkDto.Url ?? string.Empty, isExternal: true, isResource: false, isImage: false);
                         }
                     }
                 }
 
-                var resources = await _auditRepository.GetResourceData(_previousAuditKey.Value, url);
-                if (resources != null)
+                if (resourcesTask.Result != null)
                 {
-                    foreach (var resource in resources)
-                    {
+                    foreach (var resource in resourcesTask.Result)
                         _resourceDtos.Add(new ResourceDto(resource));
-                    }
                 }
 
-                var images = await _auditRepository.GetImageData(_previousAuditKey.Value, url);
-                if (images != null)
+                if (imagesTask.Result != null)
                 {
-                    foreach (var image in images)
-                    {
+                    foreach (var image in imagesTask.Result)
                         _imageDtos.Add(new ImageDto(image));
-                    }
                 }
             }
         }
@@ -972,21 +1028,33 @@ namespace Umbraco.Community.ContentAudit.Services
             var emissionsService = new EmissionsService();
             var pageAnalysisList = new List<PageAnalysisDto>();
 
+            var seoByUrl = _seoDtos.GroupBy(s => s.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var contentAnalysisByUrl = _contentAnalysisDtos.GroupBy(c => c.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var performanceByUrl = _performanceDtos.GroupBy(p => p.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var accessibilityByUrl = _accessibilityDtos.GroupBy(a => a.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var technicalSeoByUrl = _technicalSeoDtos.GroupBy(t => t.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var socialMediaByUrl = _socialMediaDtos.GroupBy(s => s.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var contentQualityByUrl = _contentQualityDtos.GroupBy(c => c.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var linksByFoundPage = _linkDtos.GroupBy(l => l.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var resourcesByFoundPage = _resourceDtos.GroupBy(r => r.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var imagesByFoundPage = _imageDtos.GroupBy(i => i.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+
             foreach (var page in _pageDtos)
             {
+                var url = page.Url ?? "";
                 var pageAnalysis = new PageAnalysisDto
                 {
                     PageData = page,
-                    SeoData = _seoDtos.FirstOrDefault(s => s.Url == page.Url)!,
-                    ContentAnalysis = _contentAnalysisDtos.FirstOrDefault(c => c.Url == page.Url)!,
-                    PerformanceData = _performanceDtos.FirstOrDefault(p => p.Url == page.Url)!,
-                    AccessibilityData = _accessibilityDtos.FirstOrDefault(a => a.Url == page.Url)!,
-                    TechnicalSeoData = _technicalSeoDtos.FirstOrDefault(t => t.Url == page.Url)!,
-                    SocialMediaData = _socialMediaDtos.FirstOrDefault(s => s.Url == page.Url)!,
-                    ContentQualityData = _contentQualityDtos.FirstOrDefault(c => c.Url == page.Url)!,
-                    Links = _linkDtos.Where(l => l.FoundPage == page.Url).ToList(),
-                    Resources = _resourceDtos.Where(r => r.FoundPage == page.Url).ToList(),
-                    Images = _imageDtos.Where(i => i.FoundPage == page.Url).ToList()
+                    SeoData = seoByUrl.GetValueOrDefault(url)!,
+                    ContentAnalysis = contentAnalysisByUrl.GetValueOrDefault(url)!,
+                    PerformanceData = performanceByUrl.GetValueOrDefault(url)!,
+                    AccessibilityData = accessibilityByUrl.GetValueOrDefault(url)!,
+                    TechnicalSeoData = technicalSeoByUrl.GetValueOrDefault(url)!,
+                    SocialMediaData = socialMediaByUrl.GetValueOrDefault(url)!,
+                    ContentQualityData = contentQualityByUrl.GetValueOrDefault(url)!,
+                    Links = linksByFoundPage.GetValueOrDefault(url) ?? [],
+                    Resources = resourcesByFoundPage.GetValueOrDefault(url) ?? [],
+                    Images = imagesByFoundPage.GetValueOrDefault(url) ?? []
                 };
 
                 if (pageAnalysis.PerformanceData?.TotalBytes.HasValue == true)
@@ -1112,7 +1180,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
                         if (discoveredUrl.ContentId.HasValue)
                         {
-                            _umbracoContent.Add(new KeyValuePair<Guid, string>(discoveredUrl.ContentId.Value, normalizedUrl));
+                            _umbracoContent[normalizedUrl] = discoveredUrl.ContentId.Value;
                         }
 
                         if (strategy.ContributesToCrawlQueue && !urlsToEnqueue.ContainsKey(normalizedUrl))
@@ -1137,7 +1205,7 @@ namespace Umbraco.Community.ContentAudit.Services
                 {
                     var absoluteUrl = absoluteUri.AbsoluteUri;
                     var contentId = discoveredUrl.ContentId
-                        ?? _umbracoContent.FirstOrDefault(x => string.Equals(x.Value, kvp.Key, StringComparison.OrdinalIgnoreCase)).Key;
+                        ?? (_umbracoContent.TryGetValue(kvp.Key, out var existingId) ? existingId : Guid.Empty);
 
                     if (contentId == Guid.Empty)
                         contentId = Guid.NewGuid();

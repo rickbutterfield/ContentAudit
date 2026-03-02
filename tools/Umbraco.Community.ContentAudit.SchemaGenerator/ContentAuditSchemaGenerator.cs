@@ -1,46 +1,29 @@
-﻿using NJsonSchema.Generation;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using NJsonSchema.Generation;
 
-namespace Umbraco.Community.ContentAudit.SchemaGenerator
+namespace Umbraco.Community.ContentAudit.SchemaGenerator;
+
+internal class ContentAuditSchemaGenerator : JsonSchemaGenerator
 {
-  internal class ContentAuditSchemaGenerator
-  {
-    private readonly JsonSchemaGenerator _schemaGenerator;
-
     public ContentAuditSchemaGenerator()
-        => _schemaGenerator = new JsonSchemaGenerator(new ContentAuditSchemaGeneratorSettings());
+        : base(new SystemTextJsonSchemaGeneratorSettings
+        {
+            AlwaysAllowAdditionalObjectProperties = true,
+            DefaultReferenceTypeNullHandling = ReferenceTypeNullHandling.NotNull,
+            SchemaNameGenerator = new NamespacePrefixedSchemaNameGenerator(),
+            IgnoreObsoleteProperties = true,
+            GenerateExamples = true,
+            SerializerOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() },
+            },
+        })
+    { }
+}
 
-    public string Generate()
-    {
-      var blockPreviewSchema = GenerateContentAuditSchema();
-      return blockPreviewSchema.ToString();
-    }
-
-    private JsonObject GenerateContentAuditSchema()
-    {
-      var schema = _schemaGenerator.Generate(typeof(AppSettings));
-      return JsonSerializer.Deserialize<JsonObject>(schema.ToJson());
-    }
-  }
-
-  internal class ContentAuditSchemaGeneratorSettings : SystemTextJsonSchemaGeneratorSettings
-  {
-    public ContentAuditSchemaGeneratorSettings()
-    {
-      AlwaysAllowAdditionalObjectProperties = true;
-      SerializerOptions = new JsonSerializerOptions();
-      DefaultReferenceTypeNullHandling = ReferenceTypeNullHandling.NotNull;
-      SchemaNameGenerator = new NamespacePrefixedSchemaNameGenerator();
-      SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-      IgnoreObsoleteProperties = true;
-      GenerateExamples = true;
-    }
-  }
-
-  internal class NamespacePrefixedSchemaNameGenerator : DefaultSchemaNameGenerator
-  {
-    public override string Generate(Type type) => type.Namespace.Replace(".", string.Empty) + base.Generate(type);
-  }
+internal class NamespacePrefixedSchemaNameGenerator : DefaultSchemaNameGenerator
+{
+    public override string Generate(Type type) =>
+        type.Namespace!.Replace(".", string.Empty) + base.Generate(type);
 }

@@ -55,7 +55,7 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 					<div class="info-grid">
 						<div class="info-item">
 							<strong>Run Date:</strong>
-							<span>${this.localize.date(this._data.runDate, { dateStyle: 'long', timeStyle: 'short' })}</span>
+							<span>${this.localize.date(new Date(this._data.runDate), { dateStyle: 'long', timeStyle: 'short' })}</span>
 						</div>
 						<div class="info-item">
 							<strong>Audit Key:</strong>
@@ -69,7 +69,8 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 						${this.#renderStatCard('Total URLs', this._data.total)}
 						${this.#renderStatCard('Internal URLs', this._data.totalInternal)}
 						${this.#renderStatCard('External URLs', this._data.totalExternal)}
-						${this.#renderStatCard('Asset URLs', this._data.totalAssets)}
+						${this.#renderStatCard('Resources', this._data.totalResources)}
+						${this.#renderStatCard('Images', this._data.totalImages)}
 						${this.#renderStatCard('Blocked URLs', this._data.totalBlocked)}
 					</div>
 				</uui-box>
@@ -91,14 +92,16 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 
 		const internalPercent = ((this._data.totalInternal ?? 0) / this._data.total) * 100;
 		const externalPercent = ((this._data.totalExternal ?? 0) / this._data.total) * 100;
-		const assetsPercent = ((this._data.totalAssets ?? 0) / this._data.total) * 100;
+		const resourcesPercent = ((this._data.totalResources ?? 0) / this._data.total) * 100;
+		const imagesPercent = ((this._data.totalImages ?? 0) / this._data.total) * 100;
 		const blockedPercent = ((this._data.totalBlocked ?? 0) / this._data.total) * 100;
 
 		return html`
 			<div class="breakdown-bar">
 				<div class="bar-segment bar-internal" style="width: ${internalPercent}%" title="Internal URLs: ${this._data.totalInternal}"></div>
 				<div class="bar-segment bar-external" style="width: ${externalPercent}%" title="External URLs: ${this._data.totalExternal}"></div>
-				<div class="bar-segment bar-assets" style="width: ${assetsPercent}%" title="Assets: ${this._data.totalAssets}"></div>
+				<div class="bar-segment bar-resources" style="width: ${resourcesPercent}%" title="Resources: ${this._data.totalResources}"></div>
+				<div class="bar-segment bar-images" style="width: ${imagesPercent}%" title="Images: ${this._data.totalImages}"></div>
 				<div class="bar-segment bar-blocked" style="width: ${blockedPercent}%" title="Blocked: ${this._data.totalBlocked}"></div>
 			</div>
 		`;
@@ -116,8 +119,12 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 					<span>External URLs (${this._data?.totalExternal ?? 0})</span>
 				</div>
 				<div class="legend-item">
-					<span class="legend-color bar-assets"></span>
-					<span>Assets (${this._data?.totalAssets ?? 0})</span>
+					<span class="legend-color bar-resources"></span>
+					<span>Resources (${this._data?.totalResources ?? 0})</span>
+				</div>
+				<div class="legend-item">
+					<span class="legend-color bar-images"></span>
+					<span>Images (${this._data?.totalImages ?? 0})</span>
 				</div>
 				<div class="legend-item">
 					<span class="legend-color bar-blocked"></span>
@@ -222,8 +229,12 @@ export class ContentAuditAuditsOverviewWorkspaceViewElement extends UmbLitElemen
 				background-color: var(--uui-color-default);
 			}
 
-			.bar-assets {
+			.bar-resources {
 				background-color: var(--uui-color-selected);
+			}
+
+			.bar-images {
+				background-color: var(--uui-color-warning);
 			}
 
 			.bar-blocked {

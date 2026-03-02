@@ -24,10 +24,16 @@ namespace Umbraco.Community.ContentAudit.Models.Dtos
         public bool External { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the URL points to a static asset (CSS, JavaScript, image, etc.).
+        /// Gets or sets a value indicating whether the URL points to a network resource (CSS, JavaScript, font, etc.).
         /// </summary>
-        [JsonPropertyName("asset")]
-        public bool Asset { get; set; }
+        [JsonPropertyName("resource")]
+        public bool Resource { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the URL points to an image.
+        /// </summary>
+        [JsonPropertyName("image")]
+        public bool Image { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the URL was successfully crawled.

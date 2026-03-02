@@ -28,10 +28,7 @@ namespace Umbraco.Community.ContentAudit.Hubs
                     await Clients.Caller.crawlPhaseChanged(_crawlStateManager.CurrentPhase);
                 }
 
-                foreach (var result in _crawlStateManager.CurrentResults)
-                {
-                    await Clients.Caller.crawlProgress(result);
-                }
+                await Clients.Caller.crawlProgress(_crawlStateManager.CurrentSummary);
             }
 
             if (_enrichmentStateManager.IsRunning && _enrichmentStateManager.CurrentAuditKey.HasValue)

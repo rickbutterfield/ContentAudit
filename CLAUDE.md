@@ -52,6 +52,8 @@ The solution consists of four projects:
 - `IValidationService` - HTML validation and parsing
 - `IDataService` - Data export functionality
 - `IAuditRepository` - Database access using Umbraco's NPoco
+- `ICrawlStateManager` - Crawl lifecycle, counter tracking, and throttled SignalR broadcasts
+- `IEnrichmentStateManager` - Enrichment lifecycle and per-result SignalR broadcasts
 
 **Audit Issue System:**
 All audit issues implement `IAuditIssue` (or specialized interfaces `IAuditPageIssue`/`IAuditImageIssue`). Issues are automatically discovered via Umbraco's type scanning and registered through `AuditIssueCollectionBuilder`.
@@ -60,9 +62,21 @@ Built-in issues include: MissingAltText, MetaDescriptionMissing, MetaDescription
 
 **API Structure:**
 - Base path: `/umbraco/content-audit/management/api/v1`
-- Controllers in `Api/` folder organized by feature: Audit (including Tree and Item sub-folders), Crawl, Issues, Settings
+- Controllers in `Api/` folder organized by feature: Audit (including Tree and Item sub-folders), Crawl (Start, Cancel, Status, IncompleteCrawl, DiscardIncompleteCrawl), Enrich, Issues, Settings
+- SignalR hub in `Hubs/ContentAuditHub.cs` for real-time crawl/enrich progress
 - Audit endpoints include: Overview, ByKey, ExternalLinks, InternalLinks, DuplicateContent, HealthScore, OrphanedPages, MissingMetadata, Images, Export
 - Authorization via `AuthorizationPolicies.SectionAccessContentAudit`
+
+### Real-Time Progress (SignalR)
+
+The crawl progress system uses a SignalR hub at `/umbraco/content-audit/hub` with throttled summary-based broadcasts:
+
+- **Hub:** `ContentAuditHub` (authorized via `SectionAccessContentAudit`)
+- **Hub client interface:** `IContentAuditHubClient` defines all real-time events
+- **State managers:** `ICrawlStateManager` for crawls, `IEnrichmentStateManager` for enrichment
+- **Crawl progress:** `CrawlStateManager` tracks running counters + a 5-item recent URLs queue. Broadcasts `CrawlStatusDto` summaries throttled to ~4/sec (250ms interval), always on first result, and a final broadcast at crawl end. Does NOT store every URL in memory.
+- **Frontend consumption:** `ContentAuditContext` connects to the hub, receives `CrawlStatusDto` summaries via `UmbObjectState` (O(1) assignment). The overview reads pre-computed counts directly — no filtering.
+- **Late joiners:** `OnConnectedAsync` sends a single summary snapshot for crawl state.
 
 ### Frontend Architecture
 
@@ -80,6 +94,9 @@ The UI registers multiple manifests for:
 - Modals (dialogs)
 - Localization (i18n)
 - Global context (shared state)
+
+**Central Context:**
+`ContentAuditContext` (`context/audit.context.ts`) is the main state provider — manages SignalR connection, all observable state (audit overviews, crawl summary, health score, issues, settings), and exposes data-fetching methods. Provided via `CONTENT_AUDIT_CONTEXT_TOKEN`. Entity actions can consume this context to refresh dashboard data after mutations.
 
 **Build Output:**
 Frontend builds to `wwwroot/App_Plugins/UmbracoCommunityContentAudit/` and is packaged with the backend.

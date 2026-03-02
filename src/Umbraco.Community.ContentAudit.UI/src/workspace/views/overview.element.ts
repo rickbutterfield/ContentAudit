@@ -1,9 +1,9 @@
 import { css, customElement, html, nothing, state } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto } from "../../api";
+import { IssueDto, OverviewDto, HealthScoreDto, CrawlDto, CrawlStatusDto, IncompleteCrawlDto } from "../../api";
 import ContentAuditContext, { CONTENT_AUDIT_CONTEXT_TOKEN } from "../../context/audit.context";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
-import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN } from "../../modals";
+import { CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN, CONTENT_AUDIT_DISCARD_AND_RUN_MODAL_TOKEN } from "../../modals";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UmbRequestReloadChildrenOfEntityEvent } from "@umbraco-cms/backoffice/entity-action";
 import { UMB_ACTION_EVENT_CONTEXT } from '@umbraco-cms/backoffice/action';
@@ -12,7 +12,7 @@ import '../../elements/health-score.element';
 @customElement('content-audit-scan-view')
 export class ContentAuditScanViewElement extends UmbLitElement {
     @state()
-    private _crawlData: CrawlDto[] = [];
+    private _crawlSummary?: CrawlStatusDto;
 
     @state()
     private _crawlPhase: string = '';
@@ -35,6 +35,9 @@ export class ContentAuditScanViewElement extends UmbLitElement {
 
     @state()
     _healthScore?: HealthScoreDto;
+
+    @state()
+    _incompleteCrawl?: IncompleteCrawlDto;
 
     #previousIsRunning = false;
     #cancelledByUser = false;
@@ -67,8 +70,12 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                 this._healthScore = healthScore;
             });
 
-            this.observe(context?.crawlData, (crawlData) => {
-                this._crawlData = crawlData || [];
+            this.observe(context?.incompleteCrawl, (incompleteCrawl) => {
+                this._incompleteCrawl = incompleteCrawl;
+            });
+
+            this.observe(context?.crawlSummary, (summary) => {
+                this._crawlSummary = summary;
             });
 
             this.observe(context?.crawlPhase, (phase) => {
@@ -98,6 +105,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
         this.#context?.getAuditOverviews();
         this.#context?.getTopIssues();
         this.#context?.getHealthScore();
+        this.#context?.getIncompleteCrawl();
     }
 
     async #onCrawlFinished() {
@@ -164,11 +172,71 @@ export class ContentAuditScanViewElement extends UmbLitElement {
         }
     }
 
+    async #continueCrawl() {
+        const modal = this.#modalManagerContext?.open(this, CONTENT_AUDIT_RUN_WARNING_MODAL_TOKEN, {
+            data: {
+                headline: "Continue previous crawl?",
+            }
+        });
+
+        try {
+            const result = await modal?.onSubmit();
+            if (result?.run) {
+                this.#startAudit();
+            }
+        } catch {
+            // Modal was rejected (closed)
+        }
+    }
+
+    async #startNewCrawl() {
+        const modal = this.#modalManagerContext?.open(this, CONTENT_AUDIT_DISCARD_AND_RUN_MODAL_TOKEN, {
+            data: {
+                headline: "Discard incomplete crawl?",
+                pagesCrawled: this._incompleteCrawl!.total
+            }
+        });
+
+        try {
+            const result = await modal?.onSubmit();
+            if (result?.confirmed) {
+                await this.#context!.discardIncompleteCrawl(this._incompleteCrawl!.key);
+                this.#startAudit();
+            }
+        } catch {
+            // Modal was rejected (closed)
+        }
+    }
+
+    #renderIncompleteCrawlBanner() {
+        if (!this._incompleteCrawl) return nothing;
+
+        const runDate = this._incompleteCrawl.runDate ? new Date(this._incompleteCrawl.runDate) : undefined;
+
+        return html`
+            <div class="incomplete-crawl-banner">
+                <uui-icon name="icon-alert"></uui-icon>
+                <div class="incomplete-crawl-info">
+                    <strong>Incomplete crawl found</strong>
+                    <span>
+                        A previous crawl${runDate && !isNaN(runDate.getTime()) ? html` from ${this.localize.date(runDate, { dateStyle: 'long', timeStyle: 'short' })}` : nothing}
+                        was interrupted with ${this._incompleteCrawl.total} URLs processed.
+                    </span>
+                </div>
+                <div class="incomplete-crawl-actions">
+                    <uui-button look="primary" color="positive" @click=${this.#continueCrawl}>Continue crawl</uui-button>
+                    <uui-button look="secondary" color="danger" @click=${this.#startNewCrawl}>Start new crawl</uui-button>
+                </div>
+            </div>
+        `;
+    }
+
     #getUrlStatus(item: CrawlDto): { label: string; color: string } {
         if (item.blocked) return { label: 'Blocked', color: 'danger' };
         if (item.skipped) return { label: 'Skipped', color: 'warning' };
         if (item.external) return { label: 'External', color: 'default' };
-        if (item.asset) return { label: 'Asset', color: 'default' };
+        if (item.image) return { label: 'Image', color: 'default' };
+        if (item.resource) return { label: 'Resource', color: 'default' };
         return { label: 'Crawled', color: 'positive' };
     }
 
@@ -189,7 +257,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
     }
 
     #renderActivityFeed() {
-        const recentItems = this._crawlData.slice(-5).reverse();
+        const recentItems = this._crawlSummary?.recentUrls?.slice().reverse() ?? [];
         if (recentItems.length === 0) return nothing;
 
         return html`
@@ -211,11 +279,12 @@ export class ContentAuditScanViewElement extends UmbLitElement {
     }
 
     #renderRunningOverlay() {
-        const total = this._crawlData.length;
-        const internal = this._crawlData.filter(x => x.crawled && !x.external && !x.asset).length;
-        const external = this._crawlData.filter(x => x.crawled && x.external && !x.asset).length;
-        const assets = this._crawlData.filter(x => x.crawled && x.asset).length;
-        const blocked = this._crawlData.filter(x => x.blocked).length;
+        const total = this._crawlSummary?.total ?? 0;
+        const internal = this._crawlSummary?.internal ?? 0;
+        const external = this._crawlSummary?.external ?? 0;
+        const resources = this._crawlSummary?.resources ?? 0;
+        const images = this._crawlSummary?.images ?? 0;
+        const blocked = this._crawlSummary?.blocked ?? 0;
 
         return html`
             <div class="overlay">
@@ -241,8 +310,12 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                             <div class="crawl-stat-label">External</div>
                         </div>
                         <div class="crawl-stat">
-                            <div class="crawl-stat-value">${assets}</div>
-                            <div class="crawl-stat-label">Assets</div>
+                            <div class="crawl-stat-value">${resources}</div>
+                            <div class="crawl-stat-label">Resources</div>
+                        </div>
+                        <div class="crawl-stat">
+                            <div class="crawl-stat-value">${images}</div>
+                            <div class="crawl-stat-label">Images</div>
                         </div>
                         <div class="crawl-stat">
                             <div class="crawl-stat-value">${blocked}</div>
@@ -265,7 +338,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
             return html`
                 <uui-box headline="Latest audit" class="span-2" style="--uui-box-default-padding: 0;">
                     <div slot="header">
-                        ${this._latestAuditOverview?.runDate != null ? this.localize.date(this._latestAuditOverview.runDate, { dateStyle: 'long', timeStyle: 'short' }) : nothing}
+                        ${this._latestAuditOverview?.runDate != null ? this.localize.date(new Date(this._latestAuditOverview.runDate), { dateStyle: 'long', timeStyle: 'short' }) : nothing}
                     </div>
                     <div slot="header-actions">
                         <uui-button look="primary" @click=${this._openModal}>Run new scan</uui-button>
@@ -288,8 +361,12 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                             <uui-table-cell>${this._latestAuditOverview?.totalExternal}</uui-table-cell>
                         </uui-table-row>
                         <uui-table-row>
-                            <uui-table-cell>Asset URLs:</uui-table-cell>
-                            <uui-table-cell>${this._latestAuditOverview?.totalAssets}</uui-table-cell>
+                            <uui-table-cell>Resources:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalResources}</uui-table-cell>
+                        </uui-table-row>
+                        <uui-table-row>
+                            <uui-table-cell>Images:</uui-table-cell>
+                            <uui-table-cell>${this._latestAuditOverview?.totalImages}</uui-table-cell>
                         </uui-table-row>
                         <uui-table-row>
                             <uui-table-cell>Blocked URLs:</uui-table-cell>
@@ -413,7 +490,7 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                             return html`
                                 <div class="chart-label">
                                     <div class="chart-label-date">
-                                        ${audit.runDate ? this.localize.date(audit.runDate, { dateStyle: 'short' }) : 'N/A'}
+                                        ${audit.runDate ? this.localize.date(new Date(audit.runDate), { dateStyle: 'short' }) : 'N/A'}
                                     </div>
                                     <div class="chart-label-score ${scoreClass}">${score.toFixed(0)}</div>
                                 </div>
@@ -443,12 +520,29 @@ export class ContentAuditScanViewElement extends UmbLitElement {
             return this.#renderRunningOverlay();
         }
 
+        if (this._incompleteCrawl && (!this._latestAuditOverview || this._latestAuditOverview.runDate == null)) {
+            return html`
+                <div class="overlay">
+                    <div class="overlay-content">
+                        <h1>ContentAudit</h1>
+                        <p class="overlay-description">
+                            Crawl your site to audit for SEO issues, accessibility problems,
+                            performance metrics, and carbon emissions. Results are analysed
+                            and presented with actionable insights.
+                        </p>
+                        ${this.#renderIncompleteCrawlBanner()}
+                    </div>
+                </div>
+            `;
+        }
+
         if (!this._latestAuditOverview || this._latestAuditOverview.runDate == null) {
             return this.#renderEmptyOverlay();
         }
 
         return html`
             <div id="main">
+                ${this.#renderIncompleteCrawlBanner()}
                 ${this.#renderLatestAudit()}
                 ${this.#renderHealthScore()}
                 ${this.#renderAuditHistory()}
@@ -565,6 +659,43 @@ export class ContentAuditScanViewElement extends UmbLitElement {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 flex: 1;
+            }
+
+            /* Incomplete crawl banner */
+            .incomplete-crawl-banner {
+                display: flex;
+                align-items: center;
+                gap: var(--uui-size-space-4);
+                padding: var(--uui-size-layout-1, 24px);
+                background-color: var(--uui-color-warning, #fbd142);
+                color: var(--uui-color-warning-contrast, #000);
+                border-radius: calc(var(--uui-border-radius, 3px) * 2);
+                box-shadow: var(--uui-shadow-depth-1, 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24));
+            }
+
+            .incomplete-crawl-banner > uui-icon {
+                font-size: 1.2em;
+                flex-shrink: 0;
+            }
+
+            .incomplete-crawl-info {
+                display: flex;
+                flex-direction: column;
+                gap: var(--uui-size-space-1);
+                flex: 1;
+                text-align: left;
+                text-wrap: balance;
+            }
+
+            .incomplete-crawl-info span {
+                font-size: var(--uui-type-small-size);
+            }
+
+            .incomplete-crawl-actions {
+                display: flex;
+                flex-direction: column;
+                gap: var(--uui-size-space-2);
+                flex-shrink: 0;
             }
 
             /* Dashboard styles */

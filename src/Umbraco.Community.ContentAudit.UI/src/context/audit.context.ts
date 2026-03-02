@@ -5,7 +5,7 @@ import { CONTENT_AUDIT_ENTITY_TYPE, CONTENT_AUDIT_WORKSPACE_ALIAS } from "../wor
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { ContentAuditRepository } from "../repository/content-audit.repository";
 import { UmbArrayState, UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
-import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, MetadataListItemDto, CrawlDto, CrawlService } from "../api";
+import { IssueDto, OverviewDto, ContentAuditSettings, HealthScoreDto, MetadataListItemDto, CrawlStatusDto, CrawlService, IncompleteCrawlDto } from "../api";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { UMB_SERVER_CONTEXT } from "@umbraco-cms/backoffice/server";
@@ -38,14 +38,17 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 	#settings = new UmbObjectState<ContentAuditSettings | undefined>(undefined);
 	public readonly settings = this.#settings.asObservable();
 
-	#crawlData = new UmbArrayState<CrawlDto>([], (x) => x.url);
-	public readonly crawlData = this.#crawlData.asObservable();
+	#crawlSummary = new UmbObjectState<CrawlStatusDto | undefined>(undefined);
+	public readonly crawlSummary = this.#crawlSummary.asObservable();
 
 	#isRunning = new UmbBooleanState(false);
 	public readonly isRunning = this.#isRunning.asObservable();
 
 	#crawlPhase = new UmbStringState('');
 	public readonly crawlPhase = this.#crawlPhase.asObservable();
+
+	#incompleteCrawl = new UmbObjectState<IncompleteCrawlDto | undefined>(undefined);
+	public readonly incompleteCrawl = this.#incompleteCrawl.asObservable();
 
 	#pageEnrichingUrl = new UmbStringState('');
 	public readonly pageEnrichingUrl = this.#pageEnrichingUrl.asObservable();
@@ -87,7 +90,12 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		});
 	}
 
-	#initHubConnection(token: string) {
+	async #initHubConnection(token: string) {
+		if (this.#connection) {
+			await this.#connection.stop();
+			this.#connection = undefined;
+		}
+
 		const serverURL = this.#serverContext?.getServerUrl() ?? '';
 		const hubUrl = `${serverURL}/umbraco/content-audit/hub`;
 
@@ -100,12 +108,13 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 
 		this.#connection.on('crawlStarted', () => {
 			this.#isRunning.setValue(true);
-			this.#crawlData.setValue([]);
+			this.#crawlSummary.setValue(undefined);
 			this.#crawlPhase.setValue('');
+			this.#incompleteCrawl.setValue(undefined);
 		});
 
-		this.#connection.on('crawlProgress', (result: CrawlDto) => {
-			this.#crawlData.appendOne(result);
+		this.#connection.on('crawlProgress', (summary: CrawlStatusDto) => {
+			this.#crawlSummary.setValue(summary);
 		});
 
 		this.#connection.on('crawlPhaseChanged', (phase: string) => {
@@ -142,14 +151,13 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		this.#connection
 			.start()
 			.then(async () => {
-				// Hydrate current state on connect
 				try {
 					const { data } = await CrawlService.getCrawlStatus();
 					if (data) {
 						this.#isRunning.setValue(data.isRunning);
 						this.#crawlPhase.setValue(data.phase ?? '');
-						if (data.results?.length) {
-							this.#crawlData.setValue(data.results);
+						if (data.isRunning) {
+							this.#crawlSummary.setValue(data);
 						}
 					}
 				} catch {
@@ -164,8 +172,8 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 				if (data) {
 					this.#isRunning.setValue(data.isRunning);
 					this.#crawlPhase.setValue(data.phase ?? '');
-					if (data.results?.length) {
-						this.#crawlData.setValue(data.results);
+					if (data.isRunning) {
+						this.#crawlSummary.setValue(data);
 					}
 				}
 			} catch {
@@ -240,6 +248,20 @@ export class ContentAuditContext extends UmbControllerBase implements UmbWorkspa
 		} else if (error) {
 			this.#notifyError('Failed to load health score.');
 		}
+	}
+
+	async getIncompleteCrawl() {
+		try {
+			const { data } = await CrawlService.getIncompleteCrawl();
+			this.#incompleteCrawl.setValue(data && 'key' in data ? data as IncompleteCrawlDto : undefined);
+		} catch {
+			this.#incompleteCrawl.setValue(undefined);
+		}
+	}
+
+	async discardIncompleteCrawl(auditKey: string) {
+		await CrawlService.discardIncompleteCrawl({ path: { id: auditKey } });
+		this.#incompleteCrawl.setValue(undefined);
 	}
 
 	async startCrawl() {

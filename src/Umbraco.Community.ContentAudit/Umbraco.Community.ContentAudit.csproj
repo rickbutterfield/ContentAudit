@@ -59,10 +59,12 @@
         <_ContentAuditJsonSchemaReference>appsettings-schema.ContentAudit.json</_ContentAuditJsonSchemaReference>
     </PropertyGroup>
 
-    <!-- Generate JSON schema on build (and before copying to project) -->
-    <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Condition="!Exists('$(_ContentAuditJsonSchemaReference)')">
+    <!-- Generate JSON schema on build (and before copying to project).
+         SkipSchemaGeneration breaks the circular dependency when the schema generator
+         ProjectReferences this project back. -->
+    <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Condition="!Exists('$(_ContentAuditJsonSchemaReference)') AND '$(SkipSchemaGeneration)' != 'true'">
         <Message Text="Generating $(_ContentAuditJsonSchemaReference) because it doesn't exist" Importance="high" />
-        <Exec WorkingDirectory="$(MSBuildThisFileDirectory)..\..\tools\Umbraco.Community.ContentAudit.SchemaGenerator" Command="dotnet run --configuration $(Configuration) -- --outputFile &quot;$(MSBuildThisFileDirectory)$(_ContentAuditJsonSchemaReference)&quot;" />
+        <Exec WorkingDirectory="$(MSBuildThisFileDirectory)..\..\tools\Umbraco.Community.ContentAudit.SchemaGenerator" Command="dotnet run --configuration $(Configuration) /p:SkipSchemaGeneration=true -- --outputFile &quot;$(MSBuildThisFileDirectory)$(_ContentAuditJsonSchemaReference)&quot;" />
     </Target>
 
     <!-- Remove generated JSON schema on clean -->

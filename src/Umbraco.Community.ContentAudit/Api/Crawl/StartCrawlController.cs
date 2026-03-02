@@ -85,12 +85,7 @@ namespace Umbraco.Community.ContentAudit.Api.Crawl
         [ProducesResponseType(typeof(CrawlStatusDto), StatusCodes.Status200OK)]
         public IActionResult GetCrawlStatus()
         {
-            return Ok(new CrawlStatusDto
-            {
-                IsRunning = _crawlStateManager.IsRunning,
-                Results = _crawlStateManager.CurrentResults,
-                Phase = _crawlStateManager.CurrentPhase
-            });
+            return Ok(_crawlStateManager.CurrentSummary);
         }
     }
 }

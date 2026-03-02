@@ -152,7 +152,8 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         int TotalUrls,
         int TotalInternal,
         int TotalExternal,
-        int TotalAssets,
+        int TotalResources,
+        int TotalImages,
         int TotalBlocked);
 
     /// <summary>

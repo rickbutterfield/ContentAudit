@@ -5,13 +5,13 @@ import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 @customElement('content-audit-issues-table-name-column-layout')
 export class ContentAuditIssuesTableNameColumnLayout extends UmbLitElement {
 	@property({ attribute: false })
-	value!: { unique: string; name: string, category: string, description: string };
+	value!: { unique: string; name: string, category: string, description: string, editPath: string };
 
 	override render() {
 		if (!this.value) return nothing;
 		return html`
 			<span>
-				<a href=${'section/audit/workspace/issues/edit/' + this.value.unique}>
+				<a href=${this.value.editPath + 'edit/' + this.value.unique}>
 					<strong>${this.value.category}: ${this.value.name}</strong>
 				</a>
 				<br/>${this.value.description}

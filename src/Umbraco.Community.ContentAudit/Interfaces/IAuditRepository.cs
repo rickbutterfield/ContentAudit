@@ -35,6 +35,14 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         Task<IEnumerable<PageSchema>> GetPagesByAuditKey(Guid auditKey);
 
         /// <summary>
+        /// Gets a single page by audit key and URL
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <param name="url">The URL of the page</param>
+        /// <returns>The page schema record if found, otherwise null</returns>
+        Task<PageSchema?> GetPageByAuditKeyAndUrl(Guid auditKey, string url);
+
+        /// <summary>
         /// Gets SEO data for a specific page in an audit
         /// </summary>
         /// <param name="auditKey">The unique identifier of the audit</param>
@@ -114,15 +122,74 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// <returns>Collection of image schema records</returns>
         Task<IEnumerable<ImageSchema>> GetImageData(Guid auditKey, string foundPage);
 
+        /// <summary>
+        /// Gets all SEO data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of SEO schema records</returns>
         Task<IEnumerable<SeoSchema>> GetAllSeoDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all content analysis data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of content analysis schema records</returns>
         Task<IEnumerable<ContentAnalysisSchema>> GetAllContentAnalysisDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all performance data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of performance schema records</returns>
         Task<IEnumerable<PerformanceSchema>> GetAllPerformanceDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all accessibility data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of accessibility schema records</returns>
         Task<IEnumerable<AccessibilitySchema>> GetAllAccessibilityDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all technical SEO data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of technical SEO schema records</returns>
         Task<IEnumerable<TechnicalSeoSchema>> GetAllTechnicalSeoDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all social media data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of social media schema records</returns>
         Task<IEnumerable<SocialMediaSchema>> GetAllSocialMediaDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all content quality data for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of content quality schema records</returns>
         Task<IEnumerable<ContentQualitySchema>> GetAllContentQualityDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all links for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of link schema records</returns>
         Task<IEnumerable<LinkSchema>> GetAllLinkDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all resources for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of resource schema records</returns>
         Task<IEnumerable<ResourceSchema>> GetAllResourceDataByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets all images for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of image schema records</returns>
         Task<IEnumerable<ImageSchema>> GetAllImageDataByAuditKey(Guid auditKey);
 
         /// <summary>
@@ -131,9 +198,34 @@ namespace Umbraco.Community.ContentAudit.Interfaces
         /// <returns>Collection of overview schema records for all audits</returns>
         Task<IEnumerable<OverviewSchema>> GetAuditOverviews();
 
+        /// <summary>
+        /// Gets all issue results for an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <returns>Collection of issue result schema records</returns>
         Task<IEnumerable<IssueResultSchema>> GetAllIssueResultsByAuditKey(Guid auditKey);
+
+        /// <summary>
+        /// Gets issue results for a specific issue type in an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <param name="issueId">The unique identifier of the issue type</param>
+        /// <returns>Collection of issue result schema records</returns>
         Task<IEnumerable<IssueResultSchema>> GetIssueResultsByIssueId(Guid auditKey, Guid issueId);
+
+        /// <summary>
+        /// Gets issue results for a specific page in an audit
+        /// </summary>
+        /// <param name="auditKey">The unique identifier of the audit</param>
+        /// <param name="pageUnique">The unique identifier of the page</param>
+        /// <returns>Collection of issue result schema records</returns>
         Task<IEnumerable<IssueResultSchema>> GetIssueResultsByPageUnique(Guid auditKey, Guid pageUnique);
+
+        /// <summary>
+        /// Gets the most recent incomplete (InProgress) audit, if one exists
+        /// </summary>
+        /// <returns>The overview schema record if found, otherwise null</returns>
+        Task<OverviewSchema?> GetIncompleteAudit();
 
         /// <summary>
         /// Deletes an audit and all associated data

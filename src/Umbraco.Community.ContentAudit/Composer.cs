@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Playwright;
 using OpenIddict.Validation.AspNetCore;
-using Polly;
 using Umbraco.Cms.Api.Common.OpenApi;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -55,19 +53,7 @@ namespace Umbraco.Community.ContentAudit
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             })
-            .AddResilienceHandler("CrawlerRetry", builder =>
-            {
-                builder.AddRetry(new HttpRetryStrategyOptions
-                {
-                    MaxRetryAttempts = 3,
-                    Delay = TimeSpan.FromSeconds(1),
-                    BackoffType = DelayBackoffType.Exponential,
-                    UseJitter = true,
-                    ShouldHandle = args => ValueTask.FromResult(
-                        args.Outcome.Result?.StatusCode >= System.Net.HttpStatusCode.InternalServerError ||
-                        args.Outcome.Exception is HttpRequestException or TaskCanceledException)
-                });
-            });
+;
 
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
             builder.Services.AddScoped<IRobotsService, RobotsService>();

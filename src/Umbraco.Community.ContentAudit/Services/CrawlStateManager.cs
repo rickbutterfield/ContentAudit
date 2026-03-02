@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
 using Umbraco.Community.ContentAudit.Hubs;
 using Umbraco.Community.ContentAudit.Interfaces;
@@ -7,10 +8,22 @@ namespace Umbraco.Community.ContentAudit.Services
 {
     public class CrawlStateManager : ICrawlStateManager
     {
+        private const int RecentUrlCapacity = 5;
+        private const long BroadcastIntervalMs = 250;
+
         private readonly IHubContext<ContentAuditHub, IContentAuditHubClient> _hubContext;
-        private readonly List<CrawlDto> _results = new();
         private readonly object _lock = new();
+        private readonly Queue<CrawlDto> _recentUrls = new();
+        private readonly Stopwatch _broadcastStopwatch = new();
+
         private CancellationTokenSource? _cts;
+        private int _total;
+        private int _internal;
+        private int _external;
+        private int _resources;
+        private int _images;
+        private int _blocked;
+        private int _skipped;
 
         public CrawlStateManager(IHubContext<ContentAuditHub, IContentAuditHubClient> hubContext)
             => _hubContext = hubContext;
@@ -19,13 +32,13 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public string? CurrentPhase { get; private set; }
 
-        public IReadOnlyList<CrawlDto> CurrentResults
+        public CrawlStatusDto CurrentSummary
         {
             get
             {
                 lock (_lock)
                 {
-                    return _results.ToList().AsReadOnly();
+                    return BuildSummary();
                 }
             }
         }
@@ -45,9 +58,10 @@ namespace Umbraco.Community.ContentAudit.Services
                 _cts?.Cancel();
                 _cts?.Dispose();
                 _cts = new CancellationTokenSource();
-                _results.Clear();
+                ResetCounters();
                 CurrentPhase = null;
                 IsRunning = true;
+                _broadcastStopwatch.Restart();
             }
 
             _hubContext.Clients.All.crawlStarted();
@@ -55,52 +69,87 @@ namespace Umbraco.Community.ContentAudit.Services
 
         public void CancelCrawl()
         {
+            CrawlStatusDto finalSummary;
             lock (_lock)
             {
                 _cts?.Cancel();
+                CurrentPhase = null;
+                IsRunning = false;
+                finalSummary = BuildSummary();
             }
 
-            CurrentPhase = null;
-            IsRunning = false;
+            _hubContext.Clients.All.crawlProgress(finalSummary);
             _hubContext.Clients.All.crawlCancelled();
         }
 
         public void CompleteCrawl()
         {
+            CrawlStatusDto finalSummary;
             lock (_lock)
             {
                 _cts?.Dispose();
                 _cts = null;
                 CurrentPhase = null;
                 IsRunning = false;
+                finalSummary = BuildSummary();
             }
 
+            _hubContext.Clients.All.crawlProgress(finalSummary);
             _hubContext.Clients.All.crawlCompleted();
         }
 
         public void FailCrawl()
         {
-            string error;
+            CrawlStatusDto finalSummary;
             lock (_lock)
             {
                 _cts?.Dispose();
                 _cts = null;
                 CurrentPhase = null;
                 IsRunning = false;
-                error = "Crawl failed unexpectedly";
+                finalSummary = BuildSummary();
             }
 
-            _hubContext.Clients.All.crawlFailed(error);
+            _hubContext.Clients.All.crawlProgress(finalSummary);
+            _hubContext.Clients.All.crawlFailed("Crawl failed unexpectedly");
         }
 
         public void AddResult(CrawlDto result)
         {
+            CrawlStatusDto? summaryToBroadcast = null;
+
             lock (_lock)
             {
-                _results.Add(result);
+                _total++;
+
+                if (result.Blocked)
+                    _blocked++;
+                else if (result.Skipped)
+                    _skipped++;
+                else if (result.Image)
+                    _images++;
+                else if (result.Resource)
+                    _resources++;
+                else if (result.External)
+                    _external++;
+                else
+                    _internal++;
+
+                _recentUrls.Enqueue(result);
+                while (_recentUrls.Count > RecentUrlCapacity)
+                    _recentUrls.Dequeue();
+
+                if (_total == 1 || _broadcastStopwatch.ElapsedMilliseconds >= BroadcastIntervalMs)
+                {
+                    summaryToBroadcast = BuildSummary();
+                    _broadcastStopwatch.Restart();
+                }
             }
 
-            _hubContext.Clients.All.crawlProgress(result);
+            if (summaryToBroadcast is not null)
+            {
+                _hubContext.Clients.All.crawlProgress(summaryToBroadcast);
+            }
         }
 
         public void SetPhase(string phase)
@@ -108,5 +157,31 @@ namespace Umbraco.Community.ContentAudit.Services
             CurrentPhase = phase;
             _hubContext.Clients.All.crawlPhaseChanged(phase);
         }
+
+        private void ResetCounters()
+        {
+            _total = 0;
+            _internal = 0;
+            _external = 0;
+            _resources = 0;
+            _images = 0;
+            _blocked = 0;
+            _skipped = 0;
+            _recentUrls.Clear();
+        }
+
+        private CrawlStatusDto BuildSummary() => new()
+        {
+            IsRunning = IsRunning,
+            Phase = CurrentPhase,
+            Total = _total,
+            Internal = _internal,
+            External = _external,
+            Resources = _resources,
+            Images = _images,
+            Blocked = _blocked,
+            Skipped = _skipped,
+            RecentUrls = [.. _recentUrls],
+        };
     }
 }

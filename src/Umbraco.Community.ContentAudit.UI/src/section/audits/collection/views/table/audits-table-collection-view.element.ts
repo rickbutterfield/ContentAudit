@@ -32,8 +32,12 @@ export class ContentAuditAuditsTableCollectionViewElement extends UmbLitElement 
             alias: 'totalExternal'
         },
         {
-            name: 'Assets',
-            alias: 'totalAssets'
+            name: 'Resources',
+            alias: 'totalResources'
+        },
+        {
+            name: 'Images',
+            alias: 'totalImages'
         },
         {
             name: 'Blocked',
@@ -69,7 +73,7 @@ export class ContentAuditAuditsTableCollectionViewElement extends UmbLitElement 
                 data: [
                     {
                         columnAlias: 'runDate',
-                        value: html`<a href=${'section/audit/workspace/audits/edit/' + audit.key}>${audit.runDate ? this.localize.date(audit.runDate, { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown'}</a>`
+                        value: html`<a href=${'section/audit/workspace/audits/edit/' + audit.key}>${audit.runDate ? this.localize.date(new Date(audit.runDate), { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown'}</a>`
                     },
                     {
                         columnAlias: 'total',
@@ -84,8 +88,12 @@ export class ContentAuditAuditsTableCollectionViewElement extends UmbLitElement 
                         value: audit.totalExternal ?? 0
                     },
                     {
-                        columnAlias: 'totalAssets',
-                        value: audit.totalAssets ?? 0
+                        columnAlias: 'totalResources',
+                        value: audit.totalResources ?? 0
+                    },
+                    {
+                        columnAlias: 'totalImages',
+                        value: audit.totalImages ?? 0
                     },
                     {
                         columnAlias: 'totalBlocked',

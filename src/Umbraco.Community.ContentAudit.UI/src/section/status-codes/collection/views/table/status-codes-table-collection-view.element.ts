@@ -1,6 +1,8 @@
 ﻿import { UMB_COLLECTION_CONTEXT, UmbDefaultCollectionContext } from '@umbraco-cms/backoffice/collection';
 import { css, customElement, html, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
+import { UmbModalRouteRegistrationController } from '@umbraco-cms/backoffice/router';
+import { UMB_WORKSPACE_MODAL } from '@umbraco-cms/backoffice/workspace';
 import { PageListItemDto } from '../../../../../api';
 import type { UmbTableColumn, UmbTableItem, UmbTableConfig } from '@umbraco-cms/backoffice/components';
 
@@ -20,10 +22,6 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
             alias: 'url',
         },
         {
-            name: 'Content Type',
-            alias: 'contentType'
-        },
-        {
             name: 'Status Code',
             alias: 'statusCode'
         }
@@ -33,9 +31,20 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
     private _tableItems: Array<UmbTableItem> = [];
 
     #collectionContext?: UmbDefaultCollectionContext<PageListItemDto>;
+    #editPath = '';
 
     constructor() {
         super();
+
+        new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
+            .addAdditionalPath('all-pages')
+            .onSetup(() => {
+                return { data: { entityType: 'all-pages', preset: {} } };
+            })
+            .observeRouteBuilder((routeBuilder) => {
+                this.#editPath = routeBuilder({});
+                this.#observeCollectionItems();
+            });
 
         this.consumeContext(UMB_COLLECTION_CONTEXT, (instance) => {
             this.#collectionContext = instance;
@@ -57,11 +66,7 @@ export class ContentAuditStatusCodesTableCollectionViewElement extends UmbLitEle
                 data: [
                     {
                         columnAlias: 'url',
-                        value: html`<a href=${'section/audit/workspace/all-pages/edit/' + page.unique}>${page.pageData?.url}</a>`
-                    },
-                    {
-                        columnAlias: 'contentType',
-                        value: page.contentType,
+                        value: html`<a href=${this.#editPath + 'edit/' + page.unique}>${page.pageData?.url}</a>`
                     },
                     {
                         columnAlias: 'statusCode',

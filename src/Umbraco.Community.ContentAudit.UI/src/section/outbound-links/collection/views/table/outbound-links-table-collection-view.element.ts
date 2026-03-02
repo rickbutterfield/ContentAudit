@@ -24,10 +24,6 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
             alias: 'statusCode'
         },
         {
-            name: 'Content Type',
-            alias: 'contentType'
-        },
-        {
             name: 'Outlinks',
             alias: 'outlinks'
         }
@@ -64,10 +60,6 @@ export class ContentAuditddOutboundLinksTableCollectionViewElement extends UmbLi
                     {
                         columnAlias: 'statusCode',
                         value: html`<content-audit-status-code-label .statusCode=${linkGroup.statusCode}></content-audit-status-code-label>`
-                    },
-                    {
-                        columnAlias: 'contentType',
-                        value: linkGroup.contentType
                     },
                     {
                         columnAlias: 'outlinks',

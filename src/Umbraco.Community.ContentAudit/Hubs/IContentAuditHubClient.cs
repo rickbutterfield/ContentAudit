@@ -5,7 +5,7 @@ namespace Umbraco.Community.ContentAudit.Hubs
     public interface IContentAuditHubClient
     {
 #pragma warning disable SA1300
-        Task crawlProgress(CrawlDto crawlResult);
+        Task crawlProgress(CrawlStatusDto summary);
         Task crawlStarted();
         Task crawlCompleted();
         Task crawlFailed(string error);

@@ -83,7 +83,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             var technicalSeoData = await _auditRepository.GetAllTechnicalSeoDataByAuditKey(auditKey.Value);
             var technicalSeoLookup = technicalSeoData
-                .GroupBy(x => x.Url ?? "")
+                .GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             foreach (var page in filteredData)
@@ -159,16 +159,16 @@ namespace Umbraco.Community.ContentAudit.Services
             var resourcesData = await _auditRepository.GetAllResourceDataByAuditKey(auditKey);
             var imagesData = await _auditRepository.GetAllImageDataByAuditKey(auditKey);
 
-            var seoLookup = seoData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var contentAnalysisLookup = contentAnalysisData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var performanceLookup = performanceData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var accessibilityLookup = accessibilityData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var technicalSeoLookup = technicalSeoData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var socialMediaLookup = socialMediaData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var contentQualityLookup = contentQualityData.GroupBy(x => x.Url ?? "").ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            var linksLookup = linksData.GroupBy(x => x.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
-            var resourcesLookup = resourcesData.GroupBy(x => x.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
-            var imagesLookup = imagesData.GroupBy(x => x.FoundPage ?? "").ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var seoLookup = seoData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var contentAnalysisLookup = contentAnalysisData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var performanceLookup = performanceData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var accessibilityLookup = accessibilityData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var technicalSeoLookup = technicalSeoData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var socialMediaLookup = socialMediaData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var contentQualityLookup = contentQualityData.GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var linksLookup = linksData.GroupBy(x => x.FoundPage ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var resourcesLookup = resourcesData.GroupBy(x => x.FoundPage ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var imagesLookup = imagesData.GroupBy(x => x.FoundPage ?? "", StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
 
             var results = new List<PageAnalysisDto>(pages.Count);
 
@@ -385,7 +385,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             var seoData = await _auditRepository.GetAllSeoDataByAuditKey(auditKey.Value);
             var seoLookup = seoData
-                .GroupBy(x => x.Url ?? "")
+                .GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             var results = new List<MetadataListItemDto>();
@@ -422,12 +422,12 @@ namespace Umbraco.Community.ContentAudit.Services
 
             var performanceData = await _auditRepository.GetAllPerformanceDataByAuditKey(auditKey.Value);
             var performanceLookup = performanceData
-                .GroupBy(x => x.Url ?? "")
+                .GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             var technicalSeoData = await _auditRepository.GetAllTechnicalSeoDataByAuditKey(auditKey.Value);
             var technicalSeoLookup = technicalSeoData
-                .GroupBy(x => x.Url ?? "")
+                .GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             var results = new List<CarbonRatingListItemDto>();
@@ -482,7 +482,7 @@ namespace Umbraco.Community.ContentAudit.Services
 
             var performanceData = await _auditRepository.GetAllPerformanceDataByAuditKey(auditKey.Value);
             var performanceLookup = performanceData
-                .GroupBy(x => x.Url ?? "")
+                .GroupBy(x => x.Url ?? "", StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             var results = new List<CoreWebVitalsListItemDto>();
@@ -576,54 +576,90 @@ namespace Umbraco.Community.ContentAudit.Services
             var pageData = await GetCachedPages(auditKey.Value);
             int pageCount = pageData?.Count() ?? 0;
 
-            if (issue is IAuditPageIssue pageIssue)
+            int affectedCount;
+            int denominator;
+
+            if (issue is IAuditImageIssue)
             {
-                var pageResults = issueResults.Where(x => x.ReferenceType == "page").ToList();
-                int pagesWithIssue = pageResults.Select(x => x.ReferenceUnique).Distinct().Count();
-                double percent = pageCount > 0 ? ((double)pagesWithIssue / pageCount) * 100.0 : 0;
-
-                var auditIssue = new IssueDto(pageIssue)
-                {
-                    NumberOfUrls = pagesWithIssue,
-                    PercentOfTotal = percent,
-                    Pages = pageResults.Select(r => new IssueReferenceDto
-                    {
-                        Unique = r.ReferenceUnique,
-                        Url = r.ReferenceUrl,
-                        ExposedValues = !string.IsNullOrEmpty(r.ExposedValuesJson)
-                            ? JsonSerializer.Deserialize<Dictionary<string, object?>>(r.ExposedValuesJson)
-                            : null
-                    })
-                };
-
-                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                return auditIssue;
+                affectedCount = issueResults.Where(x => x.ReferenceType == "image").Count();
+                var imageSchemas = await _auditRepository.GetAllImageDataByAuditKey(auditKey.Value);
+                denominator = imageSchemas.Count(x => !x.IsBackground);
             }
-            else if (issue is IAuditImageIssue)
+            else
+            {
+                affectedCount = issueResults.Where(x => x.ReferenceType == "page").Select(x => x.ReferenceUnique).Distinct().Count();
+                denominator = pageCount;
+            }
+
+            double percent = denominator > 0 ? ((double)affectedCount / denominator) * 100.0 : 0;
+
+            var auditIssue = new IssueDto(issue)
+            {
+                NumberOfUrls = affectedCount,
+                PercentOfTotal = percent,
+            };
+
+            auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
+            return auditIssue;
+        }
+
+        /// <inheritdoc/>
+        public async Task<(List<IssueReferenceDto> Items, int Total)?> GetIssueReferences(Guid issueGuid, int skip, int take, string filter = "")
+        {
+            var auditKey = await _auditRepository.GetLatestAuditKey();
+            if (!auditKey.HasValue)
+                return null;
+
+            var issue = _auditIssueCollection.FirstOrDefault(x => x.Id == issueGuid);
+            if (issue == null)
+                return null;
+
+            var issueResults = await _auditRepository.GetIssueResultsByIssueId(auditKey.Value, issueGuid);
+            if (!issueResults.Any())
+                return ([], 0);
+
+            List<IssueReferenceDto> allReferences;
+
+            if (issue is IAuditImageIssue)
             {
                 var imageResults = issueResults.Where(x => x.ReferenceType == "image").ToList();
-                int imagesWithIssues = imageResults.Count;
-
+                var affectedUniques = imageResults.Select(r => r.ReferenceUnique).ToHashSet();
                 var imageSchemas = await _auditRepository.GetAllImageDataByAuditKey(auditKey.Value);
-                double imageCount = imageSchemas.Count(x => !x.IsBackground);
-                double percent = imageCount > 0 ? ((double)imagesWithIssues / imageCount) * 100.0 : 0;
 
-                var affectedImageUniques = imageResults.Select(r => r.ReferenceUnique).ToHashSet();
-
-                var auditIssue = new IssueDto(issue)
+                allReferences = imageSchemas
+                    .Where(img => !img.IsBackground && affectedUniques.Contains(img.Unique))
+                    .Select(img => new IssueReferenceDto
+                    {
+                        Unique = img.Unique,
+                        Url = img.Url,
+                        FoundPage = img.FoundPage,
+                    })
+                    .ToList();
+            }
+            else
+            {
+                var pageResults = issueResults.Where(x => x.ReferenceType == "page").ToList();
+                allReferences = pageResults.Select(r => new IssueReferenceDto
                 {
-                    NumberOfUrls = imagesWithIssues,
-                    PercentOfTotal = percent,
-                    Images = imageSchemas
-                        .Where(img => affectedImageUniques.Contains(img.Unique))
-                        .Select(img => new ImageDto(img))
-                };
-
-                auditIssue.PriorityScore = CalculatePriorityScore(auditIssue);
-                return auditIssue;
+                    Unique = r.ReferenceUnique,
+                    Url = r.ReferenceUrl,
+                    ExposedValues = !string.IsNullOrEmpty(r.ExposedValuesJson)
+                        ? JsonSerializer.Deserialize<Dictionary<string, object?>>(r.ExposedValuesJson)
+                        : null
+                }).ToList();
             }
 
-            return null;
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                allReferences = allReferences
+                    .Where(r => r.Url != null && r.Url.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            int total = allReferences.Count;
+            var items = allReferences.Skip(skip).Take(take).ToList();
+
+            return (items, total);
         }
 
         /// <inheritdoc/>
